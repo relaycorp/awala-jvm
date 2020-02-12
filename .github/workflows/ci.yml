@@ -1,8 +1,5 @@
 name: Run Gradle
-on:
-  pull-request:
-  push:
-    branches: ["master"]
+on: ["pull-request", "push"]
 jobs:
   gradle:
     strategy:
