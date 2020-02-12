@@ -4,6 +4,9 @@
  * This generated file contains a sample Kotlin library project to get you started.
  */
 
+group = "tech.relaycorp"
+version = "0.0.1"
+
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm") version "1.3.61"
@@ -12,6 +15,8 @@ plugins {
     `java-library`
 
     id("org.jetbrains.dokka") version "0.10.0"
+
+    `maven-publish`
 }
 
 repositories {
@@ -37,4 +42,18 @@ dependencies {
 tasks.dokka {
     outputFormat = "html"
     outputDirectory = "$buildDir/javadoc"
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+//            artifact(dokkaJar)
+        }
+    }
+    repositories {
+        maven {
+            url = uri("$buildDir/repository")
+        }
+    }
 }
