@@ -1,2 +1,3 @@
-# relaynet-core-java
-Java library for the core of Relaynet
+# relaynet-core-jvm
+
+JVM library for the core of Relaynet.
