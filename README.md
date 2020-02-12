@@ -4,12 +4,9 @@ JVM library for the core of Relaynet.
 
 ## Development
 
-System dependencies:
+This project uses [Gradle](https://gradle.org/), so the only system dependency is a Java JDK. To install the project along with its dependencies, run `./gradlew build` (or `gradlew.bat build` on Windows).
 
-- Java JDK.
-- [Gradle](https://gradle.org/install/).
-
-Gradle tasks (to be run as `gradle <task-name>`):
+Additional Gradle tasks include:
 
 - `test`: Runs the unit test suite.
 - `dokka`: Generates the API documentation.
