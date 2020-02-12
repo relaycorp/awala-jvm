@@ -16,4 +16,7 @@ jobs:
           arguments: build
       - uses: eskatos/gradle-command-action@v1
         with:
-          arguments: test
+          arguments: check
+      - uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: jacocoTestCoverageVerification

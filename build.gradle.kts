@@ -19,6 +19,8 @@ plugins {
     `maven-publish`
 
     id("com.diffplug.gradle.spotless") version "3.27.1"
+
+    jacoco
 }
 
 repositories {
@@ -39,6 +41,50 @@ dependencies {
 
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+}
+
+jacoco {
+    toolVersion = "0.8.5"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+        html.isEnabled = true
+        html.destination = file("$buildDir/reports/coverage")
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = "CLASS"
+                value = "MISSEDCOUNT"
+                maximum = "0".toBigDecimal()
+            }
+
+            limit {
+                counter = "METHOD"
+                value = "MISSEDCOUNT"
+                maximum = "0".toBigDecimal()
+            }
+
+            limit {
+                counter = "BRANCH"
+                value = "MISSEDCOUNT"
+                maximum = "0".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.test {
+    finalizedBy("jacocoTestReport")
+    doLast {
+        println("View code coverage at:")
+        println("file://$buildDir/reports/jacoco/test/html/index.html")
+    }
 }
 
 tasks.dokka {
