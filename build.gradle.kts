@@ -17,6 +17,8 @@ plugins {
     id("org.jetbrains.dokka") version "0.10.0"
 
     `maven-publish`
+
+    id("com.diffplug.gradle.spotless") version "3.27.1"
 }
 
 repositories {
@@ -55,5 +57,15 @@ publishing {
         maven {
             url = uri("$buildDir/repository")
         }
+    }
+}
+
+spotless {
+    kotlin {
+        // optionally takes a version
+        ktlint()
+    }
+    kotlinGradle {
+        ktlint()
     }
 }
