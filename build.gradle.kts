@@ -5,7 +5,7 @@
  */
 
 group = "tech.relaycorp"
-version = "0.0.8"
+version = "0.0.9"
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
@@ -128,7 +128,8 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("https://api.bintray.com/maven/relaycorp/maven/relaynet/")
+            // publish=1 automatically publishes the version
+            url = uri("https://api.bintray.com/maven/relaycorp/maven/relaynet/;publish=1")
             credentials {
                 username = System.getenv("BINTRAY_USERNAME")
                 password = System.getenv("BINTRAY_KEY")
