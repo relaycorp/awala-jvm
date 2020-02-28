@@ -43,6 +43,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 jacoco {
     toolVersion = "0.8.5"
 }
