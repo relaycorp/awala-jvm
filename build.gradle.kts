@@ -5,7 +5,7 @@
  */
 
 group = "tech.relaycorp"
-version = "0.0.5"
+version = "0.0.6"
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
