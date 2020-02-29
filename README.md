@@ -1,4 +1,4 @@
-# relaynet-core-jvm
+# relaynet-jvm
 
 JVM library for the core of Relaynet.
 

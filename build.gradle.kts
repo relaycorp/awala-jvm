@@ -104,7 +104,7 @@ publishing {
             pom {
                 name.set(rootProject.name)
                 description.set("Relaynet JVM library")
-                url.set("https://github.com/relaycorp/relaynet-core-jvm")
+                url.set("https://github.com/relaycorp/relaynet-jvm")
                 developers {
                     developer {
                         id.set("relaycorp")
@@ -118,9 +118,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:https://github.com/relaycorp/relaynet-core-jvm.git")
-                    developerConnection.set("scm:git:https://github.com/relaycorp/relaynet-core-jvm.git")
-                    url.set("https://github.com/relaycorp/relaynet-core-jvm")
+                    connection.set("scm:git:https://github.com/relaycorp/relaynet-jvm.git")
+                    developerConnection.set("scm:git:https://github.com/relaycorp/relaynet-jvm.git")
+                    url.set("https://github.com/relaycorp/relaynet-jvm")
                 }
             }
         }
