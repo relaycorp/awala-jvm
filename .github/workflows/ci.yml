@@ -32,9 +32,13 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: eskatos/gradle-command-action@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
         with:
-          arguments: publish
+          node-version: 12
+      - name: Release
+        uses: codfish/semantic-release-action@v1
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BINTRAY_USERNAME: relaybot
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
