@@ -5,7 +5,7 @@
  */
 
 group = "tech.relaycorp"
-version = "0.0.1"
+version = "0.0.10"
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
@@ -41,6 +41,11 @@ dependencies {
 
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 jacoco {
@@ -96,12 +101,39 @@ publishing {
     publications {
         create<MavenPublication>("default") {
             from(components["java"])
-//            artifact(dokkaJar)
+
+            pom {
+                name.set(rootProject.name)
+                description.set("Relaynet JVM library")
+                url.set("https://github.com/relaycorp/relaynet-core-jvm")
+                developers {
+                    developer {
+                        id.set("relaycorp")
+                        name.set("Relaycorp, Inc.")
+                        email.set("no-reply@relaycorp.tech")
+                    }
+                }
+                licenses {
+                    license {
+                        name.set("MIT")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/relaycorp/relaynet-core-jvm.git")
+                    developerConnection.set("scm:git:https://github.com/relaycorp/relaynet-core-jvm.git")
+                    url.set("https://github.com/relaycorp/relaynet-core-jvm")
+                }
+            }
         }
     }
     repositories {
         maven {
-            url = uri("$buildDir/repository")
+            // publish=1 automatically publishes the version
+            url = uri("https://api.bintray.com/maven/relaycorp/maven/relaynet/;publish=1")
+            credentials {
+                username = System.getenv("BINTRAY_USERNAME")
+                password = System.getenv("BINTRAY_KEY")
+            }
         }
     }
 }
