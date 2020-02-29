@@ -36,6 +36,8 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Install Node.js dependencies
+        run: npm ci
       - name: Release
         uses: codfish/semantic-release-action@v1
         env:
