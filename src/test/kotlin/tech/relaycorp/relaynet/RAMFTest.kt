@@ -4,7 +4,6 @@ import com.beanit.jasn1.ber.types.string.BerVisibleString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class RAMFTest {
     @Test
     fun testSerializer() {
