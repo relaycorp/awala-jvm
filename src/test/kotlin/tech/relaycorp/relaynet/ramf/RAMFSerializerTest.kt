@@ -12,9 +12,8 @@ class RAMFSerializerTest {
                 "04334", "message-id", LocalDateTime.now(), 1, "payload".toByteArray()
         )
 
-        val out = ReverseByteArrayOutputStream(1000)
-        ramf.encode(out)
+        val out = ramf.encode()
 
-        File("/home/gus/tmp/ramf.der").writeBytes(out.array)
+        File("/home/gus/tmp/ramf.der").writeBytes(out)
     }
 }
