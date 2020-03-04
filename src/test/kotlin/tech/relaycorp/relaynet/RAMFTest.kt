@@ -5,7 +5,6 @@ import com.beanit.jasn1.ber.types.BerDateTime
 import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
-import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
