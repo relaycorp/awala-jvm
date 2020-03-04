@@ -13,14 +13,18 @@ import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-import java.io.Serializable
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-internal class RAMFSerializer : BerType, Serializable {
-    var recipient: BerVisibleString? = null
-    var messageId: BerVisibleString? = null
-    var creationTimeUtc: BerDateTime? = null
-    var ttl: BerInteger? = null
-    var payload: BerOctetString? = null
+val berDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+
+internal class RAMFSerializer(
+    val recipient: String,
+    val messageId: String,
+    val creationTimeUtc: LocalDateTime,
+    val ttl: Int,
+    val payload: ByteArray
+) : BerType {
 
     @Throws(IOException::class)
     override fun encode(reverseOS: OutputStream): Int {
@@ -30,23 +34,23 @@ internal class RAMFSerializer : BerType, Serializable {
     @Throws(IOException::class)
     fun encode(reverseOS: OutputStream, withTag: Boolean): Int {
         var codeLength = 0
-        codeLength += payload!!.encode(reverseOS, false)
+        codeLength += BerOctetString(payload).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 4
         reverseOS.write(0x84)
         codeLength += 1
-        codeLength += ttl!!.encode(reverseOS, false)
+        codeLength += BerInteger(ttl.toBigInteger()).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 3
         reverseOS.write(0x83)
         codeLength += 1
-        codeLength += creationTimeUtc!!.encode(reverseOS, false)
+        codeLength += BerDateTime(creationTimeUtc.format(berDateTimeFormatter)).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 2
         reverseOS.write(0x82)
         codeLength += 1
-        codeLength += messageId!!.encode(reverseOS, false)
+        codeLength += BerVisibleString(messageId).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 1
         reverseOS.write(0x81)
         codeLength += 1
-        codeLength += recipient!!.encode(reverseOS, false)
+        codeLength += BerVisibleString(recipient).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 0
         reverseOS.write(0x80)
         codeLength += 1
@@ -76,37 +80,38 @@ internal class RAMFSerializer : BerType, Serializable {
         codeLength += totalLength
         subCodeLength += berTag.decode(`is`)
         if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-            recipient = BerVisibleString()
-            subCodeLength += recipient!!.decode(`is`, false)
+            val recipientBer = BerVisibleString()
+            subCodeLength += recipientBer.decode(`is`, false)
             subCodeLength += berTag.decode(`is`)
         } else {
             throw IOException("Tag does not match the mandatory sequence element tag.")
         }
         if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
-            messageId = BerVisibleString()
-            subCodeLength += messageId!!.decode(`is`, false)
+            val messageIdBer = BerVisibleString()
+            subCodeLength += messageIdBer.decode(`is`, false)
             subCodeLength += berTag.decode(`is`)
         } else {
             throw IOException("Tag does not match the mandatory sequence element tag.")
         }
         if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 2)) {
-            creationTimeUtc = BerDateTime()
-            subCodeLength += creationTimeUtc!!.decode(`is`, false)
+            val creationTimeUtcBer = BerDateTime()
+            subCodeLength += creationTimeUtcBer.decode(`is`, false)
             subCodeLength += berTag.decode(`is`)
         } else {
             throw IOException("Tag does not match the mandatory sequence element tag.")
         }
         if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 3)) {
-            ttl = BerInteger()
-            subCodeLength += ttl!!.decode(`is`, false)
+            val ttlBer = BerInteger()
+            subCodeLength += ttlBer.decode(`is`, false)
             subCodeLength += berTag.decode(`is`)
         } else {
             throw IOException("Tag does not match the mandatory sequence element tag.")
         }
         if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 4)) {
-            payload = BerOctetString()
-            subCodeLength += payload!!.decode(`is`, false)
+            val payloadBer = BerOctetString()
+            subCodeLength += payloadBer.decode(`is`, false)
             if (subCodeLength == totalLength) {
+                // TODO: Initialise class and return instance instead
                 return codeLength
             }
         }
@@ -114,7 +119,6 @@ internal class RAMFSerializer : BerType, Serializable {
     }
 
     companion object {
-        private const val serialVersionUID = 1L
         val tag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
     }
 }
