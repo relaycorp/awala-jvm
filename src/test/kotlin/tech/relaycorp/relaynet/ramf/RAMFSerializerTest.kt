@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet
+package tech.relaycorp.relaynet.ramf
 
 import com.beanit.jasn1.ber.ReverseByteArrayOutputStream
 import com.beanit.jasn1.ber.types.BerDateTime
