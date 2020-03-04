@@ -3,6 +3,7 @@
  *
  * This generated file contains a sample Kotlin library project to get you started.
  */
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "tech.relaycorp"
 
@@ -38,8 +39,9 @@ dependencies {
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
-    // Use the Kotlin JUnit integration.
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    // Use the Kotlin JUnit5 integration.
+    testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
 java {
@@ -84,11 +86,19 @@ tasks.jacocoTestCoverageVerification {
 }
 
 tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
     finalizedBy("jacocoTestReport")
     doLast {
         println("View code coverage at:")
         println("file://$buildDir/reports/jacoco/test/html/index.html")
     }
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = "1.8"
 }
 
 tasks.dokka {
