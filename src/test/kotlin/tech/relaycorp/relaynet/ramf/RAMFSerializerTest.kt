@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-import com.beanit.jasn1.ber.ReverseByteArrayOutputStream
 import java.io.File
 import java.time.LocalDateTime
 import kotlin.test.Test

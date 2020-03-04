@@ -15,11 +15,11 @@ import java.time.format.DateTimeFormatter
 val berDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
 internal class RAMFSerializer(
-        val recipient: String,
-        val messageId: String,
-        val creationTimeUtc: LocalDateTime,
-        val ttl: Int,
-        val payload: ByteArray
+    val recipient: String,
+    val messageId: String,
+    val creationTimeUtc: LocalDateTime,
+    val ttl: Int,
+    val payload: ByteArray
 ) {
 
     @Throws(IOException::class)
