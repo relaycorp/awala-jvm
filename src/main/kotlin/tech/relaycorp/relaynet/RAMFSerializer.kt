@@ -15,7 +15,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.Serializable
 
-internal class RAMF : BerType, Serializable {
+internal class RAMFSerializer : BerType, Serializable {
     var recipient: BerVisibleString? = null
     var messageId: BerVisibleString? = null
     var creationTimeUtc: BerDateTime? = null

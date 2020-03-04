@@ -9,10 +9,10 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class RAMFTest {
+class RAMFSerializerTest {
     @Test
     fun testSerializer() {
-        val ramf = RAMF()
+        val ramf = RAMFSerializer()
         ramf.recipient = BerVisibleString("04334")
         ramf.messageId = BerVisibleString("message-id")
         ramf.creationTimeUtc = BerDateTime("20191201183001")
