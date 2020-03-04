@@ -8,7 +8,6 @@ import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.IOException
-import java.io.InputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -58,53 +57,57 @@ internal class RAMFSerializer(
     }
 
     @Throws(IOException::class)
-    fun decode(`is`: InputStream): Int {
-        var codeLength = 0
-        var subCodeLength = 0
-        val berTag = BerTag()
-        codeLength += tag.decodeAndCheck(`is`)
-        val length = BerLength()
-        codeLength += length.decode(`is`)
-        val totalLength = length.`val`
-        codeLength += totalLength
-        subCodeLength += berTag.decode(`is`)
-        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-            val recipientBer = BerVisibleString()
-            subCodeLength += recipientBer.decode(`is`, false)
-            subCodeLength += berTag.decode(`is`)
-        } else {
-            throw IOException("Tag does not match the mandatory sequence element tag.")
-        }
-        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
-            val messageIdBer = BerVisibleString()
-            subCodeLength += messageIdBer.decode(`is`, false)
-            subCodeLength += berTag.decode(`is`)
-        } else {
-            throw IOException("Tag does not match the mandatory sequence element tag.")
-        }
-        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 2)) {
-            val creationTimeUtcBer = BerDateTime()
-            subCodeLength += creationTimeUtcBer.decode(`is`, false)
-            subCodeLength += berTag.decode(`is`)
-        } else {
-            throw IOException("Tag does not match the mandatory sequence element tag.")
-        }
-        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 3)) {
-            val ttlBer = BerInteger()
-            subCodeLength += ttlBer.decode(`is`, false)
-            subCodeLength += berTag.decode(`is`)
-        } else {
-            throw IOException("Tag does not match the mandatory sequence element tag.")
-        }
-        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 4)) {
-            val payloadBer = BerOctetString()
-            subCodeLength += payloadBer.decode(`is`, false)
-            if (subCodeLength == totalLength) {
-                // TODO: Initialise class and return instance instead
-                return codeLength
-            }
-        }
-        throw IOException("Unexpected end of sequence, length tag: $totalLength, actual sequence length: $subCodeLength")
+    fun decode(): Int {
+//    fun decode(_is: InputStream): Int {
+        throw NotImplementedError(
+            "See https://github.com/relaycorp/relaynet-jvm/issues/9"
+        )
+//        var codeLength = 0
+//        var subCodeLength = 0
+//        val berTag = BerTag()
+//        codeLength += tag.decodeAndCheck(_is)
+//        val length = BerLength()
+//        codeLength += length.decode(_is)
+//        val totalLength = length.`val`
+//        codeLength += totalLength
+//        subCodeLength += berTag.decode(_is)
+//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
+//            val recipientBer = BerVisibleString()
+//            subCodeLength += recipientBer.decode(_is, false)
+//            subCodeLength += berTag.decode(_is)
+//        } else {
+//            throw IOException("Tag does not match the mandatory sequence element tag.")
+//        }
+//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
+//            val messageIdBer = BerVisibleString()
+//            subCodeLength += messageIdBer.decode(_is, false)
+//            subCodeLength += berTag.decode(_is)
+//        } else {
+//            throw IOException("Tag does not match the mandatory sequence element tag.")
+//        }
+//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 2)) {
+//            val creationTimeUtcBer = BerDateTime()
+//            subCodeLength += creationTimeUtcBer.decode(_is, false)
+//            subCodeLength += berTag.decode(_is)
+//        } else {
+//            throw IOException("Tag does not match the mandatory sequence element tag.")
+//        }
+//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 3)) {
+//            val ttlBer = BerInteger()
+//            subCodeLength += ttlBer.decode(_is, false)
+//            subCodeLength += berTag.decode(_is)
+//        } else {
+//            throw IOException("Tag does not match the mandatory sequence element tag.")
+//        }
+//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 4)) {
+//            val payloadBer = BerOctetString()
+//            subCodeLength += payloadBer.decode(_is, false)
+//            if (subCodeLength == totalLength) {
+//                // TODO: Initialise class and return instance instead
+//                return codeLength
+//            }
+//        }
+//        throw IOException("Unexpected end of sequence, length tag: $totalLength, actual sequence length: $subCodeLength")
     }
 
     companion object {
