@@ -7,6 +7,7 @@ import com.beanit.jasn1.ber.types.BerDateTime
 import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -14,15 +15,27 @@ import java.time.format.DateTimeFormatter
 val berDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
 internal class RAMFSerializer(
+    val concreteMessageType: Byte,
+    val concreteMessageVersion: Byte,
     val recipient: String,
     val messageId: String,
     val creationTimeUtc: LocalDateTime,
     val ttl: Int,
     val payload: ByteArray
 ) {
+    fun serialize(): ByteArray {
+        val output = ByteArrayOutputStream()
+
+        output.write("Relaynet".toByteArray())
+        output.write(concreteMessageType.toInt())
+        output.write(concreteMessageVersion.toInt())
+        output.write(serializeFields())
+
+        return output.toByteArray()
+    }
 
     @Throws(IOException::class)
-    fun encode(): ByteArray {
+    fun serializeFields(): ByteArray {
         val reverseOS = ReverseByteArrayOutputStream(1000)
         var codeLength = 0
 
@@ -53,6 +66,7 @@ internal class RAMFSerializer(
 
         BerLength.encodeLength(reverseOS, codeLength)
         tag.encode(reverseOS)
+        reverseOS.flush()
         return reverseOS.array
     }
 

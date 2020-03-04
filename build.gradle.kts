@@ -44,6 +44,9 @@ dependencies {
     // Use the Kotlin JUnit5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+
+    // Use the BouncyCastle provider just to test the ASN.1 serialization with jASN1
+    testImplementation("org.bouncycastle:bcprov-jdk15on:1.64")
 }
 
 java {
