@@ -36,7 +36,7 @@ internal class RAMFSerializer(
 
     @Throws(IOException::class)
     private fun serializeFields(): ByteArray {
-        val reverseOS = ReverseByteArrayOutputStream(1000)
+        val reverseOS = ReverseByteArrayOutputStream(1000, true)
         var codeLength = 0
 
         codeLength += BerOctetString(payload).encode(reverseOS, false)
