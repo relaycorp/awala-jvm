@@ -98,7 +98,7 @@ tasks.test {
     finalizedBy("jacocoTestReport")
     doLast {
         println("View code coverage at:")
-        println("file://$buildDir/reports/jacoco/test/html/index.html")
+        println("file://$buildDir/reports/coverage/index.html")
     }
 }
 
