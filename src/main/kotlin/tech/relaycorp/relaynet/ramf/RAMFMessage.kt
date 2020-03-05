@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
 
 val berDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
-internal class RAMFSerializer(
+internal class RAMFMessage(
     val concreteMessageType: Byte,
     val concreteMessageVersion: Byte,
     val recipient: String,
