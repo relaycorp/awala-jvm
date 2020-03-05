@@ -14,12 +14,117 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.assertThrows
 
 class RAMFMessageTest {
+    val stubConcreteMessageType: Byte = 32
+    val stubConcreteMessageVersion: Byte = 0
+    val stubRecipientAddress = "04334"
+    val stubMessageId = "message-id"
+    val stubCreationTimeUtc: LocalDateTime = LocalDateTime.now()
+    val stubTtl = 1
+    val stubPayload = "payload".toByteArray()
+
+    @Nested
+    inner class Constructor {
+        @Test
+        fun `Recipient address should not span more than 1023 octets`() {
+            val longRecipientAddress = "a".repeat(1024)
+            val exception = assertThrows<RAMFException> {
+                RAMFMessage(
+                        stubConcreteMessageType,
+                        stubConcreteMessageVersion,
+                        longRecipientAddress,
+                        stubMessageId,
+                        stubCreationTimeUtc,
+                        stubTtl,
+                        stubPayload
+                )
+            }
+
+            assertEquals(
+                    "Recipient address cannot span more than 1023 octets (got 1024)",
+                    exception.message
+            )
+        }
+
+        @Test
+        fun `Message id should not span more than 255 octets`() {
+            val longMessageId = "a".repeat(256)
+            val exception = assertThrows<RAMFException> {
+                RAMFMessage(
+                        stubConcreteMessageType,
+                        stubConcreteMessageVersion,
+                        stubRecipientAddress,
+                        longMessageId,
+                        stubCreationTimeUtc,
+                        stubTtl,
+                        stubPayload
+                )
+            }
+
+            assertEquals(
+                    "Message id cannot span more than 255 octets (got 256)",
+                    exception.message
+            )
+        }
+
+        @Test
+        fun `TTL should not be greater than 90 days`() {
+            val secondsIn90Days = 15552000
+            val longTtl = secondsIn90Days + 1
+            val exception = assertThrows<RAMFException> {
+                RAMFMessage(
+                        stubConcreteMessageType,
+                        stubConcreteMessageVersion,
+                        stubRecipientAddress,
+                        stubMessageId,
+                        stubCreationTimeUtc,
+                        longTtl,
+                        stubPayload
+                )
+            }
+
+            assertEquals(
+                    "TTL cannot be greater than $secondsIn90Days (got $longTtl)",
+                    exception.message
+            )
+        }
+
+        @Test
+        fun `Payload should not span more than 8 MiB`() {
+            val octetsIn8Mib = 8388608
+            val longPayloadLength = octetsIn8Mib + 1
+            val longPayload = "a".repeat(longPayloadLength).toByteArray()
+            val exception = assertThrows<RAMFException> {
+                RAMFMessage(
+                        stubConcreteMessageType,
+                        stubConcreteMessageVersion,
+                        stubRecipientAddress,
+                        stubMessageId,
+                        stubCreationTimeUtc,
+                        stubTtl,
+                        longPayload
+                )
+            }
+
+            assertEquals(
+                    "Payload cannot span more than $octetsIn8Mib octets (got $longPayloadLength)",
+                    exception.message
+            )
+        }
+    }
+
     @Nested
     inner class Serialize {
         private val stubRamfMessage = RAMFMessage(
-                32, 0, "04334", "message-id", LocalDateTime.now(), 1, "payload".toByteArray()
+                stubConcreteMessageType,
+                stubConcreteMessageVersion,
+                stubRecipientAddress,
+                stubMessageId,
+                stubCreationTimeUtc,
+                stubTtl,
+                stubPayload
         )
         private val stubRamfSerialization = stubRamfMessage.serialize()
 
@@ -58,7 +163,7 @@ class RAMFMessageTest {
                 val sequence = getAsn1Sequence()
                 val recipientRaw = sequence.getObjectAt(0) as DLTaggedObject
                 val recipientDer = DERVisibleString.getInstance(recipientRaw, false)
-                assertEquals(stubRamfMessage.recipient, recipientDer.string)
+                assertEquals(stubRamfMessage.recipientAddress, recipientDer.string)
             }
 
             @Test
