@@ -123,6 +123,6 @@ internal class RAMFSerializer(
 //    }
 
     companion object {
-        val tag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
+        private val tag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
     }
 }
