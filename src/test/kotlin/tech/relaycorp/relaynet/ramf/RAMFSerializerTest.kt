@@ -14,13 +14,11 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.TestInstance
 
 internal val stubRamf = RAMFSerializer(
         32, 0, "04334", "message-id", LocalDateTime.now(), 1, "payload".toByteArray()
 )
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RAMFSerializerTest {
     @Nested
     inner class Serialize {
