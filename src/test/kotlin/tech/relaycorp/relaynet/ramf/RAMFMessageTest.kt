@@ -1,10 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-import java.nio.charset.Charset
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1OctetString
@@ -14,6 +9,11 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
+import java.nio.charset.Charset
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class RAMFMessageTest {
     @Nested
@@ -41,18 +41,21 @@ class RAMFMessageTest {
 
         @Nested
         inner class Fields {
-            private val asn1Serialization = skipFormatSignature(stubRamfMessage.serialize())
-            private val asn1Stream = ASN1InputStream(asn1Serialization)
+            private fun getAsn1Sequence(): ASN1Sequence {
+                val asn1Serialization = skipFormatSignature(stubRamfMessage.serialize())
+                val asn1Stream = ASN1InputStream(asn1Serialization)
+                return ASN1Sequence.getInstance(asn1Stream.readObject())
+            }
 
             @Test
             fun `Message fields should be wrapped in an ASN1 Sequence`() {
-                val sequence = ASN1Sequence.getInstance(asn1Stream.readObject())
+                val sequence = getAsn1Sequence()
                 assertEquals(5, sequence.size())
             }
 
             @Test
             fun `Recipient should be stored as an ASN1 VisibleString`() {
-                val sequence = ASN1Sequence.getInstance(asn1Stream.readObject())
+                val sequence = getAsn1Sequence()
                 val recipientRaw = sequence.getObjectAt(0) as DLTaggedObject
                 val recipientDer = DERVisibleString.getInstance(recipientRaw, false)
                 assertEquals(stubRamfMessage.recipient, recipientDer.string)
@@ -60,7 +63,7 @@ class RAMFMessageTest {
 
             @Test
             fun `Message id should be stored as an ASN1 VisibleString`() {
-                val sequence = ASN1Sequence.getInstance(asn1Stream.readObject())
+                val sequence = getAsn1Sequence()
                 val messageIdRaw = sequence.getObjectAt(1) as DLTaggedObject
                 val messageIdDer = DERVisibleString.getInstance(messageIdRaw, false)
                 assertEquals(stubRamfMessage.messageId, messageIdDer.string)
@@ -68,7 +71,7 @@ class RAMFMessageTest {
 
             @Test
             fun `Creation time should be stored as an ASN1 DateTime`() {
-                val sequence = ASN1Sequence.getInstance(asn1Stream.readObject())
+                val sequence = getAsn1Sequence()
                 val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
                 // We should technically be using a DateTime type instead of GeneralizedTime, but BC
                 // doesn't support it.
@@ -82,7 +85,7 @@ class RAMFMessageTest {
 
             @Test
             fun `TTL should be stored as an ASN1 Integer`() {
-                val sequence = ASN1Sequence.getInstance(asn1Stream.readObject())
+                val sequence = getAsn1Sequence()
                 val ttlRaw = sequence.getObjectAt(3) as DLTaggedObject
                 val ttlDer = ASN1Integer.getInstance(ttlRaw, false)
                 assertEquals(stubRamfMessage.ttl, ttlDer.intPositiveValueExact())
@@ -90,7 +93,7 @@ class RAMFMessageTest {
 
             @Test
             fun `Payload should be stored as an ASN1 Octet String`() {
-                val sequence = ASN1Sequence.getInstance(asn1Stream.readObject())
+                val sequence = getAsn1Sequence()
                 val payloadRaw = sequence.getObjectAt(4) as DLTaggedObject
                 val payloadDer = ASN1OctetString.getInstance(payloadRaw, false)
                 assertEquals(stubRamfMessage.payload.asList(), payloadDer.octets.asList())
