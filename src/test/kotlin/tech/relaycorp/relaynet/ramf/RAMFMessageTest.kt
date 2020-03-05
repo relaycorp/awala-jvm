@@ -1,5 +1,10 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.nio.charset.Charset
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1OctetString
@@ -9,11 +14,6 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
-import java.nio.charset.Charset
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class RAMFMessageTest {
     @Nested
