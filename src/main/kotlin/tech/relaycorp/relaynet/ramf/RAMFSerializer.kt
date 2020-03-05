@@ -35,7 +35,7 @@ internal class RAMFSerializer(
     }
 
     @Throws(IOException::class)
-    fun serializeFields(): ByteArray {
+    private fun serializeFields(): ByteArray {
         val reverseOS = ReverseByteArrayOutputStream(1000)
         var codeLength = 0
 
@@ -70,12 +70,10 @@ internal class RAMFSerializer(
         return reverseOS.array
     }
 
-    @Throws(IOException::class)
-    fun decode(): Int {
+    // To be implemented in https://github.com/relaycorp/relaynet-jvm/issues/9,
+    // but jASN1 already generated the code.
+//    @Throws(IOException::class)
 //    fun decode(_is: InputStream): Int {
-        throw NotImplementedError(
-            "See https://github.com/relaycorp/relaynet-jvm/issues/9"
-        )
 //        var codeLength = 0
 //        var subCodeLength = 0
 //        val berTag = BerTag()
@@ -122,7 +120,7 @@ internal class RAMFSerializer(
 //            }
 //        }
 //        throw IOException("Unexpected end of sequence, length tag: $totalLength, actual sequence length: $subCodeLength")
-    }
+//    }
 
     companion object {
         val tag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
