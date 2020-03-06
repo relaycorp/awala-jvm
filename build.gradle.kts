@@ -36,6 +36,9 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
+    // Bouncy Castle
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.64")
+
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
@@ -93,7 +96,7 @@ tasks.test {
     finalizedBy("jacocoTestReport")
     doLast {
         println("View code coverage at:")
-        println("file://$buildDir/reports/jacoco/test/html/index.html")
+        println("file://$buildDir/reports/coverage/index.html")
     }
 }
 
