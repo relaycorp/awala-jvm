@@ -39,6 +39,9 @@ internal class RAMFMessage(
                     "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets (got ${messageId.length})"
             )
         }
+        if (ttl < 0) {
+            throw RAMFException("TTL cannot be negative (got $ttl)")
+        }
         if (MAX_TTL < ttl) {
             throw RAMFException(
                     "TTL cannot be greater than $MAX_TTL (got $ttl)"
