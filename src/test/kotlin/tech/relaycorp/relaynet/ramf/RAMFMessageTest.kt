@@ -70,9 +70,9 @@ class RAMFMessageTest {
         }
 
         @Test
-        fun `TTL should not be greater than 90 days`() {
-            val secondsIn90Days = 15552000
-            val longTtl = secondsIn90Days + 1
+        fun `TTL should not be greater than 180 days`() {
+            val secondsIn180Days = 15552000
+            val longTtl = secondsIn180Days + 1
             val exception = assertThrows<RAMFException> {
                 RAMFMessage(
                         stubConcreteMessageType,
@@ -86,7 +86,7 @@ class RAMFMessageTest {
             }
 
             assertEquals(
-                    "TTL cannot be greater than $secondsIn90Days (got $longTtl)",
+                    "TTL cannot be greater than $secondsIn180Days (got $longTtl)",
                     exception.message
             )
         }
