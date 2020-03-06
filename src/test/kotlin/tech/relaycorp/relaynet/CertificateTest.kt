@@ -1,7 +1,5 @@
 package tech.relaycorp.relaynet
 
-
-import java.math.BigInteger
 import java.security.KeyPair
 import java.time.LocalDateTime
 import kotlin.test.Test
@@ -53,7 +51,6 @@ class CertificateTest {
         val x500Name = createTestX500Name()
         assertNotNull(x500Name)
     }
-
 
     @Test fun testFullCertificateIssuanceOptions() {
         val options = validCertificateOptions()
