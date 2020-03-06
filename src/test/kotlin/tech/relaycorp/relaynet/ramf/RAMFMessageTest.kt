@@ -2,6 +2,8 @@ package tech.relaycorp.relaynet.ramf
 
 import java.nio.charset.Charset
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,7 +23,7 @@ class RAMFMessageTest {
     val stubConcreteMessageVersion: Byte = 0
     val stubRecipientAddress = "04334"
     val stubMessageId = "message-id"
-    val stubCreationTimeUtc: LocalDateTime = LocalDateTime.now()
+    val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now()
     val stubTtl = 1
     val stubPayload = "payload".toByteArray()
 
@@ -32,19 +34,19 @@ class RAMFMessageTest {
             val longRecipientAddress = "a".repeat(1024)
             val exception = assertThrows<RAMFException> {
                 RAMFMessage(
-                        stubConcreteMessageType,
-                        stubConcreteMessageVersion,
-                        longRecipientAddress,
-                        stubMessageId,
-                        stubCreationTimeUtc,
-                        stubTtl,
-                        stubPayload
+                    stubConcreteMessageType,
+                    stubConcreteMessageVersion,
+                    longRecipientAddress,
+                    stubMessageId,
+                    stubCreationTimeUtc,
+                    stubTtl,
+                    stubPayload
                 )
             }
 
             assertEquals(
-                    "Recipient address cannot span more than 1023 octets (got 1024)",
-                    exception.message
+                "Recipient address cannot span more than 1023 octets (got 1024)",
+                exception.message
             )
         }
 
@@ -53,20 +55,38 @@ class RAMFMessageTest {
             val longMessageId = "a".repeat(256)
             val exception = assertThrows<RAMFException> {
                 RAMFMessage(
-                        stubConcreteMessageType,
-                        stubConcreteMessageVersion,
-                        stubRecipientAddress,
-                        longMessageId,
-                        stubCreationTimeUtc,
-                        stubTtl,
-                        stubPayload
+                    stubConcreteMessageType,
+                    stubConcreteMessageVersion,
+                    stubRecipientAddress,
+                    longMessageId,
+                    stubCreationTimeUtc,
+                    stubTtl,
+                    stubPayload
                 )
             }
 
             assertEquals(
-                    "Message id cannot span more than 255 octets (got 256)",
-                    exception.message
+                "Message id cannot span more than 255 octets (got 256)",
+                exception.message
             )
+        }
+
+        @Test
+        fun `TTL should not be negative`() {
+            val negativeTtl = -1
+            val exception = assertThrows<RAMFException> {
+                RAMFMessage(
+                    stubConcreteMessageType,
+                    stubConcreteMessageVersion,
+                    stubRecipientAddress,
+                    stubMessageId,
+                    stubCreationTimeUtc,
+                    negativeTtl,
+                    stubPayload
+                )
+            }
+
+            assertEquals("TTL cannot be negative (got $negativeTtl)", exception.message)
         }
 
         @Test
@@ -75,19 +95,19 @@ class RAMFMessageTest {
             val longTtl = secondsIn180Days + 1
             val exception = assertThrows<RAMFException> {
                 RAMFMessage(
-                        stubConcreteMessageType,
-                        stubConcreteMessageVersion,
-                        stubRecipientAddress,
-                        stubMessageId,
-                        stubCreationTimeUtc,
-                        longTtl,
-                        stubPayload
+                    stubConcreteMessageType,
+                    stubConcreteMessageVersion,
+                    stubRecipientAddress,
+                    stubMessageId,
+                    stubCreationTimeUtc,
+                    longTtl,
+                    stubPayload
                 )
             }
 
             assertEquals(
-                    "TTL cannot be greater than $secondsIn180Days (got $longTtl)",
-                    exception.message
+                "TTL cannot be greater than $secondsIn180Days (got $longTtl)",
+                exception.message
             )
         }
 
@@ -98,19 +118,19 @@ class RAMFMessageTest {
             val longPayload = "a".repeat(longPayloadLength).toByteArray()
             val exception = assertThrows<RAMFException> {
                 RAMFMessage(
-                        stubConcreteMessageType,
-                        stubConcreteMessageVersion,
-                        stubRecipientAddress,
-                        stubMessageId,
-                        stubCreationTimeUtc,
-                        stubTtl,
-                        longPayload
+                    stubConcreteMessageType,
+                    stubConcreteMessageVersion,
+                    stubRecipientAddress,
+                    stubMessageId,
+                    stubCreationTimeUtc,
+                    stubTtl,
+                    longPayload
                 )
             }
 
             assertEquals(
-                    "Payload cannot span more than $octetsIn8Mib octets (got $longPayloadLength)",
-                    exception.message
+                "Payload cannot span more than $octetsIn8Mib octets (got $longPayloadLength)",
+                exception.message
             )
         }
     }
@@ -118,13 +138,13 @@ class RAMFMessageTest {
     @Nested
     inner class Serialize {
         private val stubRamfMessage = RAMFMessage(
-                stubConcreteMessageType,
-                stubConcreteMessageVersion,
-                stubRecipientAddress,
-                stubMessageId,
-                stubCreationTimeUtc,
-                stubTtl,
-                stubPayload
+            stubConcreteMessageType,
+            stubConcreteMessageVersion,
+            stubRecipientAddress,
+            stubMessageId,
+            stubCreationTimeUtc,
+            stubTtl,
+            stubPayload
         )
         private val stubRamfSerialization = stubRamfMessage.serialize()
 
@@ -146,21 +166,15 @@ class RAMFMessageTest {
 
         @Nested
         inner class Fields {
-            private fun getAsn1Sequence(): ASN1Sequence {
-                val asn1Serialization = skipFormatSignature(stubRamfMessage.serialize())
-                val asn1Stream = ASN1InputStream(asn1Serialization)
-                return ASN1Sequence.getInstance(asn1Stream.readObject())
-            }
-
             @Test
             fun `Message fields should be wrapped in an ASN1 Sequence`() {
-                val sequence = getAsn1Sequence()
+                val sequence = getAsn1Sequence(stubRamfSerialization)
                 assertEquals(5, sequence.size())
             }
 
             @Test
             fun `Recipient should be stored as an ASN1 VisibleString`() {
-                val sequence = getAsn1Sequence()
+                val sequence = getAsn1Sequence(stubRamfSerialization)
                 val recipientRaw = sequence.getObjectAt(0) as DLTaggedObject
                 val recipientDer = DERVisibleString.getInstance(recipientRaw, false)
                 assertEquals(stubRamfMessage.recipientAddress, recipientDer.string)
@@ -168,40 +182,76 @@ class RAMFMessageTest {
 
             @Test
             fun `Message id should be stored as an ASN1 VisibleString`() {
-                val sequence = getAsn1Sequence()
+                val sequence = getAsn1Sequence(stubRamfSerialization)
                 val messageIdRaw = sequence.getObjectAt(1) as DLTaggedObject
                 val messageIdDer = DERVisibleString.getInstance(messageIdRaw, false)
                 assertEquals(stubRamfMessage.messageId, messageIdDer.string)
             }
 
-            @Test
-            fun `Creation time should be stored as an ASN1 DateTime`() {
-                val sequence = getAsn1Sequence()
-                val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
-                // We should technically be using a DateTime type instead of GeneralizedTime, but BC
-                // doesn't support it.
-                val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
-                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-                assertEquals(
-                        stubRamfMessage.creationTimeUtc.format(dateTimeFormatter),
-                        creationTimeDer.timeString
-                )
-            }
+            @Nested
+            inner class CreationTime {
+                private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
-            @Test
-            fun `TTL should be stored as an ASN1 Integer`() {
-                val sequence = getAsn1Sequence()
-                val ttlRaw = sequence.getObjectAt(3) as DLTaggedObject
-                val ttlDer = ASN1Integer.getInstance(ttlRaw, false)
-                assertEquals(stubRamfMessage.ttl, ttlDer.intPositiveValueExact())
+                @Test
+                fun `Creation time should be stored as an ASN1 DateTime`() {
+                    val sequence = getAsn1Sequence(stubRamfSerialization)
+                    val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
+                    // We should technically be using a DateTime type instead of GeneralizedTime, but BC
+                    // doesn't support it.
+                    val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
+                    assertEquals(
+                        stubRamfMessage.creationTime.format(dateTimeFormatter),
+                        creationTimeDer.timeString
+                    )
+                }
+
+                @Test
+                fun `Creation time should be converted to UTC when provided in different timezone`() {
+                    val nowTimezoneUnaware = LocalDateTime.now()
+                    val zoneId = ZoneId.of("Etc/GMT-5")
+                    val message = RAMFMessage(
+                        stubConcreteMessageType,
+                        stubConcreteMessageVersion,
+                        stubRecipientAddress,
+                        stubMessageId,
+                        ZonedDateTime.of(nowTimezoneUnaware, zoneId),
+                        stubTtl,
+                        stubPayload
+                    )
+
+                    val sequence = getAsn1Sequence(message.serialize())
+
+                    val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
+                    // We should technically be using a DateTime type instead of GeneralizedTime, but BC
+                    // doesn't support it.
+                    val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
+                    assertEquals(
+                        message.creationTime.withZoneSameInstant(ZoneId.of("UTC")).format(dateTimeFormatter),
+                        creationTimeDer.timeString
+                    )
+                }
+
+                @Test
+                fun `TTL should be stored as an ASN1 Integer`() {
+                    val sequence = getAsn1Sequence(stubRamfSerialization)
+                    val ttlRaw = sequence.getObjectAt(3) as DLTaggedObject
+                    val ttlDer = ASN1Integer.getInstance(ttlRaw, false)
+                    assertEquals(stubRamfMessage.ttl, ttlDer.intPositiveValueExact())
+                }
             }
 
             @Test
             fun `Payload should be stored as an ASN1 Octet String`() {
-                val sequence = getAsn1Sequence()
+                val sequence = getAsn1Sequence(stubRamfSerialization)
                 val payloadRaw = sequence.getObjectAt(4) as DLTaggedObject
                 val payloadDer = ASN1OctetString.getInstance(payloadRaw, false)
                 assertEquals(stubRamfMessage.payload.asList(), payloadDer.octets.asList())
+            }
+
+            private fun getAsn1Sequence(serialization: ByteArray): ASN1Sequence {
+                val asn1Serialization = skipFormatSignature(serialization)
+                val asn1Stream = ASN1InputStream(asn1Serialization)
+                return ASN1Sequence.getInstance(asn1Stream.readObject())
             }
         }
     }
