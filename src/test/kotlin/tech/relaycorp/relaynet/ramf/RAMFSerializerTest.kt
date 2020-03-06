@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -21,11 +22,14 @@ import org.junit.jupiter.api.assertThrows
 class RAMFSerializerTest {
     val stubConcreteMessageType: Byte = 32
     val stubConcreteMessageVersion: Byte = 0
-    val stubRecipientAddress = "04334"
-    val stubMessageId = "message-id"
-    val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now()
-    val stubTtl = 1
-    val stubPayload = "payload".toByteArray()
+
+    private val stubFieldSet = RAMFFieldSet(
+        "04334",
+        "message-id",
+        ZonedDateTime.now(),
+        1,
+        "payload".toByteArray()
+    )
 
     private val stubSerializer = RAMFSerializer(
         stubConcreteMessageType,
@@ -34,13 +38,6 @@ class RAMFSerializerTest {
 
     @Nested
     inner class Serialize {
-        private val stubFieldSet = RAMFFieldSet(
-            stubRecipientAddress,
-            stubMessageId,
-            stubCreationTimeUtc,
-            stubTtl,
-            stubPayload
-        )
         private val stubSerialization = stubSerializer.serialize(stubFieldSet)
 
         @Test
@@ -104,13 +101,7 @@ class RAMFSerializerTest {
                 fun `Creation time should be converted to UTC when provided in different timezone`() {
                     val nowTimezoneUnaware = LocalDateTime.now()
                     val zoneId = ZoneId.of("Etc/GMT-5")
-                    val fieldSet = RAMFFieldSet(
-                        stubRecipientAddress,
-                        stubMessageId,
-                        ZonedDateTime.of(nowTimezoneUnaware, zoneId),
-                        stubTtl,
-                        stubPayload
-                    )
+                    val fieldSet = stubFieldSet.copy(creationTime = ZonedDateTime.of(nowTimezoneUnaware, zoneId))
 
                     val sequence = getAsn1Sequence(stubSerializer.serialize(fieldSet))
 
@@ -173,13 +164,39 @@ class RAMFSerializerTest {
             }
 
             @Test
-            @Disabled
             fun `Concrete message type should match expected one`() {
+                val invalidMessageType = stubSerializer.concreteMessageType.inc()
+                val invalidSerialization = ByteArrayOutputStream(10)
+                invalidSerialization.write("Relaynet".toByteArray())
+                invalidSerialization.write(invalidMessageType.toInt())
+                invalidSerialization.write(stubSerializer.concreteMessageVersion.toInt())
+
+                val exception = assertThrows<RAMFException> {
+                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                }
+
+                assertEquals(
+                    "Message type should be ${stubSerializer.concreteMessageType} (got $invalidMessageType)",
+                    exception.message
+                )
             }
 
             @Test
-            @Disabled
             fun `Concrete message version should match expected one`() {
+                val invalidMessageVersion = stubSerializer.concreteMessageVersion.inc()
+                val invalidSerialization = ByteArrayOutputStream(10)
+                invalidSerialization.write("Relaynet".toByteArray())
+                invalidSerialization.write(stubSerializer.concreteMessageType.toInt())
+                invalidSerialization.write(invalidMessageVersion.toInt())
+
+                val exception = assertThrows<RAMFException> {
+                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                }
+
+                assertEquals(
+                    "Message version should be ${stubSerializer.concreteMessageVersion} (got $invalidMessageVersion)",
+                    exception.message
+                )
             }
         }
 

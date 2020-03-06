@@ -9,6 +9,7 @@ import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.nio.charset.Charset
 import java.time.ZoneId
 
 private val ramfMessageTag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
@@ -71,9 +72,19 @@ internal open class RAMFSerializer(
         if (serialization.size < formatSignatureLength) {
             throw RAMFException("Serialization is too short to contain format signature")
         }
-        val magicConstant = serialization.sliceArray(0..8).toString()
+        val magicConstant = serialization.sliceArray(0..7).toString(Charset.forName("ASCII"))
         if (magicConstant != "Relaynet") {
             throw RAMFException("Format signature should start with magic constant 'Relaynet'")
+        }
+        if (serialization[8] != concreteMessageType) {
+            throw RAMFException(
+                "Message type should be $concreteMessageType (got ${serialization[8]})"
+            )
+        }
+        if (serialization[9] != concreteMessageVersion) {
+            throw RAMFException(
+                "Message version should be $concreteMessageVersion (got ${serialization[9]})"
+            )
         }
         throw Error("Unimplemented")
     }
