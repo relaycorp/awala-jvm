@@ -36,12 +36,17 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
+    implementation("com.beanit:jasn1:1.11.2")
+
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
     // Use the Kotlin JUnit5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+
+    // Use the BouncyCastle provider just to test the ASN.1 serialization with jASN1
+    testImplementation("org.bouncycastle:bcprov-jdk15on:1.64")
 }
 
 java {
@@ -93,7 +98,7 @@ tasks.test {
     finalizedBy("jacocoTestReport")
     doLast {
         println("View code coverage at:")
-        println("file://$buildDir/reports/jacoco/test/html/index.html")
+        println("file://$buildDir/reports/coverage/index.html")
     }
 }
 
