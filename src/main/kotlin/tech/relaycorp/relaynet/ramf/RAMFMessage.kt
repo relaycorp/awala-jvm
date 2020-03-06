@@ -9,7 +9,8 @@ import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 val berDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
@@ -24,19 +25,19 @@ internal class RAMFMessage(
     val concreteMessageVersion: Byte,
     val recipientAddress: String,
     val messageId: String,
-    val creationTimeUtc: LocalDateTime,
+    val creationTime: ZonedDateTime,
     val ttl: Int,
     val payload: ByteArray
 ) {
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
             throw RAMFException(
-                    "Recipient address cannot span more than $MAX_RECIPIENT_ADDRESS_LENGTH octets (got ${recipientAddress.length})"
+                "Recipient address cannot span more than $MAX_RECIPIENT_ADDRESS_LENGTH octets (got ${recipientAddress.length})"
             )
         }
         if (MAX_MESSAGE_ID_LENGTH < messageId.length) {
             throw RAMFException(
-                    "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets (got ${messageId.length})"
+                "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets (got ${messageId.length})"
             )
         }
         if (ttl < 0) {
@@ -44,12 +45,12 @@ internal class RAMFMessage(
         }
         if (MAX_TTL < ttl) {
             throw RAMFException(
-                    "TTL cannot be greater than $MAX_TTL (got $ttl)"
+                "TTL cannot be greater than $MAX_TTL (got $ttl)"
             )
         }
         if (MAX_PAYLOAD_LENGTH < payload.size) {
             throw RAMFException(
-                    "Payload cannot span more than $MAX_PAYLOAD_LENGTH octets (got ${payload.size})"
+                "Payload cannot span more than $MAX_PAYLOAD_LENGTH octets (got ${payload.size})"
             )
         }
     }
@@ -80,6 +81,7 @@ internal class RAMFMessage(
         reverseOS.write(0x83)
         codeLength += 1
 
+        val creationTimeUtc = creationTime.withZoneSameInstant(ZoneId.of("UTC"))
         codeLength += BerDateTime(creationTimeUtc.format(berDateTimeFormatter)).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 2
         reverseOS.write(0x82)
