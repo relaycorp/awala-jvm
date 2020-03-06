@@ -7,6 +7,7 @@ import com.beanit.jasn1.ber.types.BerDateTime
 import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.charset.Charset
@@ -68,22 +69,27 @@ internal open class RAMFSerializer(
 
     @Throws(RAMFException::class)
     fun deserialize(serialization: ByteArray): RAMFMessage {
-        val formatSignatureLength = 10
-        if (serialization.size < formatSignatureLength) {
+        val serializationStream = ByteArrayInputStream(serialization)
+        if (serializationStream.available() < 10) {
             throw RAMFException("Serialization is too short to contain format signature")
         }
-        val magicConstant = serialization.sliceArray(0..7).toString(Charset.forName("ASCII"))
+
+        val magicConstant = serializationStream.readNBytes(8).toString(Charset.forName("ASCII"))
         if (magicConstant != "Relaynet") {
             throw RAMFException("Format signature should start with magic constant 'Relaynet'")
         }
-        if (serialization[8] != concreteMessageType) {
+
+        val messageType = serializationStream.read()
+        if (messageType != concreteMessageType.toInt()) {
             throw RAMFException(
-                "Message type should be $concreteMessageType (got ${serialization[8]})"
+                "Message type should be $concreteMessageType (got $messageType)"
             )
         }
-        if (serialization[9] != concreteMessageVersion) {
+
+        val messageVersion = serializationStream.read()
+        if (messageVersion != concreteMessageVersion.toInt()) {
             throw RAMFException(
-                "Message version should be $concreteMessageVersion (got ${serialization[9]})"
+                "Message version should be $concreteMessageVersion (got $messageVersion)"
             )
         }
         throw Error("Unimplemented")
