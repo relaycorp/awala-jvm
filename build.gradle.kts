@@ -36,6 +36,9 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
+    // Bouncy Castle
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.64")
+
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
     // https://github.com/relaycorp/relaynet-jvm/issues/25
     implementation("com.beanit:jasn1:1.11.2")
