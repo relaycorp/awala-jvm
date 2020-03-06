@@ -103,8 +103,6 @@ internal class RAMFMessage(
         return reverseOS.array
     }
 
-    // To be implemented in https://github.com/relaycorp/relaynet-jvm/issues/9,
-    // but jASN1 already generated the code.
 //    @Throws(IOException::class)
 //    fun decode(_is: InputStream): Int {
 //        var codeLength = 0
@@ -157,5 +155,19 @@ internal class RAMFMessage(
 
     companion object {
         private val tag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
+
+        @JvmStatic
+        @Throws(RAMFException::class)
+        fun deserialize(serialization: ByteArray): RAMFMessage {
+            val formatSignatureLength = 10
+            if (serialization.size < formatSignatureLength) {
+                throw RAMFException("Serialization is too short to contain format signature")
+            }
+            val magicConstant = serialization.sliceArray(0..8).toString()
+            if (magicConstant != "Relaynet") {
+                throw RAMFException("Format signature should start with magic constant 'Relaynet'")
+            }
+            throw Error("Unimplemented")
+        }
     }
 }

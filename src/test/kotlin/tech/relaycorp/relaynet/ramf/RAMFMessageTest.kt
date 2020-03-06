@@ -200,8 +200,8 @@ class RAMFMessageTest {
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                    stubRamfMessage.creationTime.format(dateTimeFormatter),
-                    creationTimeDer.timeString
+                        stubRamfMessage.creationTime.format(dateTimeFormatter),
+                        creationTimeDer.timeString
                     )
                 }
 
@@ -261,13 +261,22 @@ class RAMFMessageTest {
         @Nested
         inner class FormatSignature {
             @Test
-            @Disabled
             fun `Format signature must be present`() {
+                val formatSignatureLength = 10
+                val invalidSerialization = "a".repeat(formatSignatureLength - 1).toByteArray()
+
+                val exception = assertThrows<RAMFException> { RAMFMessage.deserialize(invalidSerialization) }
+
+                assertEquals("Serialization is too short to contain format signature", exception.message)
             }
 
             @Test
-            @Disabled
             fun `Magic constant should be ASCII string "Relaynet"`() {
+                val incompleteSerialization = "Relaynope01234".toByteArray()
+
+                val exception = assertThrows<RAMFException> { RAMFMessage.deserialize(incompleteSerialization) }
+
+                assertEquals("Format signature should start with magic constant 'Relaynet'", exception.message)
             }
 
             @Test
