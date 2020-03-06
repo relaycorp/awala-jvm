@@ -200,8 +200,8 @@ class RAMFMessageTest {
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                        stubRamfMessage.creationTime.format(dateTimeFormatter),
-                        creationTimeDer.timeString
+                    stubRamfMessage.creationTime.format(dateTimeFormatter),
+                    creationTimeDer.timeString
                     )
                 }
 
@@ -259,21 +259,55 @@ class RAMFMessageTest {
     @Nested
     inner class Deserialize {
         @Nested
-        inner class CreationTime {
+        inner class FormatSignature {
             @Test
-            @Disabled("Pending implementation")
-            fun `A timezone other than UTC should not be allowed`() {
+            @Disabled
+            fun `Format signature must be present`() {
             }
 
             @Test
-            @Disabled("Pending implementation")
-            fun `Timezone may be unset`() {
+            @Disabled
+            fun `Magic constant should be ASCII string "Relaynet"`() {
             }
 
             @Test
-            @Disabled("Pending implementation")
-            fun `Timezone may be set to UTC`() {
+            @Disabled
+            fun `Concrete message type should match expected one`() {
             }
+
+            @Test
+            @Disabled
+            fun `Concrete message version should match expected one`() {
+            }
+        }
+
+        @Test
+        @Disabled
+        fun `Fields should be DER-serialized`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Recipient should be stored as an ASN1 VisibleString`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Message id should be stored as an ASN1 VisibleString`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Creation time should be stored as an ASN1 DateTime`() {
+        }
+
+        @Test
+        @Disabled
+        fun `TTL should be stored as an ASN1 Integer`() {
+        }
+
+        @Test
+        fun `Payload should be stored as an ASN1 Octet String`() {
         }
     }
 }
