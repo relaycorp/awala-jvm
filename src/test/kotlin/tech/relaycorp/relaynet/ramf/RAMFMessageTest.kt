@@ -110,4 +110,22 @@ class RAMFMessageTest {
             )
         }
     }
+
+    @Nested
+    inner class Serialize {
+        @Test
+        fun `Serialization should use format signature specified in companion object`() {
+            val message =
+                StubRAMFMessage(stubRecipientAddress, stubMessageId, stubCreationTimeUtc, stubTtl, stubPayload)
+
+            val serialization = message.serialize()
+
+            val expectedSerialization = StubRAMFMessage.serialize(
+                RAMFFieldSet(
+                    stubRecipientAddress, stubMessageId, stubCreationTimeUtc, stubTtl, stubPayload
+                )
+            )
+            assert(serialization contentEquals expectedSerialization)
+        }
+    }
 }

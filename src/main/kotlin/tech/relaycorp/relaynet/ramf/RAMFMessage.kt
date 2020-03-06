@@ -43,8 +43,10 @@ internal abstract class RAMFMessage(
         }
     }
 
-    // TODO: Write instance method serialize() once deserialization is complete
-    // so that the deserialization() function can be used in the tests
+    fun serialize(): ByteArray {
+        val fieldSet = RAMFFieldSet(recipientAddress, messageId, creationTime, ttl, payload)
+        return serialize(fieldSet)
+    }
 
     companion object : RAMFSerializer(0, 0)
 }
