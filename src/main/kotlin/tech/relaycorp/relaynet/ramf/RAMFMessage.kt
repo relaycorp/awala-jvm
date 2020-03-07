@@ -1,16 +1,15 @@
 package tech.relaycorp.relaynet.ramf
 
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-
-val berDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
 private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1023
 private const val MAX_MESSAGE_ID_LENGTH = 255
 private const val MAX_TTL = 15552000
 private const val MAX_PAYLOAD_LENGTH = 8388608
 
-internal abstract class RAMFMessage(
+// This class should be abstract instead of open, but I couldn't find a way to make it work with
+// the companion object
+internal open class RAMFMessage(
     val recipientAddress: String,
     val messageId: String,
     val creationTime: ZonedDateTime,
@@ -48,5 +47,5 @@ internal abstract class RAMFMessage(
         return serialize(fieldSet)
     }
 
-    companion object : RAMFSerializer(0, 0)
+    companion object : RAMFSerializer<RAMFMessage>(0, 0, ::RAMFMessage)
 }

@@ -12,16 +12,26 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
+import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import org.bouncycastle.asn1.ASN1InputStream
+import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.ASN1TaggedObject
+import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 
-private val ramfMessageTag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
+private val DER_SEQUENCE_TAG = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
 
-internal open class RAMFSerializer(
+private val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
+
+internal open class RAMFSerializer<T : RAMFMessage>(
     val concreteMessageType: Byte,
-    val concreteMessageVersion: Byte
+    val concreteMessageVersion: Byte,
+    private val messageClazz: (String, String, ZonedDateTime, Int, ByteArray) -> T
 ) {
     fun serialize(fieldSet: RAMFFieldSet): ByteArray {
         val output = ByteArrayOutputStream()
@@ -49,8 +59,8 @@ internal open class RAMFSerializer(
         reverseOS.write(0x83)
         codeLength += 1
 
-        val creationTimeUtc = fieldSet.creationTime.withZoneSameInstant(ZoneId.of("UTC"))
-        codeLength += BerDateTime(creationTimeUtc.format(berDateTimeFormatter)).encode(reverseOS, false)
+        val creationTimeUtc = fieldSet.creationTime.withZoneSameInstant(UTC_ZONE_ID)
+        codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 2
         reverseOS.write(0x82)
         codeLength += 1
@@ -66,12 +76,12 @@ internal open class RAMFSerializer(
         codeLength += 1
 
         BerLength.encodeLength(reverseOS, codeLength)
-        ramfMessageTag.encode(reverseOS)
+        DER_SEQUENCE_TAG.encode(reverseOS)
         return reverseOS.array
     }
 
     @Throws(RAMFException::class)
-    fun deserialize(serialization: ByteArray): RAMFMessage {
+    fun deserialize(serialization: ByteArray): T {
         val serializationStream = ByteArrayInputStream(serialization)
         if (serializationStream.available() < 10) {
             throw RAMFException("Serialization is too short to contain format signature")
@@ -95,12 +105,11 @@ internal open class RAMFSerializer(
                 "Message version should be $concreteMessageVersion (got $messageVersion)"
             )
         }
-        deserializeFields(serializationStream)
-        throw Error("Unimplemented")
+        return deserializeFields(serializationStream)
     }
 
     @Throws(RAMFException::class)
-    private fun deserializeFields(serialization: InputStream) {
+    private fun deserializeFields(serialization: InputStream): T {
         val asn1InputStream = ASN1InputStream(serialization)
         val fieldSequence: ASN1Sequence = try {
             val asn1Value = asn1InputStream.readObject()
@@ -113,19 +122,40 @@ internal open class RAMFSerializer(
                 else -> throw exception
             }
         }
-        val fieldSequenceSize = fieldSequence.size()
-        if (fieldSequenceSize != 5) {
+        val fields = fieldSequence.toArray()
+        if (fields.size != 5) {
             throw RAMFException(
-                "Field sequence should contain 5 items (got $fieldSequenceSize)"
+                "Field sequence should contain 5 items (got ${fields.size})"
             )
         }
 
-        val recipientAddressRaw = fieldSequence.getObjectAt(0)
-        try {
-            DERVisibleString.getInstance(recipientAddressRaw)
-        } catch (_: java.lang.IllegalArgumentException) {
-            throw RAMFException("Recipient address should be a VisibleString")
+        val recipientAddress = DERVisibleString.getInstance(fields[0] as ASN1TaggedObject, false)
+
+        val messageId = DERVisibleString.getInstance(fields[1] as ASN1TaggedObject, false)
+
+        // BouncyCastle doesn't support ASN.1 DATE-TIME values so we have to do the parsing
+        // ourselves. We could use a DerGeneralizedTime but that's a bit risky because it may
+        // contain a timezone.
+        val creationTimeDer = DERVisibleString.getInstance(fields[2] as ASN1TaggedObject, false)
+        val creationTime = try {
+            LocalDateTime.parse(creationTimeDer.string, BER_DATETIME_FORMATTER)
+        } catch (_: DateTimeParseException) {
+            throw RAMFException(
+                "Creation time should be an ASN.1 DATE-TIME value"
+            )
         }
+
+        val ttlDer = ASN1Integer.getInstance(fields[3] as ASN1TaggedObject, false)
+
+        val payloadDer = DEROctetString.getInstance(fields[4] as ASN1TaggedObject, false)
+
+        return messageClazz(
+            recipientAddress.string,
+            messageId.string,
+            ZonedDateTime.of(creationTime, UTC_ZONE_ID),
+            ttlDer.intPositiveValueExact(),
+            payloadDer.octets
+        )
     }
 
     // @Throws(RAMFException::class)
@@ -182,3 +212,6 @@ internal open class RAMFSerializer(
     //     throw RAMFException("Field set sequence contains more than 5 items")
     // }
 }
+
+val BER_DATETIME_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyyMMddHHmmss")

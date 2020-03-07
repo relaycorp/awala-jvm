@@ -9,5 +9,5 @@ internal class StubRAMFMessage(
     ttl: Int,
     payload: ByteArray
 ) : RAMFMessage(recipientAddress, messageId, creationTime, ttl, payload) {
-    companion object : RAMFSerializer(0, 0)
+    companion object : RAMFSerializer<StubRAMFMessage>(0, 0, ::StubRAMFMessage)
 }

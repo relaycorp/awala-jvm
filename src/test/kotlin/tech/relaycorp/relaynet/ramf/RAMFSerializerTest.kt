@@ -4,6 +4,7 @@ import com.beanit.jasn1.ber.BerLength
 import com.beanit.jasn1.ber.BerTag
 import com.beanit.jasn1.ber.ReverseByteArrayOutputStream
 import com.beanit.jasn1.ber.types.BerDateTime
+import com.beanit.jasn1.ber.types.BerGeneralizedTime
 import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.BerType
@@ -22,7 +23,6 @@ import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DERGeneralizedTime
 import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.DLTaggedObject
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -36,14 +36,15 @@ class RAMFSerializerTest {
     private val stubFieldSet = RAMFFieldSet(
         "04334",
         "message-id",
-        ZonedDateTime.now(),
-        1,
+        ZonedDateTime.now(ZoneId.of("UTC")),
+        12345,
         "payload".toByteArray()
     )
 
     private val stubSerializer = RAMFSerializer(
         stubConcreteMessageType,
-        stubConcreteMessageVersion
+        stubConcreteMessageVersion,
+        ::StubRAMFMessage
     )
 
     @Nested
@@ -122,14 +123,14 @@ class RAMFSerializerTest {
                         creationTimeDer.timeString
                     )
                 }
+            }
 
-                @Test
-                fun `TTL should be stored as an ASN1 Integer`() {
-                    val sequence = getAsn1Sequence(stubSerialization)
-                    val ttlRaw = sequence.getObjectAt(3) as DLTaggedObject
-                    val ttlDer = ASN1Integer.getInstance(ttlRaw, false)
-                    assertEquals(stubFieldSet.ttl, ttlDer.intPositiveValueExact())
-                }
+            @Test
+            fun `TTL should be stored as an ASN1 Integer`() {
+                val sequence = getAsn1Sequence(stubSerialization)
+                val ttlRaw = sequence.getObjectAt(3) as DLTaggedObject
+                val ttlDer = ASN1Integer.getInstance(ttlRaw, false)
+                assertEquals(stubFieldSet.ttl, ttlDer.intPositiveValueExact())
             }
 
             @Test
@@ -210,12 +211,15 @@ class RAMFSerializerTest {
 
         @Nested
         inner class FieldSet {
+            private val formatSignature: ByteArray = "Relaynet".toByteArray() + byteArrayOf(
+                stubSerializer.concreteMessageType,
+                stubSerializer.concreteMessageVersion
+            )
+
             @Test
             fun `Fields should be DER-serialized`() {
                 val invalidSerialization = ByteArrayOutputStream(11)
-                invalidSerialization.write("Relaynet".toByteArray())
-                invalidSerialization.write(stubSerializer.concreteMessageType.toInt())
-                invalidSerialization.write(stubSerializer.concreteMessageVersion.toInt())
+                invalidSerialization.write(formatSignature)
                 invalidSerialization.write(0xff)
 
                 val exception = assertThrows<RAMFException> {
@@ -228,10 +232,7 @@ class RAMFSerializerTest {
             @Test
             fun `Fields should be stored as a universal, constructed sequence`() {
                 val invalidSerialization = ByteArrayOutputStream(11)
-                invalidSerialization.write("Relaynet".toByteArray())
-                invalidSerialization.write(stubSerializer.concreteMessageType.toInt())
-                invalidSerialization.write(stubSerializer.concreteMessageVersion.toInt())
-                invalidSerialization.write(0xff)
+                invalidSerialization.write(formatSignature)
 
                 val fieldSetSerialization = ReverseByteArrayOutputStream(100)
                 BerOctetString("Not a sequence".toByteArray()).encode(fieldSetSerialization)
@@ -247,9 +248,7 @@ class RAMFSerializerTest {
             @Test
             fun `Fields should be a sequence of no more than 5 items`() {
                 val invalidSerialization = ByteArrayOutputStream()
-                invalidSerialization.write("Relaynet".toByteArray())
-                invalidSerialization.write(stubSerializer.concreteMessageType.toInt())
-                invalidSerialization.write(stubSerializer.concreteMessageVersion.toInt())
+                invalidSerialization.write(formatSignature)
 
                 val fieldSetSerialization = serializeSequence(
                     BerVisibleString("1"),
@@ -272,45 +271,63 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Recipient should be stored as an ASN1 VisibleString`() {
-                val invalidSerialization = ByteArrayOutputStream()
-                invalidSerialization.write("Relaynet".toByteArray())
-                invalidSerialization.write(stubSerializer.concreteMessageType.toInt())
-                invalidSerialization.write(stubSerializer.concreteMessageVersion.toInt())
+            fun `Message fields should be output when the serialization is valid`() {
+                val serialization = stubSerializer.serialize(stubFieldSet)
 
-                val fieldSetSerialization = serializeFieldSet(BerInteger(32L))
+                val parsedMessage = stubSerializer.deserialize(serialization)
+
+                assertEquals(stubFieldSet.recipientAddress, parsedMessage.recipientAddress)
+
+                assertEquals(stubFieldSet.messageId, parsedMessage.messageId)
+
+                assertEquals(
+                    stubFieldSet.creationTime.withNano(0),
+                    parsedMessage.creationTime
+                )
+
+                assertEquals(stubFieldSet.ttl, parsedMessage.ttl)
+
+                assertEquals(stubFieldSet.payload.asList(), parsedMessage.payload.asList())
+            }
+
+            @Test
+            fun `Creation time in a format other than ASN1 DATE-TIME should be refused`() {
+                // For example, a GeneralizedTime value (which includes timezone) should be refused
+                val invalidSerialization = ByteArrayOutputStream()
+                invalidSerialization.write(formatSignature)
+
+                val fieldSetSerialization = serializeFieldSet(creationTime = BerGeneralizedTime("20200307173323-03"))
                 invalidSerialization.write(fieldSetSerialization)
 
                 val exception = assertThrows<RAMFException> {
                     stubSerializer.deserialize(invalidSerialization.toByteArray())
                 }
 
-                assertEquals("Recipient address should be a VisibleString", exception.message)
+                assertEquals(
+                    "Creation time should be an ASN.1 DATE-TIME value",
+                    exception.message
+                )
             }
 
             @Test
-            @Disabled
-            fun `Message id should be stored as an ASN1 VisibleString`() {
-            }
+            fun `Creation time should be parsed as UTC`() {
+                // Pick timezone that's never equivalent to UTC (like "Europe/London")
+                val nonUTCZoneId = ZoneId.of("America/Caracas")
+                val serialization = stubSerializer.serialize(
+                    stubFieldSet.copy(
+                        creationTime = stubFieldSet.creationTime.withZoneSameInstant(nonUTCZoneId)
+                    )
+                )
 
-            @Test
-            @Disabled
-            fun `Creation time should be stored as an ASN1 DateTime`() {
-            }
+                val parsedMessage = stubSerializer.deserialize(serialization)
 
-            @Test
-            @Disabled
-            fun `TTL should be stored as an ASN1 Integer`() {
-            }
-
-            @Test
-            fun `Payload should be stored as an ASN1 Octet String`() {
+                assertEquals(parsedMessage.creationTime.zone, ZoneId.of("UTC"))
             }
 
             private fun serializeFieldSet(
                 recipientAddress: BerType = BerVisibleString(stubFieldSet.recipientAddress),
                 messageId: BerType = BerVisibleString(stubFieldSet.messageId),
-                creationTime: BerType = BerDateTime(stubFieldSet.recipientAddress.format(BER_DATETIME_FORMATTER)),
+                creationTime: BerType = BerDateTime(stubFieldSet.creationTime.format(BER_DATETIME_FORMATTER)),
                 ttl: BerType = BerInteger(stubFieldSet.ttl.toBigInteger()),
                 payload: BerType = BerOctetString(stubFieldSet.payload)
             ): ByteArray {
