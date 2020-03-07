@@ -10,8 +10,12 @@ import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.nio.charset.Charset
 import java.time.ZoneId
+import org.bouncycastle.asn1.ASN1InputStream
+import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.DERVisibleString
 
 private val ramfMessageTag = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
 
@@ -63,7 +67,6 @@ internal open class RAMFSerializer(
 
         BerLength.encodeLength(reverseOS, codeLength)
         ramfMessageTag.encode(reverseOS)
-        reverseOS.flush()
         return reverseOS.array
     }
 
@@ -92,56 +95,90 @@ internal open class RAMFSerializer(
                 "Message version should be $concreteMessageVersion (got $messageVersion)"
             )
         }
+        deserializeFields(serializationStream)
         throw Error("Unimplemented")
     }
 
-//    @Throws(IOException::class)
-//    fun decode(_is: InputStream): Int {
-//        var codeLength = 0
-//        var subCodeLength = 0
-//        val berTag = BerTag()
-//        codeLength += tag.decodeAndCheck(_is)
-//        val length = BerLength()
-//        codeLength += length.decode(_is)
-//        val totalLength = length.`val`
-//        codeLength += totalLength
-//        subCodeLength += berTag.decode(_is)
-//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-//            val recipientBer = BerVisibleString()
-//            subCodeLength += recipientBer.decode(_is, false)
-//            subCodeLength += berTag.decode(_is)
-//        } else {
-//            throw IOException("Tag does not match the mandatory sequence element tag.")
-//        }
-//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
-//            val messageIdBer = BerVisibleString()
-//            subCodeLength += messageIdBer.decode(_is, false)
-//            subCodeLength += berTag.decode(_is)
-//        } else {
-//            throw IOException("Tag does not match the mandatory sequence element tag.")
-//        }
-//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 2)) {
-//            val creationTimeUtcBer = BerDateTime()
-//            subCodeLength += creationTimeUtcBer.decode(_is, false)
-//            subCodeLength += berTag.decode(_is)
-//        } else {
-//            throw IOException("Tag does not match the mandatory sequence element tag.")
-//        }
-//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 3)) {
-//            val ttlBer = BerInteger()
-//            subCodeLength += ttlBer.decode(_is, false)
-//            subCodeLength += berTag.decode(_is)
-//        } else {
-//            throw IOException("Tag does not match the mandatory sequence element tag.")
-//        }
-//        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 4)) {
-//            val payloadBer = BerOctetString()
-//            subCodeLength += payloadBer.decode(_is, false)
-//            if (subCodeLength == totalLength) {
-//                // TODO: Initialise class and return instance instead
-//                return codeLength
-//            }
-//        }
-//        throw IOException("Unexpected end of sequence, length tag: $totalLength, actual sequence length: $subCodeLength")
-//    }
+    @Throws(RAMFException::class)
+    private fun deserializeFields(serialization: InputStream) {
+        val asn1InputStream = ASN1InputStream(serialization)
+        val fieldSequence: ASN1Sequence = try {
+            val asn1Value = asn1InputStream.readObject()
+            ASN1Sequence.getInstance(asn1Value)
+        } catch (exception: Exception) {
+            when (exception) {
+                is IOException, is IllegalArgumentException -> throw RAMFException(
+                    "Message fields are not a DER-encoded sequence"
+                )
+                else -> throw exception
+            }
+        }
+        val fieldSequenceSize = fieldSequence.size()
+        if (fieldSequenceSize != 5) {
+            throw RAMFException(
+                "Field sequence should contain 5 items (got $fieldSequenceSize)"
+            )
+        }
+
+        val recipientAddressRaw = fieldSequence.getObjectAt(0)
+        try {
+            DERVisibleString.getInstance(recipientAddressRaw)
+        } catch (_: java.lang.IllegalArgumentException) {
+            throw RAMFException("Recipient address should be a VisibleString")
+        }
+    }
+
+    // @Throws(RAMFException::class)
+    // private fun deserializeFields(serialization: InputStream): Int {
+    //     var codeLength = 0
+    //     var subCodeLength = 0
+    //     val berTag = BerTag()
+    //     try {
+    //         codeLength += ramfMessageTag.decodeAndCheck(serialization)
+    //     } catch (error: IOException) {
+    //         throw RAMFException("Message fields are not a DER-encoded sequence")
+    //     }
+    //     val length = BerLength()
+    //     codeLength += length.decode(serialization)
+    //     val totalLength = length.`val`
+    //     codeLength += totalLength
+    //     subCodeLength += berTag.decode(serialization)
+    //     if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
+    //         val recipientBer = BerVisibleString()
+    //         subCodeLength += recipientBer.decode(serialization, false)
+    //         subCodeLength += berTag.decode(serialization)
+    //     } else {
+    //         throw IOException("Tag does not match the mandatory sequence element tag.")
+    //     }
+    //     if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
+    //         val messageIdBer = BerVisibleString()
+    //         subCodeLength += messageIdBer.decode(serialization, false)
+    //         subCodeLength += berTag.decode(serialization)
+    //     } else {
+    //         throw IOException("Tag does not match the mandatory sequence element tag.")
+    //     }
+    //     if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 2)) {
+    //         val creationTimeUtcBer = BerDateTime()
+    //         subCodeLength += creationTimeUtcBer.decode(serialization, false)
+    //         subCodeLength += berTag.decode(serialization)
+    //     } else {
+    //         throw IOException("Tag does not match the mandatory sequence element tag.")
+    //     }
+    //     if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 3)) {
+    //         val ttlBer = BerInteger()
+    //         subCodeLength += ttlBer.decode(serialization, false)
+    //         subCodeLength += berTag.decode(serialization)
+    //     } else {
+    //         throw IOException("Tag does not match the mandatory sequence element tag.")
+    //     }
+    //     if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 4)) {
+    //         val payloadBer = BerOctetString()
+    //         subCodeLength += payloadBer.decode(serialization, false)
+    //         if (subCodeLength == totalLength) {
+    //             // TODO: Initialise class and return instance instead
+    //             return codeLength
+    //         }
+    //     }
+    //     throw RAMFException("Field set sequence contains more than 5 items")
+    // }
 }

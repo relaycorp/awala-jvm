@@ -36,7 +36,10 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
+    // Libraries for ASN.1 serialization. We're transitioning to having BouncyCastle used at runtime
+    // and jASN1 used for testing only.
     implementation("com.beanit:jasn1:1.11.2")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.64")
 
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
@@ -44,9 +47,6 @@ dependencies {
     // Use the Kotlin JUnit5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-
-    // Use the BouncyCastle provider just to test the ASN.1 serialization with jASN1
-    testImplementation("org.bouncycastle:bcprov-jdk15on:1.64")
 }
 
 java {
