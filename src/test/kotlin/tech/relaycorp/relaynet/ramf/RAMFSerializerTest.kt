@@ -55,7 +55,7 @@ class RAMFSerializerTest {
         private val stubSerialization = stubSerializer.serialize(stubMessage)
 
         @Test
-        fun `Magic constant should be ASCII string "Relaynet"`() {
+        fun `Magic constant should be ASCII string Relaynet`() {
             val magicSignature = stubSerialization.copyOfRange(0, 8)
             assertEquals("Relaynet", magicSignature.toString(Charset.forName("ASCII")))
         }
@@ -172,7 +172,7 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Magic constant should be ASCII string "Relaynet"`() {
+            fun `Magic constant should be ASCII string Relaynet`() {
                 val incompleteSerialization = "Relaynope01234".toByteArray()
 
                 val exception = assertThrows<RAMFException> { stubSerializer.deserialize(incompleteSerialization) }
