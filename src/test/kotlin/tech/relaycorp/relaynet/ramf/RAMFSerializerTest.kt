@@ -226,7 +226,7 @@ class RAMFSerializerTest {
                     stubSerializer.deserialize(invalidSerialization.toByteArray())
                 }
 
-                assertEquals("Message fields are not a DER-encoded sequence", exception.message)
+                assertEquals("Message fields are not a DER-encoded", exception.message)
             }
 
             @Test
@@ -242,7 +242,7 @@ class RAMFSerializerTest {
                     stubSerializer.deserialize(invalidSerialization.toByteArray())
                 }
 
-                assertEquals("Message fields are not a DER-encoded sequence", exception.message)
+                assertEquals("Message fields are not a ASN.1 sequence", exception.message)
             }
 
             @Test

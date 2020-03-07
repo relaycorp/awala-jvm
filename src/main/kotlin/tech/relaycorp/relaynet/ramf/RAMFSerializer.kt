@@ -111,16 +111,15 @@ internal open class RAMFSerializer<T : RAMFMessage>(
     @Throws(RAMFException::class)
     private fun deserializeFields(serialization: InputStream): T {
         val asn1InputStream = ASN1InputStream(serialization)
+        val asn1Value = try {
+            asn1InputStream.readObject()
+        } catch (_: IOException) {
+            throw RAMFException("Message fields are not a DER-encoded")
+        }
         val fieldSequence: ASN1Sequence = try {
-            val asn1Value = asn1InputStream.readObject()
             ASN1Sequence.getInstance(asn1Value)
-        } catch (exception: Exception) {
-            when (exception) {
-                is IOException, is IllegalArgumentException -> throw RAMFException(
-                    "Message fields are not a DER-encoded sequence"
-                )
-                else -> throw exception
-            }
+        } catch (_: IllegalArgumentException) {
+            throw RAMFException("Message fields are not a ASN.1 sequence")
         }
         val fields = fieldSequence.toArray()
         if (fields.size != 5) {
