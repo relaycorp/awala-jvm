@@ -29,11 +29,14 @@ import org.junit.jupiter.api.assertThrows
 
 private val BER_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
+// Pick timezone that's never equivalent to UTC (like "Europe/London")
+val NON_UTC_ZONE_ID = ZoneId.of("America/Caracas")
+
 class RAMFSerializerTest {
     val stubConcreteMessageType: Byte = 32
     val stubConcreteMessageVersion: Byte = 0
 
-    private val stubFieldSet = RAMFFieldSet(
+    private val stubMessage = StubRAMFMessage(
         "04334",
         "message-id",
         ZonedDateTime.now(ZoneId.of("UTC")),
@@ -49,7 +52,7 @@ class RAMFSerializerTest {
 
     @Nested
     inner class Serialize {
-        private val stubSerialization = stubSerializer.serialize(stubFieldSet)
+        private val stubSerialization = stubSerializer.serialize(stubMessage)
 
         @Test
         fun `Magic constant should be ASCII string "Relaynet"`() {
@@ -80,7 +83,7 @@ class RAMFSerializerTest {
                 val sequence = getAsn1Sequence(stubSerialization)
                 val recipientRaw = sequence.getObjectAt(0) as DLTaggedObject
                 val recipientDer = DERVisibleString.getInstance(recipientRaw, false)
-                assertEquals(stubFieldSet.recipientAddress, recipientDer.string)
+                assertEquals(stubMessage.recipientAddress, recipientDer.string)
             }
 
             @Test
@@ -88,7 +91,7 @@ class RAMFSerializerTest {
                 val sequence = getAsn1Sequence(stubSerialization)
                 val messageIdRaw = sequence.getObjectAt(1) as DLTaggedObject
                 val messageIdDer = DERVisibleString.getInstance(messageIdRaw, false)
-                assertEquals(stubFieldSet.messageId, messageIdDer.string)
+                assertEquals(stubMessage.messageId, messageIdDer.string)
             }
 
             @Nested
@@ -101,7 +104,7 @@ class RAMFSerializerTest {
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                        stubFieldSet.creationTime.format(BER_DATETIME_FORMATTER),
+                        stubMessage.creationTime.format(BER_DATETIME_FORMATTER),
                         creationTimeDer.timeString
                     )
                 }
@@ -109,17 +112,22 @@ class RAMFSerializerTest {
                 @Test
                 fun `Creation time should be converted to UTC when provided in different timezone`() {
                     val nowTimezoneUnaware = LocalDateTime.now()
-                    val zoneId = ZoneId.of("Etc/GMT-5")
-                    val fieldSet = stubFieldSet.copy(creationTime = ZonedDateTime.of(nowTimezoneUnaware, zoneId))
+                    val message = StubRAMFMessage(
+                        stubMessage.recipientAddress,
+                        stubMessage.messageId,
+                        ZonedDateTime.of(nowTimezoneUnaware, NON_UTC_ZONE_ID),
+                        stubMessage.ttl,
+                        stubMessage.payload
+                    )
 
-                    val sequence = getAsn1Sequence(stubSerializer.serialize(fieldSet))
+                    val sequence = getAsn1Sequence(stubSerializer.serialize(message))
 
                     val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
                     // We should technically be using a DateTime type instead of GeneralizedTime, but BC
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                        fieldSet.creationTime.withZoneSameInstant(ZoneId.of("UTC")).format(BER_DATETIME_FORMATTER),
+                        message.creationTime.withZoneSameInstant(ZoneId.of("UTC")).format(BER_DATETIME_FORMATTER),
                         creationTimeDer.timeString
                     )
                 }
@@ -130,7 +138,7 @@ class RAMFSerializerTest {
                 val sequence = getAsn1Sequence(stubSerialization)
                 val ttlRaw = sequence.getObjectAt(3) as DLTaggedObject
                 val ttlDer = ASN1Integer.getInstance(ttlRaw, false)
-                assertEquals(stubFieldSet.ttl, ttlDer.intPositiveValueExact())
+                assertEquals(stubMessage.ttl, ttlDer.intPositiveValueExact())
             }
 
             @Test
@@ -138,7 +146,7 @@ class RAMFSerializerTest {
                 val sequence = getAsn1Sequence(stubSerialization)
                 val payloadRaw = sequence.getObjectAt(4) as DLTaggedObject
                 val payloadDer = ASN1OctetString.getInstance(payloadRaw, false)
-                assertEquals(stubFieldSet.payload.asList(), payloadDer.octets.asList())
+                assertEquals(stubMessage.payload.asList(), payloadDer.octets.asList())
             }
 
             private fun getAsn1Sequence(serialization: ByteArray): ASN1Sequence {
@@ -272,22 +280,22 @@ class RAMFSerializerTest {
 
             @Test
             fun `Message fields should be output when the serialization is valid`() {
-                val serialization = stubSerializer.serialize(stubFieldSet)
+                val serialization = stubSerializer.serialize(stubMessage)
 
                 val parsedMessage = stubSerializer.deserialize(serialization)
 
-                assertEquals(stubFieldSet.recipientAddress, parsedMessage.recipientAddress)
+                assertEquals(stubMessage.recipientAddress, parsedMessage.recipientAddress)
 
-                assertEquals(stubFieldSet.messageId, parsedMessage.messageId)
+                assertEquals(stubMessage.messageId, parsedMessage.messageId)
 
                 assertEquals(
-                    stubFieldSet.creationTime.withNano(0),
+                    stubMessage.creationTime.withNano(0),
                     parsedMessage.creationTime
                 )
 
-                assertEquals(stubFieldSet.ttl, parsedMessage.ttl)
+                assertEquals(stubMessage.ttl, parsedMessage.ttl)
 
-                assertEquals(stubFieldSet.payload.asList(), parsedMessage.payload.asList())
+                assertEquals(stubMessage.payload.asList(), parsedMessage.payload.asList())
             }
 
             @Test
@@ -311,13 +319,14 @@ class RAMFSerializerTest {
 
             @Test
             fun `Creation time should be parsed as UTC`() {
-                // Pick timezone that's never equivalent to UTC (like "Europe/London")
-                val nonUTCZoneId = ZoneId.of("America/Caracas")
-                val serialization = stubSerializer.serialize(
-                    stubFieldSet.copy(
-                        creationTime = stubFieldSet.creationTime.withZoneSameInstant(nonUTCZoneId)
-                    )
+                val message = StubRAMFMessage(
+                    stubMessage.recipientAddress,
+                    stubMessage.messageId,
+                    stubMessage.creationTime.withZoneSameInstant(NON_UTC_ZONE_ID),
+                    stubMessage.ttl,
+                    stubMessage.payload
                 )
+                val serialization = stubSerializer.serialize(message)
 
                 val parsedMessage = stubSerializer.deserialize(serialization)
 
@@ -325,11 +334,11 @@ class RAMFSerializerTest {
             }
 
             private fun serializeFieldSet(
-                recipientAddress: BerType = BerVisibleString(stubFieldSet.recipientAddress),
-                messageId: BerType = BerVisibleString(stubFieldSet.messageId),
-                creationTime: BerType = BerDateTime(stubFieldSet.creationTime.format(BER_DATETIME_FORMATTER)),
-                ttl: BerType = BerInteger(stubFieldSet.ttl.toBigInteger()),
-                payload: BerType = BerOctetString(stubFieldSet.payload)
+                recipientAddress: BerType = BerVisibleString(stubMessage.recipientAddress),
+                messageId: BerType = BerVisibleString(stubMessage.messageId),
+                creationTime: BerType = BerDateTime(stubMessage.creationTime.format(BER_DATETIME_FORMATTER)),
+                ttl: BerType = BerInteger(stubMessage.ttl.toBigInteger()),
+                payload: BerType = BerOctetString(stubMessage.payload)
             ): ByteArray {
                 return serializeSequence(
                     recipientAddress,

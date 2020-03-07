@@ -120,11 +120,7 @@ class RAMFMessageTest {
 
             val serialization = message.serialize()
 
-            val expectedSerialization = StubRAMFMessage.serialize(
-                RAMFFieldSet(
-                    stubRecipientAddress, stubMessageId, stubCreationTimeUtc, stubTtl, stubPayload
-                )
-            )
+            val expectedSerialization = StubRAMFMessage.serialize(message)
             assert(serialization contentEquals expectedSerialization)
         }
     }

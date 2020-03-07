@@ -43,8 +43,7 @@ internal open class RAMFMessage(
     }
 
     fun serialize(): ByteArray {
-        val fieldSet = RAMFFieldSet(recipientAddress, messageId, creationTime, ttl, payload)
-        return serialize(fieldSet)
+        return serialize(this)
     }
 
     companion object : RAMFSerializer<RAMFMessage>(0, 0, ::RAMFMessage)

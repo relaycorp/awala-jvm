@@ -33,44 +33,44 @@ internal open class RAMFSerializer<T : RAMFMessage>(
     val concreteMessageVersion: Byte,
     private val messageClazz: (String, String, ZonedDateTime, Int, ByteArray) -> T
 ) {
-    fun serialize(fieldSet: RAMFFieldSet): ByteArray {
+    fun serialize(message: T): ByteArray {
         val output = ByteArrayOutputStream()
 
         output.write("Relaynet".toByteArray())
         output.write(concreteMessageType.toInt())
         output.write(concreteMessageVersion.toInt())
-        output.write(serializeFields(fieldSet))
+        output.write(serializeMessage(message))
 
         return output.toByteArray()
     }
 
     @Throws(IOException::class)
-    private fun serializeFields(fieldSet: RAMFFieldSet): ByteArray {
+    private fun serializeMessage(message: T): ByteArray {
         val reverseOS = ReverseByteArrayOutputStream(1000, true)
         var codeLength = 0
 
-        codeLength += BerOctetString(fieldSet.payload).encode(reverseOS, false)
+        codeLength += BerOctetString(message.payload).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 4
         reverseOS.write(0x84)
         codeLength += 1
 
-        codeLength += BerInteger(fieldSet.ttl.toBigInteger()).encode(reverseOS, false)
+        codeLength += BerInteger(message.ttl.toBigInteger()).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 3
         reverseOS.write(0x83)
         codeLength += 1
 
-        val creationTimeUtc = fieldSet.creationTime.withZoneSameInstant(UTC_ZONE_ID)
+        val creationTimeUtc = message.creationTime.withZoneSameInstant(UTC_ZONE_ID)
         codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 2
         reverseOS.write(0x82)
         codeLength += 1
 
-        codeLength += BerVisibleString(fieldSet.messageId).encode(reverseOS, false)
+        codeLength += BerVisibleString(message.messageId).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 1
         reverseOS.write(0x81)
         codeLength += 1
 
-        codeLength += BerVisibleString(fieldSet.recipientAddress).encode(reverseOS, false)
+        codeLength += BerVisibleString(message.recipientAddress).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 0
         reverseOS.write(0x80)
         codeLength += 1
