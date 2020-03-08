@@ -50,6 +50,9 @@ dependencies {
     // Use the Kotlin JUnit5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+
+    // TODO: Remove
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.64")
 }
 
 java {
@@ -88,6 +91,11 @@ tasks.jacocoTestCoverageVerification {
                 value = "MISSEDCOUNT"
                 maximum = "0".toBigDecimal()
             }
+
+            // TODO: Remove once the PR implementing X.509 certs has been merged.
+            excludes = listOf(
+                "tech.relaycorp.relaynet.x509.*"
+            )
         }
     }
 }
