@@ -3,8 +3,10 @@ package tech.relaycorp.relaynet
 import java.security.KeyPair
 import java.time.LocalDateTime
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.bouncycastle.asn1.x500.X500Name
+import org.junit.jupiter.api.assertThrows
 
 class CertificateTest {
     fun createKeyPair(): KeyPair {
@@ -12,7 +14,7 @@ class CertificateTest {
     }
 
     fun createTestX500Name(): X500Name {
-        return Certificate.buildX500Name("The C Name", "The O Name", "The l Name", "The stName", "abc@xyz.com")
+        return Certificate.buildX500Name("The C Name")
     }
 
     fun validCertificateOptions(): FullCertificateIssuanceOptions {
@@ -70,9 +72,36 @@ class CertificateTest {
         options.validityEndDate = LocalDateTime.now().plusMonths(2)
         assertNotNull(options, "Valid inputs should create a Full Certificate Issuance Options object")
     }
+    @Test fun testShouldCreateValidX500Name(){
+        val x500Name = createTestX500Name()
+        val cName = x500Name.rdNs[0]
+        assertNotNull(cName.equals("The C Name"))
+    }
+
+    @Test fun testShouldNotCreateInvalidX500Name(){
+        val exception = assertThrows<CertificateError> {
+            Certificate.buildX500Name("")
+        }
+        assertEquals(
+                "Invalid CName in X500 Name",
+                exception.message
+        )
+    }
+
     @Test fun testShouldCreateCertificate() {
         val options = validCertificateOptions()
         val newCertificate = Certificate.issue(options)
         assertNotNull(newCertificate, "Should issue a certificate from valid options")
+    }
+    @Test fun testShouldRejectInvalidStartDate() {
+        val options = validCertificateOptions()
+        options.validityStartDate = options.validityEndDate
+        val exception = assertThrows<CertificateError> {
+            Certificate.issue(options)
+        }
+        assertEquals(
+                "The end date must be later than the start date",
+                exception.message
+        )
     }
 }

@@ -28,12 +28,18 @@ class Certificate constructor (certificateHolder: X509CertificateHolder?) {
         val MAX_PATH_LENGTH_CONSTRAINT = 2
         val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
 
+        @Throws(CertificateError::class)
         fun issue(options: FullCertificateIssuanceOptions): Certificate {
+            val start = options.validityStartDate
+            val end = options.validityEndDate
+            // validate inputs
+            if (start >= end) {
+                throw CertificateError("The end date must be later than the start date")
+            }
 
             val issuer = X500Name.getInstance(options.commonName)
             val serial = options.serialNumber
-            val start = options.validityStartDate
-            val end = options.validityEndDate
+
             val subject = options.commonName
             val pubkey = options.subjectPublicKey
             val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(pubkey.getEncoded())
@@ -49,14 +55,15 @@ class Certificate constructor (certificateHolder: X509CertificateHolder?) {
 
             return Certificate(builder.build(signerBuilder))
         }
-        fun buildX500Name(cName: String, oName: String, lName: String, stName: String, email: String? = "info@relaycorp.tech"): X500Name {
+
+        @Throws(CertificateError::class)
+        fun buildX500Name(cName: String): X500Name {
+            if(cName.length<=0){
+                throw CertificateError("Invalid CName in X500 Name")
+            }
             val builder = X500NameBuilder(BCStyle.INSTANCE)
             builder.addRDN(BCStyle.C, cName)
-            builder.addRDN(BCStyle.O, oName)
-            builder.addRDN(BCStyle.L, lName)
-            builder.addRDN(BCStyle.ST, stName)
-            builder.addRDN(BCStyle.E, email)
-            return builder.build() ?: throw CertificateError("Invalid X500 Name", null)
+            return builder.build() ?: throw CertificateError("Invalid X500 Name")
         }
     }
 }
@@ -96,4 +103,4 @@ class CryptoUtil {
 
 open class RelaynetError : Exception()
 
-open class CertificateError(override val message: String?, override val cause: Throwable?) : RelaynetError()
+open class CertificateError(override val message: String?) : RelaynetError()
