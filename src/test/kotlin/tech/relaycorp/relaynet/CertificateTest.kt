@@ -72,13 +72,13 @@ class CertificateTest {
         options.validityEndDate = LocalDateTime.now().plusMonths(2)
         assertNotNull(options, "Valid inputs should create a Full Certificate Issuance Options object")
     }
-    @Test fun testShouldCreateValidX500Name(){
+    @Test fun testShouldCreateValidX500Name() {
         val x500Name = createTestX500Name()
         val cName = x500Name.rdNs[0]
         assertNotNull(cName.equals("The C Name"))
     }
 
-    @Test fun testShouldNotCreateInvalidX500Name(){
+    @Test fun testShouldNotCreateInvalidX500Name() {
         val exception = assertThrows<CertificateError> {
             Certificate.buildX500Name("")
         }

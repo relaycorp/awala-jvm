@@ -58,7 +58,7 @@ class Certificate constructor (certificateHolder: X509CertificateHolder?) {
 
         @Throws(CertificateError::class)
         fun buildX500Name(cName: String): X500Name {
-            if(cName.length<=0){
+            if (cName.length <= 0) {
                 throw CertificateError("Invalid CName in X500 Name")
             }
             val builder = X500NameBuilder(BCStyle.INSTANCE)
