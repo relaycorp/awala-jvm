@@ -22,7 +22,8 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import tech.relaycorp.relaynet.Certificate.Companion.MAX_PATH_LENGTH_CONSTRAINT
 import tech.relaycorp.relaynet.CryptoUtil.Companion.generateRandom64BitValue
 
-class Certificate constructor (certificateHolder: X509CertificateHolder?) {
+class Certificate constructor (_certificateHolder: X509CertificateHolder) {
+    val certificateHolder: X509CertificateHolder = _certificateHolder
 
     companion object {
         val MAX_PATH_LENGTH_CONSTRAINT = 2
@@ -83,10 +84,13 @@ data class FullCertificateIssuanceOptions(
 class Keys {
 
     companion object {
-        private val DEFAULT_KEY_SIZE: Int = 2048
+        @Throws(KeyError::class)
         fun generateRSAKeyPair(modulus: Int): KeyPair {
+            if (modulus < 2048) {
+                throw KeyError("The modulus should be at least 2048 (got $modulus)")
+            }
             val keyGen = KeyPairGenerator.getInstance("RSA")
-            keyGen.initialize(maxOf(modulus, DEFAULT_KEY_SIZE)) // `modulus` should be >= 2048 and default to 2048
+            keyGen.initialize(modulus) // `modulus` should be >= 2048 and default to 2048
             return keyGen.generateKeyPair()
         }
     }
@@ -103,4 +107,5 @@ class CryptoUtil {
 
 open class RelaynetError : Exception()
 
-open class CertificateError(override val message: String?) : RelaynetError()
+class CertificateError(override val message: String?) : RelaynetError()
+class KeyError(override val message: String?) : RelaynetError()

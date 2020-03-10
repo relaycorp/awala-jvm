@@ -1,10 +1,14 @@
 package tech.relaycorp.relaynet
 
+import java.math.BigInteger
 import java.security.KeyPair
+import java.sql.Date
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.x500.X500Name
 import org.junit.jupiter.api.assertThrows
 
@@ -45,8 +49,13 @@ class CertificateTest {
         assertNotNull(privateKey, "generateRSAKeyPair should return a private key")
     }
     @Test fun testGenerateRSAKeyPairWithInvalidModulus() {
-        val keyPair = Keys.generateRSAKeyPair(-1)
-        assertNotNull(keyPair, "generateRSAKeyPair with an invalid modulus should still return a key")
+        val exception = assertThrows<KeyError> {
+            Keys.generateRSAKeyPair(1024)
+        }
+        assertEquals(
+                "The modulus should be at least 2048 (got 1024)",
+                exception.message
+        )
     }
 
     @Test fun testX500Name() {
@@ -91,7 +100,24 @@ class CertificateTest {
     @Test fun testShouldCreateCertificate() {
         val options = validCertificateOptions()
         val newCertificate = Certificate.issue(options)
-        assertNotNull(newCertificate, "Should issue a certificate from valid options")
+        // Check version number, should be v3
+        assertEquals(newCertificate.certificateHolder.versionNumber, 3, "Should issue a certificate from valid options")
+    }
+    @Test fun testShouldHaveAValidSerialNumber() {
+        val options = validCertificateOptions()
+        val newCertificate = Certificate.issue(options)
+        // Check version number, should be v3
+        assertTrue(newCertificate.certificateHolder.serialNumber > BigInteger.ZERO, "Should issue a certificate from valid options")
+    }
+    @Test fun testShouldHaveAValidDefaultStartDate() {
+        val options = validCertificateOptions()
+        val newCertificate = Certificate.issue(options)
+        assertEquals(newCertificate.certificateHolder.notBefore, Date.valueOf(LocalDate.now()), "Should create a certificate valid from now by default")
+    }
+    @Test fun testShouldHaveAValidDefaultEndDate() {
+        val options = validCertificateOptions()
+        val newCertificate = Certificate.issue(options)
+        assertTrue(newCertificate.certificateHolder.notAfter > Date.valueOf(LocalDate.now()), "Should create a certificate end date after now")
     }
     @Test fun testShouldRejectInvalidStartDate() {
         val options = validCertificateOptions()
@@ -105,3 +131,20 @@ class CertificateTest {
         )
     }
 }
+// test(‘should create an X.509 v3 certificate’,
+// test(‘should import the public key into the certificate’
+// test(‘should be signed with the specified private key’
+// test(‘should store the specified serial number’,
+// test(‘should generate a serial number if none was set’,
+// test(‘should create a certificate valid from now by default’
+// test(‘should honor a custom start validity date’
+// test(‘should honor a custom end validity date’
+// test(‘should not accept an end date before the start date’
+// test(‘should store the specified Common Name (CN) in the subject’
+// test(‘should set issuer DN to that of subject when self-issuing certificates’
+// test(‘should accept an issuer marked as CA’,
+// test(‘should refuse an issuer certificate without extensions’,
+// test(‘should refuse an issuer certificate with an empty set of extensions’,
+// test(‘should refuse an issuer certificate without basic constraints extension’
+// test(‘should refuse an issuer not marked as CA’,
+// test(‘should set issuer DN to that of CA’,
