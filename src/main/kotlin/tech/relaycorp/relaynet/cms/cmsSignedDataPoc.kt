@@ -5,7 +5,6 @@ import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.CMSSignedDataGenerator
 import org.bouncycastle.cms.CMSTypedData
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.ContentSigner
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
@@ -15,7 +14,6 @@ import tech.relaycorp.relaynet.x509.Keys
 import java.io.File
 import java.security.KeyPair
 import java.security.PrivateKey
-import java.security.Security
 
 fun generateStubCert(keyPair: KeyPair): Certificate {
     val commonName = Certificate.buildX500Name("The C Name")
@@ -51,8 +49,6 @@ fun sign2(plaintext: ByteArray, privateKey: PrivateKey, certificate: Certificate
 }
 
 fun main() {
-    Security.addProvider(BouncyCastleProvider())
-
     val stubKeyPair = Keys.generateRSAKeyPair(2048)
     val certificate = generateStubCert(stubKeyPair)
 
