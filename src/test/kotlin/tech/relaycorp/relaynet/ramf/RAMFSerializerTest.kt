@@ -16,7 +16,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
-import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
@@ -26,6 +25,7 @@ import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.parseDer
 
 private val BER_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
@@ -151,8 +151,7 @@ class RAMFSerializerTest {
 
             private fun getAsn1Sequence(serialization: ByteArray): ASN1Sequence {
                 val asn1Serialization = skipFormatSignature(serialization)
-                val asn1Stream = ASN1InputStream(asn1Serialization)
-                return ASN1Sequence.getInstance(asn1Stream.readObject())
+                return ASN1Sequence.getInstance(parseDer(asn1Serialization))
             }
         }
     }

@@ -1,5 +1,8 @@
 package tech.relaycorp.relaynet.cms
 
+import java.io.File
+import java.security.KeyPair
+import java.security.PrivateKey
 import org.bouncycastle.cert.jcajce.JcaCertStore
 import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.CMSSignedDataGenerator
@@ -11,9 +14,6 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import tech.relaycorp.relaynet.x509.Certificate
 import tech.relaycorp.relaynet.x509.FullCertificateIssuanceOptions
 import tech.relaycorp.relaynet.x509.Keys
-import java.io.File
-import java.security.KeyPair
-import java.security.PrivateKey
 
 fun generateStubCert(keyPair: KeyPair): Certificate {
     val commonName = Certificate.buildX500Name("The C Name")
