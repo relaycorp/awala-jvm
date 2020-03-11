@@ -1,6 +1,10 @@
 package tech.relaycorp.relaynet.cms
 
+import java.security.MessageDigest
 import kotlin.test.assertEquals
+import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.cms.Attribute
 import org.bouncycastle.asn1.cms.ContentInfo
 import org.bouncycastle.cms.CMSSignedData
 import org.junit.jupiter.api.Disabled
@@ -91,23 +95,56 @@ class Sign {
                 signerInfo.sid.serialNumber
             )
         }
-    }
 
-    @Nested
-    inner class SignedAttributes {
-        @Test
-        @Disabled
-        fun `Signed attributes should be present`() {
-        }
+        @Nested
+        inner class SignedAttributes {
+            @Test
+            fun `Signed attributes should be present`() {
+                val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
 
-        @Test
-        @Disabled
-        fun `Content type attribute should be set to CMS Data`() {
-        }
+                val cmsSignedData = parseCmsSignedData(serialization)
 
-        @Test
-        @Disabled
-        fun `Plaintext digest should be present`() {
+                val signerInfo = cmsSignedData.signerInfos.first()
+
+                assert(0 < signerInfo.signedAttributes.size())
+            }
+
+            @Test
+            fun `Content type attribute should be set to CMS Data`() {
+                val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+
+                val cmsSignedData = parseCmsSignedData(serialization)
+
+                val signerInfo = cmsSignedData.signerInfos.first()
+
+                val cmsContentTypeAttrOid = "1.2.840.113549.1.9.3"
+                val contentTypeAttrs = signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsContentTypeAttrOid))
+                assertEquals(1, contentTypeAttrs.size())
+                val contentTypeAttr = contentTypeAttrs.get(0) as Attribute
+                assertEquals(1, contentTypeAttr.attributeValues.size)
+                val cmsDataOid = "1.2.840.113549.1.7.1"
+                assertEquals(cmsDataOid, contentTypeAttr.attributeValues[0].toString())
+            }
+
+            @Test
+            fun `Plaintext digest should be present`() {
+                val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+
+                val cmsSignedData = parseCmsSignedData(serialization)
+
+                val signerInfo = cmsSignedData.signerInfos.first()
+
+                val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"
+                val digestAttrs = signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsDigestAttributeOid))
+                assertEquals(1, digestAttrs.size())
+                val digestAttr = digestAttrs.get(0) as Attribute
+                assertEquals(1, digestAttr.attributeValues.size)
+                val digest = MessageDigest.getInstance("SHA-256").digest(stubPlaintext)
+                assertEquals(
+                    digest.asList(),
+                    (digestAttr.attributeValues[0] as DEROctetString).octets.asList()
+                )
+            }
         }
     }
 
