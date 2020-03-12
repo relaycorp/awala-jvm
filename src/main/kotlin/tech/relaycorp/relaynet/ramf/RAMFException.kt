@@ -1,3 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-class RAMFException(message: String) : Exception(message)
+import tech.relaycorp.relaynet.RelaynetException
+
+class RAMFException(message: String) : RelaynetException(message)
