@@ -9,6 +9,9 @@ import org.bouncycastle.util.CollectionStore
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
+import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.x509.Certificate
 import tech.relaycorp.relaynet.x509.FullCertificateIssuanceOptions
@@ -26,6 +29,8 @@ val stubCertificate = Certificate.issue(
         issuerCertificate = null
     )
 )
+
+val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"
 
 class Sign {
     @Test
@@ -135,7 +140,6 @@ class Sign {
 
                 val signerInfo = cmsSignedData.signerInfos.first()
 
-                val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"
                 val digestAttrs = signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsDigestAttributeOid))
                 assertEquals(1, digestAttrs.size())
                 val digestAttr = digestAttrs.get(0) as Attribute
@@ -183,30 +187,48 @@ class Sign {
     }
 
     @Nested
-    inner class HashingAlgorithms {
+    inner class Hashing {
+        private val hashingAlgorithmsMap = mapOf(
+            HashingAlgorithm.SHA256 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.1"),
+            HashingAlgorithm.SHA384 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.2"),
+            HashingAlgorithm.SHA512 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.3")
+        )
+
         @Test
-        @Disabled
         fun `SHA-256 should be used by default`() {
+            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+
+            val cmsSignedData = parseCmsSignedData(serialization)
+
+            assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
+            assertEquals(
+                hashingAlgorithmsMap[HashingAlgorithm.SHA256],
+                cmsSignedData.digestAlgorithmIDs.first().algorithm
+            )
+
+            val signerInfo = cmsSignedData.signerInfos.first()
+
+            assertEquals(
+                hashingAlgorithmsMap[HashingAlgorithm.SHA256],
+                signerInfo.digestAlgorithmID.algorithm
+            )
         }
 
-        @Test
-        @Disabled
-        fun `SHA-384 should be supported`() {
-        }
+        @ParameterizedTest(name = "{0} should be honored if explicitly set")
+        @EnumSource
+        fun `Hashing algorithm should be customizable`(algo: HashingAlgorithm) {
+            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate, hashingAlgorithm = algo)
 
-        @Test
-        @Disabled
-        fun `SHA-512 should be supported`() {
-        }
+            val cmsSignedData = parseCmsSignedData(serialization)
 
-        @Test
-        @Disabled
-        fun `SHA-1 should not be supported`() {
-        }
+            val hashingAlgorithmOid = hashingAlgorithmsMap[algo]
 
-        @Test
-        @Disabled
-        fun `MD5 should not be supported`() {
+            assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
+            assertEquals(hashingAlgorithmOid, cmsSignedData.digestAlgorithmIDs.first().algorithm)
+
+            val signerInfo = cmsSignedData.signerInfos.first()
+
+            assertEquals(hashingAlgorithmOid, signerInfo.digestAlgorithmID.algorithm)
         }
     }
 
