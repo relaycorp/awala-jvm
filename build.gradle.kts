@@ -92,11 +92,6 @@ tasks.jacocoTestCoverageVerification {
                 value = "MISSEDCOUNT"
                 maximum = "0".toBigDecimal()
             }
-
-            // TODO: Remove once the PR implementing X.509 certs has been merged.
-            excludes = listOf(
-                "tech.relaycorp.relaynet.x509.*"
-            )
         }
     }
 }
