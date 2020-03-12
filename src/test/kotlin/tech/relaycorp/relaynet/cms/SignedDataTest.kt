@@ -1,12 +1,11 @@
 package tech.relaycorp.relaynet.cms
 
-import java.security.MessageDigest
-import kotlin.test.assertEquals
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.cms.Attribute
 import org.bouncycastle.asn1.cms.ContentInfo
 import org.bouncycastle.cms.CMSSignedData
+import org.bouncycastle.util.CollectionStore
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -14,6 +13,8 @@ import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.x509.Certificate
 import tech.relaycorp.relaynet.x509.FullCertificateIssuanceOptions
 import tech.relaycorp.relaynet.x509.Keys
+import java.security.MessageDigest
+import kotlin.test.assertEquals
 
 val stubPlaintext = "The plaintext".toByteArray()
 val stubKeyPair = Keys.generateRSAKeyPair(2048)
@@ -151,13 +152,33 @@ class Sign {
     @Nested
     inner class AttachedCertificates {
         @Test
-        @Disabled
         fun `Signer certificate should be attached`() {
+            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+
+            val cmsSignedData = parseCmsSignedData(serialization)
+
+            val attachedCerts = (cmsSignedData.certificates as CollectionStore).asSequence().toList()
+            assertEquals(1, attachedCerts.size)
+            assertEquals(stubCertificate.certificateHolder, attachedCerts[0])
         }
 
         @Test
-        @Disabled
         fun `CA certificate chain should optionally be attached`() {
+            val anotherCertificate = Certificate.issue(
+                FullCertificateIssuanceOptions(
+                    Certificate.buildX500Name("Another"),
+                    stubKeyPair.private,
+                    stubKeyPair.public,
+                    issuerCertificate = null
+                )
+            )
+            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate, setOf(anotherCertificate))
+
+            val cmsSignedData = parseCmsSignedData(serialization)
+
+            val attachedCerts = (cmsSignedData.certificates as CollectionStore).asSequence().toSet()
+            assertEquals(2, attachedCerts.size)
+            assert(attachedCerts.contains(anotherCertificate.certificateHolder))
         }
     }
 
