@@ -19,35 +19,41 @@ import org.bouncycastle.crypto.util.PrivateKeyFactory
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
-import tech.relaycorp.relaynet.Certificate.Companion.MAX_PATH_LENGTH_CONSTRAINT
-import tech.relaycorp.relaynet.CryptoUtil.Companion.generateRandom64BitValue
 
 class Certificate constructor (_certificateHolder: X509CertificateHolder) {
     val certificateHolder: X509CertificateHolder = _certificateHolder
 
     companion object {
-        val MAX_PATH_LENGTH_CONSTRAINT = 2
         val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
+        val MAX_PATH_LENGTH_CONSTRAINT = 2
 
         @Throws(CertificateError::class)
-        fun issue(options: FullCertificateIssuanceOptions): Certificate {
-            val start = options.validityStartDate
-            val end = options.validityEndDate
+        fun issue(
+            commonName: X500Name?,
+            issuerPrivateKey: PrivateKey,
+            subjectPublicKey: PublicKey,
+            serialNumber: Long,
+            validityStartDate: LocalDateTime = LocalDateTime.now(),
+            validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
+            isCA: Boolean = false,
+            pathLenConstraint: Int = MAX_PATH_LENGTH_CONSTRAINT
+
+        ): Certificate {
+            val start = validityStartDate
+            val end = validityEndDate
             // validate inputs
             if (start >= end) {
                 throw CertificateError("The end date must be later than the start date")
             }
 
-            val issuer = X500Name.getInstance(options.commonName)
-            val serial = options.serialNumber
-
-            val subject = options.commonName
-            val pubkey = options.subjectPublicKey
+            val issuer = X500Name.getInstance(commonName)
+            val serial = serialNumber
+            val subject = commonName
+            val pubkey = subjectPublicKey
             val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(pubkey.getEncoded())
-
             val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
             val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-            val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(options.issuerPrivateKey.encoded)
+            val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
             val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
             val signerBuilder = contentSignerBuilder.build(privateKeyParam)
 
@@ -59,27 +65,38 @@ class Certificate constructor (_certificateHolder: X509CertificateHolder) {
 
         @Throws(CertificateError::class)
         fun buildX500Name(cName: String): X500Name {
-            if (cName.length <= 0) {
+            if (cName.isEmpty()) {
                 throw CertificateError("Invalid CName in X500 Name")
             }
             val builder = X500NameBuilder(BCStyle.INSTANCE)
             builder.addRDN(BCStyle.C, cName)
-            return builder.build() ?: throw CertificateError("Invalid X500 Name")
+            return builder.build()
         }
     }
 }
 
-data class FullCertificateIssuanceOptions(
-    var commonName: X500Name?,
-    var issuerPrivateKey: PrivateKey,
-    var subjectPublicKey: PublicKey,
-    var serialNumber: Long = generateRandom64BitValue(),
-    var validityStartDate: LocalDateTime = LocalDateTime.now(),
-    var validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
-    var isCA: Boolean? = false,
-    var issuerCertificate: Certificate?,
-    var pathLenConstraint: Int = MAX_PATH_LENGTH_CONSTRAINT
-)
+// data class FullCertificateIssuanceOptions(){
+//    var commonName: X500Name?
+//    var issuerPrivateKey: PrivateKey
+//    var subjectPublicKey: PublicKey
+//    var serialNumber: Long
+//    var validityStartDate: LocalDateTime
+//    var validityEndDate: LocalDateTime
+//    var isCA: Boolean?
+//    var issuerCertificate: Certificate?
+//    var pathLenConstraint: Int
+//
+// fun build(commonName: X500Name?,
+//    issuerPrivateKey: PrivateKey,
+//    subjectPublicKey: PublicKey,
+//    serialNumber: Long = generateRandom64BitValue(),
+//    validityStartDate: LocalDateTime = LocalDateTime.now(),
+//    validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
+//    isCA: Boolean? = false,
+//    issuerCertificate: Certificate?,
+//    pathLenConstraint: Int = MAX_PATH_LENGTH_CONSTRAINT){
+// }
+// }
 
 class Keys {
 
