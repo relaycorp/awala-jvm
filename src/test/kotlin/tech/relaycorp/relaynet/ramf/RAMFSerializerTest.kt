@@ -159,6 +159,26 @@ class RAMFSerializerTest {
 
     @Nested
     inner class Deserialize {
+        private val octetsIn9Mib = 9437184
+
+        @Test
+        fun `Messages up to 9 MiB should be accepted`() {
+            val invalidSerialization = "a".repeat(octetsIn9Mib).toByteArray()
+
+            // Deserialization still fails, but for a different reason
+            val exception = assertThrows<RAMFException> { stubSerializer.deserialize(invalidSerialization) }
+            assertEquals("Format signature should start with magic constant 'Relaynet'", exception.message)
+        }
+
+        @Test
+        fun `Messages larger than 9 MiB should be refused`() {
+            val invalidSerialization = "a".repeat(octetsIn9Mib + 1).toByteArray()
+
+            val exception = assertThrows<RAMFException> { stubSerializer.deserialize(invalidSerialization) }
+
+            assertEquals("Message should not be larger than 9 MiB", exception.message)
+        }
+
         @Nested
         inner class FormatSignature {
             @Test

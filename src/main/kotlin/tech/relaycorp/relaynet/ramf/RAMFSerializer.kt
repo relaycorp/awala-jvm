@@ -24,6 +24,8 @@ import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 
+private const val OCTETS_IN_9_MIB = 9437184
+
 private val DER_SEQUENCE_TAG = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
 
 private val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
@@ -83,7 +85,13 @@ internal open class RAMFSerializer<T : RAMFMessage>(
     @Throws(RAMFException::class)
     fun deserialize(serialization: ByteArray): T {
         val serializationStream = ByteArrayInputStream(serialization)
-        if (serializationStream.available() < 10) {
+        val serializationSize = serializationStream.available()
+
+        if (OCTETS_IN_9_MIB < serializationSize) {
+            throw RAMFException("Message should not be larger than 9 MiB")
+        }
+
+        if (serializationSize < 10) {
             throw RAMFException("Serialization is too short to contain format signature")
         }
 
