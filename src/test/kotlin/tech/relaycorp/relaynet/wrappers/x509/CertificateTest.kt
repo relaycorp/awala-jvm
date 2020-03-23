@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet
+package tech.relaycorp.relaynet.wrappers.x509
 
 import java.math.BigInteger
 import java.security.KeyPair
