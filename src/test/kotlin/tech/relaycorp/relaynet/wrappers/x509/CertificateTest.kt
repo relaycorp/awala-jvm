@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
@@ -117,35 +118,105 @@ class CertificateTest {
         )
     }
 
+    @Test
+    fun `Subject DN should be set to specified CN`() {
+        val commonName = "The CN"
+        val certificate = Certificate.issue(
+            commonName,
+            stubKeyPair.private,
+            stubKeyPair.public
+        )
+
+        assertEquals(1, certificate.certificateHolder.subject.rdNs.size)
+        assertEquals(false, certificate.certificateHolder.subject.rdNs[0].isMultiValued)
+        assertEquals(commonName, certificate.certificateHolder.subject.rdNs[0].first.value.toString())
+    }
+
+    @Test
+    fun `Issuer DN should be same as subject when certificate is self-issued`() {
+        val commonName = "The CN"
+        val certificate = Certificate.issue(
+            commonName,
+            stubKeyPair.private,
+            stubKeyPair.public
+        )
+
+        assertEquals(1, certificate.certificateHolder.issuer.rdNs.size)
+        assertEquals(false, certificate.certificateHolder.issuer.rdNs[0].isMultiValued)
+        assertEquals(commonName, certificate.certificateHolder.issuer.rdNs[0].first.value.toString())
+    }
+
     @Nested
-    inner class CommonName {
+    inner class IssuerCertificate {
         @Test
-        fun `Common name should not be an empty string`() {
-            val exception = assertThrows<CertificateException> {
-                Certificate.issue(
-                    "",
-                    stubKeyPair.private,
-                    stubKeyPair.public
-                )
-            }
-            assertEquals(
-                "CommonName should not be empty",
-                exception.message
-            )
+        @Disabled
+        fun `Issuer DN should be set to subject of issuer certificate`() {
         }
 
         @Test
-        fun `Specified CN should be used`() {
-            val commonName = "The CN"
-            val certificate = Certificate.issue(
-                commonName,
-                stubKeyPair.private,
-                stubKeyPair.public
-            )
+        @Disabled
+        fun `Issuer certificate should have basicConstraints extension`() {
+        }
 
-            assertEquals(1, certificate.certificateHolder.subject.rdNs.size)
-            assertEquals(false, certificate.certificateHolder.subject.rdNs[0].isMultiValued)
-            assertEquals(commonName, certificate.certificateHolder.subject.rdNs[0].first.value.toString())
+        @Test
+        @Disabled
+        fun `Issuer certificate should be marked as CA`() {
+        }
+    }
+
+    @Nested
+    inner class BasicConstraintsExtension {
+        @Test
+        @Disabled
+        fun `Extension should be included and marked as critical`() {
+        }
+
+        @Test
+        @Disabled
+        fun `CA flag should be false by default`() {
+        }
+
+        @Test
+        @Disabled
+        fun `CA flag should be enabled if requested`() {
+        }
+
+        @Test
+        @Disabled
+        fun `pathLenConstraint should be 0 by default`() {
+        }
+
+        @Test
+        @Disabled
+        fun `pathLenConstraint can be set to a custom value less than or equal to 2`() {
+        }
+
+        @Test
+        @Disabled
+        fun `pathLenConstraint should not be greater than 2`() {
+        }
+
+        @Test
+        @Disabled
+        fun `pathLenConstraint should not be negative`() {
+        }
+
+        @Nested
+        inner class AuthorityKeyIdentifier {
+            @Test
+            @Disabled
+            fun `Value should correspond to subject when self-issued`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Value should correspond to issuer when issued by a CA`() {
+            }
+        }
+
+        @Test
+        @Disabled
+        fun `Subject Key Identifier extension should correspond to subject key`() {
         }
     }
 }

@@ -25,7 +25,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
         @Throws(CertificateException::class)
         fun issue(
-            commonName: String,
+            subjectCommonName: String,
             issuerPrivateKey: PrivateKey,
             subjectPublicKey: PublicKey,
             validityStartDate: LocalDateTime = LocalDateTime.now(),
@@ -38,7 +38,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
                 throw CertificateException("The end date must be later than the start date")
             }
 
-            val issuerDistinguishedName = buildDistinguishedName(commonName)
+            val issuerDistinguishedName = buildDistinguishedName(subjectCommonName)
             val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(subjectPublicKey.encoded)
             val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
             val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
@@ -61,9 +61,6 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
         @Throws(CertificateException::class)
         private fun buildDistinguishedName(commonName: String): X500Name {
-            if (commonName.isEmpty()) {
-                throw CertificateException("CommonName should not be empty")
-            }
             val builder = X500NameBuilder(BCStyle.INSTANCE)
             builder.addRDN(BCStyle.C, commonName)
             return builder.build()
