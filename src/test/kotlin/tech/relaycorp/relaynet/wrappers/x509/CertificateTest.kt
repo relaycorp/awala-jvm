@@ -11,49 +11,15 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.bouncycastle.asn1.x500.X500Name
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.wrappers.CryptoUtil
-import tech.relaycorp.relaynet.wrappers.KeyException
-import tech.relaycorp.relaynet.wrappers.Keys
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class CertificateTest {
     private fun createKeyPair(): KeyPair {
-        return Keys.generateRSAKeyPair(2048)
+        return generateRSAKeyPair(2048)
     }
 
     private fun createTestX500Name(): X500Name {
         return Certificate.buildX500Name("The C Name")
-    }
-
-    @Test
-    fun testGenerateRSAKeyPair() {
-        val keyPair = Keys.generateRSAKeyPair(2048)
-        assertNotNull(keyPair, "generateRSAKeyPair with a valid modulus should return a key")
-    }
-
-    @Test
-    fun testGenerateRSAKeyPairKeys() {
-        val keyPair = Keys.generateRSAKeyPair(2048)
-        val publicKey = keyPair.public
-        val privateKey = keyPair.private
-        assertNotNull(publicKey, "generateRSAKeyPair should return a public key")
-        assertNotNull(privateKey, "generateRSAKeyPair should return a private key")
-    }
-
-    @Test
-    fun testGenerateRSAKeyPairWithInvalidModulus() {
-        val exception = assertThrows<KeyException> {
-            Keys.generateRSAKeyPair(1024)
-        }
-        assertEquals(
-            "The modulus should be at least 2048 (got 1024)",
-            exception.message
-        )
-    }
-
-    @Test
-    fun generateSecureRandomNumber() {
-        val randomNumber = CryptoUtil.generateRandom64BitValue()
-        assertNotNull(randomNumber, "Should generate a 64bit Random Number")
     }
 
     @Test
