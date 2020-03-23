@@ -25,7 +25,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
         @Throws(CertificateException::class)
         fun issue(
-            commonName: X500Name?,
+            commonName: String,
             issuerPrivateKey: PrivateKey,
             subjectPublicKey: PublicKey,
             validityStartDate: LocalDateTime = LocalDateTime.now(),
@@ -38,7 +38,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
                 throw CertificateException("The end date must be later than the start date")
             }
 
-            val issuer = X500Name.getInstance(commonName)
+            val issuerDistinguishedName = buildDistinguishedName(commonName)
             val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(subjectPublicKey.encoded)
             val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
             val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
@@ -47,12 +47,12 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val signerBuilder = contentSignerBuilder.build(privateKeyParam)
 
             val builder = X509v3CertificateBuilder(
-                issuer,
+                issuerDistinguishedName,
                 generateRandomBigInteger(),
                 Date.valueOf(validityStartDate.toLocalDate()),
                 Date.valueOf(validityEndDate.toLocalDate()),
                 Locale.ENGLISH,
-                commonName,
+                issuerDistinguishedName,
                 subjectPublicKeyInfo
             )
 
@@ -60,12 +60,12 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         }
 
         @Throws(CertificateException::class)
-        fun buildX500Name(cName: String): X500Name {
-            if (cName.isEmpty()) {
-                throw CertificateException("Invalid CName in X500 Name")
+        private fun buildDistinguishedName(commonName: String): X500Name {
+            if (commonName.isEmpty()) {
+                throw CertificateException("CommonName should not be empty")
             }
             val builder = X500NameBuilder(BCStyle.INSTANCE)
-            builder.addRDN(BCStyle.C, cName)
+            builder.addRDN(BCStyle.C, commonName)
             return builder.build()
         }
     }
