@@ -11,6 +11,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.bouncycastle.asn1.x500.X500Name
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.wrappers.CryptoUtil
+import tech.relaycorp.relaynet.wrappers.KeyException
+import tech.relaycorp.relaynet.wrappers.Keys
 
 class CertificateTest {
     private fun createKeyPair(): KeyPair {
@@ -38,7 +41,7 @@ class CertificateTest {
 
     @Test
     fun testGenerateRSAKeyPairWithInvalidModulus() {
-        val exception = assertThrows<KeyError> {
+        val exception = assertThrows<KeyException> {
             Keys.generateRSAKeyPair(1024)
         }
         assertEquals(
@@ -68,7 +71,7 @@ class CertificateTest {
 
     @Test
     fun testShouldNotCreateInvalidX500Name() {
-        val exception = assertThrows<CertificateError> {
+        val exception = assertThrows<CertificateException> {
             Certificate.buildX500Name("")
         }
         assertEquals(
@@ -182,7 +185,7 @@ class CertificateTest {
         val validityStartDate = LocalDateTime.now().plusMonths(1)
         // Set start and dates the same
         val validityEndDate = validityStartDate
-        val exception = assertThrows<CertificateError> {
+        val exception = assertThrows<CertificateException> {
             Certificate.issue(
                 commonName,
                 issuerPrivateKey,

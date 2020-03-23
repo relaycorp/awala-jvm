@@ -1,10 +1,7 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
-import java.security.KeyPair
-import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.PublicKey
-import java.security.SecureRandom
 import java.sql.Date
 import java.time.LocalDateTime
 import java.util.Locale
@@ -27,7 +24,7 @@ class Certificate constructor(_certificateHolder: X509CertificateHolder) {
         private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
         private const val MAX_PATH_LENGTH_CONSTRAINT = 2
 
-        @Throws(CertificateError::class)
+        @Throws(CertificateException::class)
         fun issue(
             commonName: X500Name?,
             issuerPrivateKey: PrivateKey,
@@ -40,7 +37,7 @@ class Certificate constructor(_certificateHolder: X509CertificateHolder) {
         ): Certificate {
             // validate inputs
             if (validityStartDate >= validityEndDate) {
-                throw CertificateError("The end date must be later than the start date")
+                throw CertificateException("The end date must be later than the start date")
             }
 
             val issuer = X500Name.getInstance(commonName)
@@ -64,10 +61,10 @@ class Certificate constructor(_certificateHolder: X509CertificateHolder) {
             return Certificate(builder.build(signerBuilder))
         }
 
-        @Throws(CertificateError::class)
+        @Throws(CertificateException::class)
         fun buildX500Name(cName: String): X500Name {
             if (cName.isEmpty()) {
-                throw CertificateError("Invalid CName in X500 Name")
+                throw CertificateException("Invalid CName in X500 Name")
             }
             val builder = X500NameBuilder(BCStyle.INSTANCE)
             builder.addRDN(BCStyle.C, cName)
@@ -98,32 +95,3 @@ class Certificate constructor(_certificateHolder: X509CertificateHolder) {
 //    pathLenConstraint: Int = MAX_PATH_LENGTH_CONSTRAINT){
 // }
 // }
-
-class Keys {
-
-    companion object {
-        @Throws(KeyError::class)
-        fun generateRSAKeyPair(modulus: Int): KeyPair {
-            if (modulus < 2048) {
-                throw KeyError("The modulus should be at least 2048 (got $modulus)")
-            }
-            val keyGen = KeyPairGenerator.getInstance("RSA")
-            keyGen.initialize(modulus) // `modulus` should be >= 2048 and default to 2048
-            return keyGen.generateKeyPair()
-        }
-    }
-}
-
-class CryptoUtil {
-    companion object {
-        fun generateRandom64BitValue(): Long {
-            val random = SecureRandom()
-            return random.nextLong()
-        }
-    }
-}
-
-open class RelaynetError : Exception()
-
-class CertificateError(override val message: String?) : RelaynetError()
-class KeyError(override val message: String?) : RelaynetError()
