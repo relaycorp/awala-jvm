@@ -16,6 +16,7 @@ import org.bouncycastle.crypto.util.PrivateKeyFactory
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
+import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 
 class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     companion object {
@@ -27,7 +28,6 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             commonName: X500Name?,
             issuerPrivateKey: PrivateKey,
             subjectPublicKey: PublicKey,
-            serialNumber: Long,
             validityStartDate: LocalDateTime = LocalDateTime.now(),
             validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
             isCA: Boolean = false,
@@ -48,7 +48,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
             val builder = X509v3CertificateBuilder(
                 issuer,
-                serialNumber.toBigInteger(),
+                generateRandomBigInteger(),
                 Date.valueOf(validityStartDate.toLocalDate()),
                 Date.valueOf(validityEndDate.toLocalDate()),
                 Locale.ENGLISH,
