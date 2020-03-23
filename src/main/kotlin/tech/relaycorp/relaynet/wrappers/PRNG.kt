@@ -1,8 +1,9 @@
 package tech.relaycorp.relaynet.wrappers
 
+import java.math.BigInteger
 import java.security.SecureRandom
 
-fun generateRandom64BitValue(): Long {
+fun generateRandomBigInteger(): BigInteger {
     val random = SecureRandom()
-    return random.nextLong()
+    return BigInteger(64, random)
 }

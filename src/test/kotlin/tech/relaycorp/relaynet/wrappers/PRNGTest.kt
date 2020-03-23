@@ -1,17 +1,16 @@
 package tech.relaycorp.relaynet.wrappers
 
-import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class PRNGTest {
     @Nested
-    inner class GenerateRandom64BitValue {
+    inner class GenerateRandomBigInteger {
         @Test
-        fun `Random long number should be output`() {
-            val value = generateRandom64BitValue()
+        fun `Output should be 64 bit number`() {
+            val value = generateRandomBigInteger()
 
-            assertNotNull(value)
+            assert(value.bitLength() in 61..64)
         }
     }
 }
