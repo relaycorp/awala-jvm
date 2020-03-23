@@ -17,9 +17,7 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 
-class Certificate constructor(_certificateHolder: X509CertificateHolder) {
-    val certificateHolder: X509CertificateHolder = _certificateHolder
-
+class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     companion object {
         private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
         private const val MAX_PATH_LENGTH_CONSTRAINT = 2
