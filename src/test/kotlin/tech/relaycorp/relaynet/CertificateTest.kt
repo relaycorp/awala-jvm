@@ -13,17 +13,16 @@ import org.bouncycastle.asn1.x500.X500Name
 import org.junit.jupiter.api.assertThrows
 
 class CertificateTest {
-    fun createKeyPair(): KeyPair {
+    private fun createKeyPair(): KeyPair {
         return Keys.generateRSAKeyPair(2048)
     }
 
-    fun createTestX500Name(): X500Name {
+    private fun createTestX500Name(): X500Name {
         return Certificate.buildX500Name("The C Name")
     }
 
     @Test
     fun testGenerateRSAKeyPair() {
-        val classUnderTest = Keys()
         val keyPair = Keys.generateRSAKeyPair(2048)
         assertNotNull(keyPair, "generateRSAKeyPair with a valid modulus should return a key")
     }
@@ -50,7 +49,6 @@ class CertificateTest {
 
     @Test
     fun generateSecureRandomNumber() {
-        val classUnderTest = CryptoUtil()
         val randomNumber = CryptoUtil.generateRandom64BitValue()
         assertNotNull(randomNumber, "Should generate a 64bit Random Number")
     }
@@ -185,7 +183,7 @@ class CertificateTest {
         // Set start and dates the same
         val validityEndDate = validityStartDate
         val exception = assertThrows<CertificateError> {
-            val newCertificate = Certificate.issue(
+            Certificate.issue(
                 commonName,
                 issuerPrivateKey,
                 subjectPublicKey,

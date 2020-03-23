@@ -24,8 +24,8 @@ class Certificate constructor(_certificateHolder: X509CertificateHolder) {
     val certificateHolder: X509CertificateHolder = _certificateHolder
 
     companion object {
-        val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
-        val MAX_PATH_LENGTH_CONSTRAINT = 2
+        private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
+        private const val MAX_PATH_LENGTH_CONSTRAINT = 2
 
         @Throws(CertificateError::class)
         fun issue(
@@ -37,20 +37,14 @@ class Certificate constructor(_certificateHolder: X509CertificateHolder) {
             validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
             isCA: Boolean = false,
             pathLenConstraint: Int = MAX_PATH_LENGTH_CONSTRAINT
-
         ): Certificate {
-            val start = validityStartDate
-            val end = validityEndDate
             // validate inputs
-            if (start >= end) {
+            if (validityStartDate >= validityEndDate) {
                 throw CertificateError("The end date must be later than the start date")
             }
 
             val issuer = X500Name.getInstance(commonName)
-            val serial = serialNumber
-            val subject = commonName
-            val pubkey = subjectPublicKey
-            val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(pubkey.encoded)
+            val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(subjectPublicKey.encoded)
             val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
             val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
             val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
@@ -59,11 +53,11 @@ class Certificate constructor(_certificateHolder: X509CertificateHolder) {
 
             val builder = X509v3CertificateBuilder(
                 issuer,
-                serial.toBigInteger(),
-                Date.valueOf(start.toLocalDate()),
-                Date.valueOf(end.toLocalDate()),
+                serialNumber.toBigInteger(),
+                Date.valueOf(validityStartDate.toLocalDate()),
+                Date.valueOf(validityEndDate.toLocalDate()),
                 Locale.ENGLISH,
-                subject,
+                commonName,
                 subjectPublicKeyInfo
             )
 
