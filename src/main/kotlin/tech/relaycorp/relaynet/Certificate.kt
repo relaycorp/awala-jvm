@@ -20,7 +20,7 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 
-class Certificate constructor (_certificateHolder: X509CertificateHolder) {
+class Certificate constructor(_certificateHolder: X509CertificateHolder) {
     val certificateHolder: X509CertificateHolder = _certificateHolder
 
     companion object {
@@ -50,15 +50,22 @@ class Certificate constructor (_certificateHolder: X509CertificateHolder) {
             val serial = serialNumber
             val subject = commonName
             val pubkey = subjectPublicKey
-            val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(pubkey.getEncoded())
+            val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(pubkey.encoded)
             val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
             val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
             val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
             val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
             val signerBuilder = contentSignerBuilder.build(privateKeyParam)
 
-            val builder = X509v3CertificateBuilder(issuer,
-                    serial.toBigInteger(), Date.valueOf(start.toLocalDate()), Date.valueOf(end.toLocalDate()), Locale.ENGLISH, subject, subjectPublicKeyInfo)
+            val builder = X509v3CertificateBuilder(
+                issuer,
+                serial.toBigInteger(),
+                Date.valueOf(start.toLocalDate()),
+                Date.valueOf(end.toLocalDate()),
+                Locale.ENGLISH,
+                subject,
+                subjectPublicKeyInfo
+            )
 
             return Certificate(builder.build(signerBuilder))
         }

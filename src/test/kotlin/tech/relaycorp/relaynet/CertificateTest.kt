@@ -43,8 +43,8 @@ class CertificateTest {
             Keys.generateRSAKeyPair(1024)
         }
         assertEquals(
-                "The modulus should be at least 2048 (got 1024)",
-                exception.message
+            "The modulus should be at least 2048 (got 1024)",
+            exception.message
         )
     }
 
@@ -74,8 +74,8 @@ class CertificateTest {
             Certificate.buildX500Name("")
         }
         assertEquals(
-                "Invalid CName in X500 Name",
-                exception.message
+            "Invalid CName in X500 Name",
+            exception.message
         )
     }
 //    @Test fun testGetPathLengthDefault() {
@@ -92,38 +92,46 @@ class CertificateTest {
         val validityStartDate = LocalDateTime.now().plusMonths(1)
         val validityEndDate = LocalDateTime.now().plusMonths(2)
         val pathLenConstraint = 2
-        val newCertificate = Certificate.issue(commonName,
-                issuerPrivateKey,
-                subjectPublicKey,
-                serialNumber,
-                validityStartDate,
-                validityEndDate
+        val newCertificate = Certificate.issue(
+            commonName,
+            issuerPrivateKey,
+            subjectPublicKey,
+            serialNumber,
+            validityStartDate,
+            validityEndDate
         )
         // Check version number, should be v3
         assertEquals(newCertificate.certificateHolder.versionNumber, 3, "Should issue a certificate from valid options")
     }
 
-        @Test fun testShouldHaveAValidSerialNumber() {
-            val commonName = createTestX500Name()
-            val keyPair = createKeyPair()
-            val issuerPrivateKey = keyPair.private
-            val subjectPublicKey = keyPair.public
-            val serialNumber: Long = 2
-            val validityStartDate = LocalDateTime.now().plusMonths(1)
-            val validityEndDate = LocalDateTime.now().plusMonths(2)
-            val pathLenConstraint = 2
-            val newCertificate = Certificate.issue(commonName,
-                    issuerPrivateKey,
-                    subjectPublicKey,
-                    serialNumber,
-                    validityStartDate,
-                    validityEndDate
-            )
+    @Test
+    fun testShouldHaveAValidSerialNumber() {
+        val commonName = createTestX500Name()
+        val keyPair = createKeyPair()
+        val issuerPrivateKey = keyPair.private
+        val subjectPublicKey = keyPair.public
+        val serialNumber: Long = 2
+        val validityStartDate = LocalDateTime.now().plusMonths(1)
+        val validityEndDate = LocalDateTime.now().plusMonths(2)
+        val pathLenConstraint = 2
+        val newCertificate = Certificate.issue(
+            commonName,
+            issuerPrivateKey,
+            subjectPublicKey,
+            serialNumber,
+            validityStartDate,
+            validityEndDate
+        )
 
         // Check version number, should be v3
-        assertTrue(newCertificate.certificateHolder.serialNumber > BigInteger.ZERO, "Should issue a certificate from valid options")
+        assertTrue(
+            newCertificate.certificateHolder.serialNumber > BigInteger.ZERO,
+            "Should issue a certificate from valid options"
+        )
     }
-    @Test fun testShouldHaveAValidDefaultStartDate() {
+
+    @Test
+    fun testShouldHaveAValidDefaultStartDate() {
 
         val commonName = createTestX500Name()
         val keyPair = createKeyPair()
@@ -131,29 +139,41 @@ class CertificateTest {
         val subjectPublicKey = keyPair.public
         val serialNumber: Long = 2
         val pathLenConstraint = 2
-        val newCertificate = Certificate.issue(commonName,
-                issuerPrivateKey,
-                subjectPublicKey,
-                serialNumber
+        val newCertificate = Certificate.issue(
+            commonName,
+            issuerPrivateKey,
+            subjectPublicKey,
+            serialNumber
         )
 
-        assertEquals(newCertificate.certificateHolder.notBefore, Date.valueOf(LocalDate.now()), "Should create a certificate valid from now by default")
+        assertEquals(
+            newCertificate.certificateHolder.notBefore,
+            Date.valueOf(LocalDate.now()),
+            "Should create a certificate valid from now by default"
+        )
     }
-    @Test fun testShouldHaveAValidDefaultEndDate() {
+
+    @Test
+    fun testShouldHaveAValidDefaultEndDate() {
         val commonName = createTestX500Name()
         val keyPair = createKeyPair()
         val issuerPrivateKey = keyPair.private
         val subjectPublicKey = keyPair.public
         val serialNumber: Long = 2
         val pathLenConstraint = 2
-        val newCertificate = Certificate.issue(commonName,
-                issuerPrivateKey,
-                subjectPublicKey,
-                serialNumber
+        val newCertificate = Certificate.issue(
+            commonName,
+            issuerPrivateKey,
+            subjectPublicKey,
+            serialNumber
         )
 
-        assertTrue(newCertificate.certificateHolder.notAfter > Date.valueOf(LocalDate.now()), "Should create a certificate end date after now")
+        assertTrue(
+            newCertificate.certificateHolder.notAfter > Date.valueOf(LocalDate.now()),
+            "Should create a certificate end date after now"
+        )
     }
+
     @Test
     fun testShouldRejectInvalidStartDate() {
         val commonName = createTestX500Name()
@@ -165,17 +185,18 @@ class CertificateTest {
         // Set start and dates the same
         val validityEndDate = validityStartDate
         val exception = assertThrows<CertificateError> {
-            val newCertificate = Certificate.issue(commonName,
-                    issuerPrivateKey,
-                    subjectPublicKey,
-                    serialNumber,
-                    validityStartDate,
-                    validityEndDate
+            val newCertificate = Certificate.issue(
+                commonName,
+                issuerPrivateKey,
+                subjectPublicKey,
+                serialNumber,
+                validityStartDate,
+                validityEndDate
             )
         }
         assertEquals(
-                "The end date must be later than the start date",
-                exception.message
+            "The end date must be later than the start date",
+            exception.message
         )
     }
 }
