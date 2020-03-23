@@ -6,7 +6,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.x509.BasicConstraints
+import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
@@ -166,57 +170,127 @@ class CertificateTest {
 
     @Nested
     inner class BasicConstraintsExtension {
+        private val extensionOid = "2.5.29.19"
+
         @Test
-        @Disabled
         fun `Extension should be included and marked as critical`() {
+            val certificate = Certificate.issue(
+                stubCommonName,
+                stubKeyPair.private,
+                stubKeyPair.public
+            )
+
+            assert(certificate.certificateHolder.hasExtensions())
+            val extension = certificate.certificateHolder.getExtension(ASN1ObjectIdentifier(extensionOid))
+            assert(extension is Extension)
+            assert(extension.isCritical)
         }
 
         @Test
-        @Disabled
         fun `CA flag should be false by default`() {
+            val certificate = Certificate.issue(
+                stubCommonName,
+                stubKeyPair.private,
+                stubKeyPair.public
+            )
+
+            val basicConstraints = BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
+            assertFalse(basicConstraints.isCA)
         }
 
         @Test
-        @Disabled
         fun `CA flag should be enabled if requested`() {
+            val certificate = Certificate.issue(
+                stubCommonName,
+                stubKeyPair.private,
+                stubKeyPair.public,
+                isCA = true
+            )
+
+            assert(
+                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).isCA
+            )
         }
 
         @Test
-        @Disabled
         fun `pathLenConstraint should be 0 by default`() {
+            val certificate = Certificate.issue(
+                stubCommonName,
+                stubKeyPair.private,
+                stubKeyPair.public
+            )
+
+            val basicConstraints = BasicConstraints.fromExtensions(
+                certificate.certificateHolder.extensions
+            )
+            assertEquals(
+                0,
+                basicConstraints.pathLenConstraint.toInt()
+            )
         }
 
         @Test
-        @Disabled
-        fun `pathLenConstraint can be set to a custom value less than or equal to 2`() {
+        fun `pathLenConstraint can be set to a custom value of up to 2`() {
+            val certificate = Certificate.issue(
+                stubCommonName,
+                stubKeyPair.private,
+                stubKeyPair.public,
+                pathLenConstraint = 2
+            )
+
+            val basicConstraints = BasicConstraints.fromExtensions(
+                certificate.certificateHolder.extensions
+            )
+            assertEquals(
+                2,
+                basicConstraints.pathLenConstraint.toInt()
+            )
         }
 
         @Test
-        @Disabled
         fun `pathLenConstraint should not be greater than 2`() {
+            val exception = assertThrows<CertificateException> {
+                Certificate.issue(
+                    stubCommonName,
+                    stubKeyPair.private,
+                    stubKeyPair.public,
+                    pathLenConstraint = 3
+                )
+            }
+
+            assertEquals("pathLenConstraint should be between 0 and 2 (got 3)", exception.message)
         }
 
         @Test
-        @Disabled
         fun `pathLenConstraint should not be negative`() {
+            val exception = assertThrows<CertificateException> {
+                Certificate.issue(
+                    stubCommonName,
+                    stubKeyPair.private,
+                    stubKeyPair.public,
+                    pathLenConstraint = -1
+                )
+            }
+
+            assertEquals("pathLenConstraint should be between 0 and 2 (got -1)", exception.message)
         }
+    }
 
-        @Nested
-        inner class AuthorityKeyIdentifier {
-            @Test
-            @Disabled
-            fun `Value should correspond to subject when self-issued`() {
-            }
-
-            @Test
-            @Disabled
-            fun `Value should correspond to issuer when issued by a CA`() {
-            }
+    @Nested
+    inner class AuthorityKeyIdentifier {
+        @Test
+        @Disabled
+        fun `Value should correspond to subject when self-issued`() {
         }
 
         @Test
         @Disabled
-        fun `Subject Key Identifier extension should correspond to subject key`() {
+        fun `Value should correspond to issuer when issued by a CA`() {
         }
+    }
+
+    @Test
+    @Disabled
+    fun `Subject Key Identifier extension should correspond to subject key`() {
     }
 }

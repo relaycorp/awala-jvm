@@ -8,6 +8,7 @@ import java.util.Locale
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
+import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
@@ -21,7 +22,6 @@ import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     companion object {
         private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
-        private const val MAX_PATH_LENGTH_CONSTRAINT = 2
 
         @Throws(CertificateException::class)
         fun issue(
@@ -31,7 +31,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             validityStartDate: LocalDateTime = LocalDateTime.now(),
             validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
             isCA: Boolean = false,
-            pathLenConstraint: Int = MAX_PATH_LENGTH_CONSTRAINT
+            pathLenConstraint: Int = 0
         ): Certificate {
             // validate inputs
             if (validityStartDate >= validityEndDate) {
@@ -55,6 +55,9 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
                 issuerDistinguishedName,
                 subjectPublicKeyInfo
             )
+
+            val basicConstraints = BasicConstraintsExtension(isCA, pathLenConstraint)
+            builder.addExtension(Extension.basicConstraints, true, basicConstraints)
 
             return Certificate(builder.build(signerBuilder))
         }
