@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.wrappers
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,7 +16,7 @@ class KeysTest {
             val keyPair = generateRSAKeyPair(4096)
 
             assert(keyPair.private is RSAPrivateKey)
-            assert(keyPair.private.toString().contains("4096 bits"))
+            assertTrue(keyPair.private.toString().contains("4096 bits"), "DEBUG: ${keyPair.private}")
 
             assert(keyPair.public is RSAPublicKey)
             assert(keyPair.public.toString().contains("4096 bits"))
