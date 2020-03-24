@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
+import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.sql.Date
@@ -7,8 +8,10 @@ import java.time.LocalDateTime
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier
 import org.bouncycastle.asn1.x509.BasicConstraints
 import org.bouncycastle.asn1.x509.Extension
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
@@ -57,8 +60,24 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val basicConstraints = BasicConstraintsExtension(isCA, pathLenConstraint)
             builder.addExtension(Extension.basicConstraints, true, basicConstraints)
 
+            val subjectPublicKeyDigest = getPublicKeyInfoDigest(subjectPublicKeyInfo)
+            val ski = SubjectKeyIdentifier(subjectPublicKeyDigest)
+            builder.addExtension(Extension.subjectKeyIdentifier, false, ski)
+
+            val issuerPublicKeyDigest = if (issuerCertificate != null)
+                getPublicKeyInfoDigest(issuerCertificate.certificateHolder.subjectPublicKeyInfo)
+            else
+                subjectPublicKeyDigest
+            val aki = AuthorityKeyIdentifier(issuerPublicKeyDigest)
+            builder.addExtension(Extension.authorityKeyIdentifier, false, aki)
+
             val signerBuilder = makeSigner(issuerPrivateKey)
             return Certificate(builder.build(signerBuilder))
+        }
+
+        private fun getPublicKeyInfoDigest(keyInfo: SubjectPublicKeyInfo): ByteArray {
+            val digest = MessageDigest.getInstance("SHA-256")
+            return digest.digest(keyInfo.parsePublicKey().encoded)
         }
 
         @Throws(CertificateException::class)

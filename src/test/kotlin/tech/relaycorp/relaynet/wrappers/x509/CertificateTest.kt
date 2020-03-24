@@ -11,8 +11,10 @@ import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier
 import org.bouncycastle.asn1.x509.BasicConstraints
 import org.bouncycastle.asn1.x509.Extension
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509v3CertificateBuilder
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter
@@ -21,9 +23,9 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class CertificateTest {
@@ -208,12 +210,14 @@ class CertificateTest {
             val signerBuilder = contentSignerBuilder.build(privateKeyParam)
             val issuerCertificate = Certificate(builder.build(signerBuilder))
 
-            val exception = assertThrows<CertificateException> { Certificate.issue(
-                stubSubjectCommonName,
-                issuerKeyPair.private,
-                stubSubjectKeyPair.public,
-                issuerCertificate = issuerCertificate
-            ) }
+            val exception = assertThrows<CertificateException> {
+                Certificate.issue(
+                    stubSubjectCommonName,
+                    issuerKeyPair.private,
+                    stubSubjectKeyPair.public,
+                    issuerCertificate = issuerCertificate
+                )
+            }
 
             assertEquals("Issuer certificate should have basic constraints extension", exception.message)
         }
@@ -349,20 +353,67 @@ class CertificateTest {
     }
 
     @Nested
-    inner class AuthorityKeyIdentifier {
+    inner class AuthorityKeyIdentifierTest {
         @Test
-        @Disabled
         fun `Value should correspond to subject when self-issued`() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.private,
+                stubSubjectKeyPair.public
+            )
+
+            val aki = AuthorityKeyIdentifier.fromExtensions(
+                certificate.certificateHolder.extensions
+            )
+            val subjectPublicKeyInfo = certificate.certificateHolder.subjectPublicKeyInfo
+            assertEquals(
+                sha256(subjectPublicKeyInfo.parsePublicKey().encoded).asList(),
+                aki.keyIdentifier.asList()
+            )
         }
 
         @Test
-        @Disabled
         fun `Value should correspond to issuer when issued by a CA`() {
+            val issuerKeyPair = generateRSAKeyPair()
+            val issuerCertificate = Certificate.issue(
+                stubSubjectCommonName,
+                issuerKeyPair.private,
+                issuerKeyPair.public,
+                isCA = true
+            )
+            val subjectCertificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.private,
+                stubSubjectKeyPair.public,
+                issuerCertificate = issuerCertificate
+            )
+
+            val issuerPublicKeyInfo = issuerCertificate.certificateHolder.subjectPublicKeyInfo
+            val aki = AuthorityKeyIdentifier.fromExtensions(
+                subjectCertificate.certificateHolder.extensions
+            )
+            assertEquals(
+                sha256(issuerPublicKeyInfo.parsePublicKey().encoded).asList(),
+                aki.keyIdentifier.asList()
+            )
         }
     }
 
     @Test
-    @Disabled
-    fun `Subject Key Identifier extension should correspond to subject key`() {
+    fun `Subject Key Identifier extension should be SHA-256 digest of subject key`() {
+        val certificate = Certificate.issue(
+            stubSubjectCommonName,
+            stubSubjectKeyPair.private,
+            stubSubjectKeyPair.public
+        )
+
+        val ski = SubjectKeyIdentifier.fromExtensions(
+            certificate.certificateHolder.extensions
+        )
+        val subjectPublicKeyInfo = certificate.certificateHolder.subjectPublicKeyInfo
+        assertEquals(
+            sha256(subjectPublicKeyInfo.parsePublicKey().encoded).asList(),
+            ski.keyIdentifier.asList()
+        )
     }
 }
