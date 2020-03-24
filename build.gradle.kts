@@ -51,9 +51,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-
-    // TODO: Remove
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.64")
 }
 
 java {
