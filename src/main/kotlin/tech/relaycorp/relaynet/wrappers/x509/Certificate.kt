@@ -108,26 +108,3 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         }
     }
 }
-
-// data class FullCertificateIssuanceOptions(){
-//    var commonName: X500Name?
-//    var issuerPrivateKey: PrivateKey
-//    var subjectPublicKey: PublicKey
-//    var serialNumber: Long
-//    var validityStartDate: LocalDateTime
-//    var validityEndDate: LocalDateTime
-//    var isCA: Boolean?
-//    var issuerCertificate: Certificate?
-//    var pathLenConstraint: Int
-//
-// fun build(commonName: X500Name?,
-//    issuerPrivateKey: PrivateKey,
-//    subjectPublicKey: PublicKey,
-//    serialNumber: Long = generateRandom64BitValue(),
-//    validityStartDate: LocalDateTime = LocalDateTime.now(),
-//    validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
-//    isCA: Boolean? = false,
-//    issuerCertificate: Certificate?,
-//    pathLenConstraint: Int = MAX_PATH_LENGTH_CONSTRAINT){
-// }
-// }
