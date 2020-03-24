@@ -3,7 +3,6 @@ package tech.relaycorp.relaynet.wrappers
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -16,19 +15,19 @@ class KeysTest {
             val keyPair = generateRSAKeyPair(4096)
 
             assert(keyPair.private is RSAPrivateKey)
-            assertTrue(keyPair.private.toString().contains("4096 bits"), "DEBUG: ${keyPair.private}")
+            assertEquals(4096, (keyPair.private as RSAPrivateKey).modulus.bitLength())
 
             assert(keyPair.public is RSAPublicKey)
-            assert(keyPair.public.toString().contains("4096 bits"))
+            assertEquals(4096, (keyPair.public as RSAPublicKey).modulus.bitLength())
         }
 
         @Test
         fun `Modulus should be 2048 by default`() {
             val keyPair = generateRSAKeyPair()
 
-            assert(keyPair.private.toString().contains("2048 bits"))
+            assertEquals(2048, (keyPair.private as RSAPrivateKey).modulus.bitLength())
 
-            assert(keyPair.public.toString().contains("2048 bits"))
+            assertEquals(2048, (keyPair.public as RSAPublicKey).modulus.bitLength())
         }
 
         @Test
