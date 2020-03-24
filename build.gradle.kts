@@ -88,7 +88,6 @@ tasks.jacocoTestCoverageVerification {
                 value = "MISSEDCOUNT"
                 maximum = "0".toBigDecimal()
             }
-            excludes = mutableListOf("tech.relaycorp.relaynet.FullCertificateIssuanceOptions")
         }
     }
 }
