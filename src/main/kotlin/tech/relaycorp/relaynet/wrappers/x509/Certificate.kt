@@ -32,8 +32,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             subjectCommonName: String,
             issuerPrivateKey: PrivateKey,
             subjectPublicKey: PublicKey,
+            validityEndDate: LocalDateTime,
             validityStartDate: LocalDateTime = LocalDateTime.now(),
-            validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
             isCA: Boolean = false,
             pathLenConstraint: Int = 0,
             issuerCertificate: Certificate? = null

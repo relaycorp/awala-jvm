@@ -7,7 +7,6 @@ import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -31,13 +30,15 @@ import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 class CertificateTest {
     private val stubSubjectCommonName = "The CommonName"
     private val stubSubjectKeyPair = generateRSAKeyPair()
+    private val stubValidityEndDate = LocalDateTime.now().plusMonths(2)
 
     @Test
     fun `Certificate version should be 3`() {
         val certificate = Certificate.issue(
             stubSubjectCommonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
         )
 
         assertEquals(3, certificate.certificateHolder.versionNumber)
@@ -45,14 +46,11 @@ class CertificateTest {
 
     @Test
     fun `Subject public key should be the specified one`() {
-        val validityStartDate = LocalDateTime.now().plusMonths(1)
-        val validityEndDate = LocalDateTime.now().plusMonths(2)
         val certificate = Certificate.issue(
             stubSubjectCommonName,
             stubSubjectKeyPair.private,
             stubSubjectKeyPair.public,
-            validityStartDate,
-            validityEndDate
+            stubValidityEndDate
         )
 
         assertEquals(
@@ -66,7 +64,8 @@ class CertificateTest {
         val certificate = Certificate.issue(
             stubSubjectCommonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
         )
 
         assert(
@@ -79,7 +78,8 @@ class CertificateTest {
         val certificate = Certificate.issue(
             stubSubjectCommonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
         )
 
         assert(certificate.certificateHolder.serialNumber > BigInteger.ZERO)
@@ -90,7 +90,8 @@ class CertificateTest {
         val certificate = Certificate.issue(
             stubSubjectCommonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
         )
 
         assertEquals(
@@ -101,16 +102,18 @@ class CertificateTest {
 
     // TODO: There shouldn't be any default end date. It must be explicit.
     @Test
-    fun testShouldHaveAValidDefaultEndDate() {
-        val newCertificate = Certificate.issue(
+    fun `Validity end date should be honored`() {
+        val endDate = LocalDateTime.now().plusDays(1)
+        val certificate = Certificate.issue(
             stubSubjectCommonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            endDate
         )
 
-        assertTrue(
-            newCertificate.certificateHolder.notAfter > Date.valueOf(LocalDate.now()),
-            "Should create a certificate end date after now"
+        assertEquals(
+            Date.valueOf(endDate.toLocalDate()),
+            certificate.certificateHolder.notAfter
         )
     }
 
@@ -139,7 +142,8 @@ class CertificateTest {
         val certificate = Certificate.issue(
             commonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
         )
 
         assertEquals(1, certificate.certificateHolder.subject.rdNs.size)
@@ -153,7 +157,8 @@ class CertificateTest {
         val certificate = Certificate.issue(
             commonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
         )
 
         assertEquals(1, certificate.certificateHolder.issuer.rdNs.size)
@@ -172,12 +177,14 @@ class CertificateTest {
                 issuerCommonName,
                 issuerKeyPair.private,
                 issuerKeyPair.public,
+                stubValidityEndDate,
                 isCA = true
             )
             val subjectCertificate = Certificate.issue(
                 stubSubjectCommonName,
                 issuerKeyPair.private,
                 stubSubjectKeyPair.public,
+                stubValidityEndDate,
                 issuerCertificate = issuerCertificate
             )
 
@@ -215,6 +222,7 @@ class CertificateTest {
                     stubSubjectCommonName,
                     issuerKeyPair.private,
                     stubSubjectKeyPair.public,
+                    stubValidityEndDate,
                     issuerCertificate = issuerCertificate
                 )
             }
@@ -229,6 +237,7 @@ class CertificateTest {
                 issuerCommonName,
                 issuerKeyPair.private,
                 issuerKeyPair.public,
+                stubValidityEndDate,
                 isCA = false
             )
             val exception = assertThrows<CertificateException> {
@@ -236,6 +245,7 @@ class CertificateTest {
                     stubSubjectCommonName,
                     issuerKeyPair.private,
                     stubSubjectKeyPair.public,
+                    stubValidityEndDate,
                     issuerCertificate = issuerCertificate
                 )
             }
@@ -253,7 +263,8 @@ class CertificateTest {
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.private,
-                stubSubjectKeyPair.public
+                stubSubjectKeyPair.public,
+                stubValidityEndDate
             )
 
             assert(certificate.certificateHolder.hasExtensions())
@@ -267,7 +278,8 @@ class CertificateTest {
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.private,
-                stubSubjectKeyPair.public
+                stubSubjectKeyPair.public,
+                stubValidityEndDate
             )
 
             val basicConstraints = BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
@@ -280,6 +292,7 @@ class CertificateTest {
                 stubSubjectCommonName,
                 stubSubjectKeyPair.private,
                 stubSubjectKeyPair.public,
+                stubValidityEndDate,
                 isCA = true
             )
 
@@ -293,7 +306,8 @@ class CertificateTest {
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.private,
-                stubSubjectKeyPair.public
+                stubSubjectKeyPair.public,
+                stubValidityEndDate
             )
 
             val basicConstraints = BasicConstraints.fromExtensions(
@@ -311,6 +325,7 @@ class CertificateTest {
                 stubSubjectCommonName,
                 stubSubjectKeyPair.private,
                 stubSubjectKeyPair.public,
+                stubValidityEndDate,
                 pathLenConstraint = 2
             )
 
@@ -330,6 +345,7 @@ class CertificateTest {
                     stubSubjectCommonName,
                     stubSubjectKeyPair.private,
                     stubSubjectKeyPair.public,
+                    stubValidityEndDate,
                     pathLenConstraint = 3
                 )
             }
@@ -344,6 +360,7 @@ class CertificateTest {
                     stubSubjectCommonName,
                     stubSubjectKeyPair.private,
                     stubSubjectKeyPair.public,
+                    stubValidityEndDate,
                     pathLenConstraint = -1
                 )
             }
@@ -359,7 +376,8 @@ class CertificateTest {
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.private,
-                stubSubjectKeyPair.public
+                stubSubjectKeyPair.public,
+                stubValidityEndDate
             )
 
             val aki = AuthorityKeyIdentifier.fromExtensions(
@@ -379,12 +397,14 @@ class CertificateTest {
                 stubSubjectCommonName,
                 issuerKeyPair.private,
                 issuerKeyPair.public,
+                stubValidityEndDate,
                 isCA = true
             )
             val subjectCertificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.private,
                 stubSubjectKeyPair.public,
+                stubValidityEndDate,
                 issuerCertificate = issuerCertificate
             )
 
@@ -404,7 +424,8 @@ class CertificateTest {
         val certificate = Certificate.issue(
             stubSubjectCommonName,
             stubSubjectKeyPair.private,
-            stubSubjectKeyPair.public
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
         )
 
         val ski = SubjectKeyIdentifier.fromExtensions(
