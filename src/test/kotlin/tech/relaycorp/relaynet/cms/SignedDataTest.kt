@@ -1,6 +1,7 @@
 package tech.relaycorp.relaynet.cms
 
 import java.security.MessageDigest
+import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
@@ -24,27 +25,22 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.parseDer
-import tech.relaycorp.relaynet.x509.Certificate
-import tech.relaycorp.relaynet.x509.FullCertificateIssuanceOptions
-import tech.relaycorp.relaynet.x509.Keys
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 val stubPlaintext = "The plaintext".toByteArray()
-val stubKeyPair = Keys.generateRSAKeyPair(2048)
+val stubKeyPair = generateRSAKeyPair()
 val stubCertificate = Certificate.issue(
-    FullCertificateIssuanceOptions(
-        Certificate.buildX500Name("The C Name"),
-        stubKeyPair.private,
-        stubKeyPair.public,
-        issuerCertificate = null
-    )
+    "The Common Name",
+    stubKeyPair.private,
+    stubKeyPair.public,
+    LocalDateTime.now().plusDays(1)
 )
 val anotherStubCertificate = Certificate.issue(
-    FullCertificateIssuanceOptions(
-        Certificate.buildX500Name("Another"),
-        stubKeyPair.private,
-        stubKeyPair.public,
-        issuerCertificate = null
-    )
+    "Another",
+    stubKeyPair.private,
+    stubKeyPair.public,
+    LocalDateTime.now().plusDays(1)
 )
 
 const val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"

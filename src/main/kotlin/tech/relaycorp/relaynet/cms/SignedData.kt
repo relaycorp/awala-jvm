@@ -21,7 +21,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import org.bouncycastle.util.CollectionStore
 import org.bouncycastle.util.Selector
 import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.x509.Certificate
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private val signatureAlgorithmMap = mapOf(
     HashingAlgorithm.SHA256 to "SHA256withRSA",
