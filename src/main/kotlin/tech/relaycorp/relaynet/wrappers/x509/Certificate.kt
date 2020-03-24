@@ -8,6 +8,7 @@ import java.util.Locale
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
+import org.bouncycastle.asn1.x509.BasicConstraints
 import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
@@ -31,35 +32,50 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             validityStartDate: LocalDateTime = LocalDateTime.now(),
             validityEndDate: LocalDateTime = validityStartDate.plusMonths(1),
             isCA: Boolean = false,
-            pathLenConstraint: Int = 0
+            pathLenConstraint: Int = 0,
+            issuerCertificate: Certificate? = null
         ): Certificate {
-            // validate inputs
             if (validityStartDate >= validityEndDate) {
                 throw CertificateException("The end date must be later than the start date")
             }
+            if (issuerCertificate != null) {
+                requireCertificateToBeCA(issuerCertificate)
+            }
 
-            val issuerDistinguishedName = buildDistinguishedName(subjectCommonName)
+            val subjectDistinguishedName = buildDistinguishedName(subjectCommonName)
             val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(subjectPublicKey.encoded)
-            val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
-            val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-            val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
-            val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
-            val signerBuilder = contentSignerBuilder.build(privateKeyParam)
 
             val builder = X509v3CertificateBuilder(
-                issuerDistinguishedName,
+                issuerCertificate?.certificateHolder?.issuer ?: subjectDistinguishedName,
                 generateRandomBigInteger(),
                 Date.valueOf(validityStartDate.toLocalDate()),
                 Date.valueOf(validityEndDate.toLocalDate()),
-                Locale.ENGLISH,
-                issuerDistinguishedName,
+                Locale.ENGLISH, // TODO: Check actually needed
+                subjectDistinguishedName,
                 subjectPublicKeyInfo
             )
 
             val basicConstraints = BasicConstraintsExtension(isCA, pathLenConstraint)
             builder.addExtension(Extension.basicConstraints, true, basicConstraints)
 
+            val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
+            val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
+            val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
+            val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
+            val signerBuilder = contentSignerBuilder.build(privateKeyParam)
             return Certificate(builder.build(signerBuilder))
+        }
+
+        private fun requireCertificateToBeCA(issuerCertificate: Certificate) {
+            val issuerBasicConstraintsExtension =
+                issuerCertificate.certificateHolder.getExtension(Extension.basicConstraints)
+                    ?: throw CertificateException(
+                        "Issuer certificate should have basic constraints extension"
+                    )
+            val issuerBasicConstraints = BasicConstraints.getInstance(issuerBasicConstraintsExtension.parsedValue)
+            if (!issuerBasicConstraints.isCA) {
+                throw CertificateException("Issuer certificate should be marked as CA")
+            }
         }
 
         @Throws(CertificateException::class)
