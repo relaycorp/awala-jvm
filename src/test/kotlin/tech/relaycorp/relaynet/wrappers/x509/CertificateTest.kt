@@ -14,6 +14,7 @@ import org.bouncycastle.asn1.x509.BasicConstraints
 import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
+import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter
 import org.bouncycastle.crypto.util.PrivateKeyFactory
@@ -28,12 +29,12 @@ import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class CertificateTest {
+    private val stubSubjectCommonName = "The CommonName"
+    private val stubSubjectKeyPair = generateRSAKeyPair()
+    private val stubValidityEndDate = LocalDateTime.now().plusMonths(2)
+
     @Nested
     inner class Issue {
-        private val stubSubjectCommonName = "The CommonName"
-        private val stubSubjectKeyPair = generateRSAKeyPair()
-        private val stubValidityEndDate = LocalDateTime.now().plusMonths(2)
-
         @Test
         fun `Certificate version should be 3`() {
             val certificate = Certificate.issue(
@@ -469,6 +470,24 @@ class CertificateTest {
                 sha256(subjectPublicKeyInfo.parsePublicKey().encoded).asList(),
                 ski.keyIdentifier.asList()
             )
+        }
+    }
+
+    @Nested
+    inner class Serialize {
+        @Test
+        fun `Output should be DER-encoded`() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.private,
+                stubSubjectKeyPair.public,
+                stubValidityEndDate
+            )
+
+            val certificateSerialized = certificate.serialize()
+
+            val certificateHolderDeserialized = X509CertificateHolder(certificateSerialized)
+            assertEquals(certificate.certificateHolder, certificateHolderDeserialized)
         }
     }
 }

@@ -107,4 +107,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             return contentSignerBuilder.build(privateKeyParam)
         }
     }
+
+    fun serialize(): ByteArray {
+        return certificateHolder.encoded
+    }
 }
