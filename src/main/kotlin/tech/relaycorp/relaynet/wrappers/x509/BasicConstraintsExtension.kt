@@ -23,6 +23,11 @@ internal class BasicConstraintsExtension(
                 "pathLenConstraint should be between 0 and 2 (got $pathLenConstraint)"
             )
         }
+        if (pathLenConstraint != 0 && !cA) {
+            throw CertificateException(
+                "Subject should be a CA if pathLenConstraint=$pathLenConstraint"
+            )
+        }
     }
 
     override fun toASN1Primitive(): ASN1Primitive {

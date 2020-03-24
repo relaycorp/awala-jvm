@@ -302,6 +302,25 @@ class CertificateTest {
         }
 
         @Test
+        fun `CA flag should be enabled if pathLenConstraint is greater than 0`() {
+            val exception = assertThrows<CertificateException> {
+                Certificate.issue(
+                    stubSubjectCommonName,
+                    stubSubjectKeyPair.private,
+                    stubSubjectKeyPair.public,
+                    stubValidityEndDate,
+                    isCA = false,
+                    pathLenConstraint = 1
+                )
+            }
+
+            assertEquals(
+                "Subject should be a CA if pathLenConstraint=1",
+                exception.message
+            )
+        }
+
+        @Test
         fun `pathLenConstraint should be 0 by default`() {
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
