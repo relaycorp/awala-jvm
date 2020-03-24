@@ -95,8 +95,9 @@ internal open class RAMFSerializer<T : RAMFMessage>(
             throw RAMFException("Serialization is too short to contain format signature")
         }
 
-        val magicConstant = serializationStream.readNBytes(8).toString(Charset.forName("ASCII"))
-        if (magicConstant != "Relaynet") {
+        val magicConstant = ByteArray(8)
+        serializationStream.read(magicConstant, 0, magicConstant.size)
+        if (magicConstant.toString(Charset.forName("ASCII")) != "Relaynet") {
             throw RAMFException("Format signature should start with magic constant 'Relaynet'")
         }
 
