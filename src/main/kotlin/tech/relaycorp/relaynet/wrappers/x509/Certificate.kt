@@ -4,7 +4,6 @@ import java.security.PrivateKey
 import java.security.PublicKey
 import java.sql.Date
 import java.time.LocalDateTime
-import java.util.Locale
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -50,7 +49,6 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
                 generateRandomBigInteger(),
                 Date.valueOf(validityStartDate.toLocalDate()),
                 Date.valueOf(validityEndDate.toLocalDate()),
-                Locale.ENGLISH, // TODO: Check actually needed
                 subjectDistinguishedName,
                 subjectPublicKeyInfo
             )
