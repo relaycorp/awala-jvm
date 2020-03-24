@@ -360,6 +360,7 @@ class CertificateTest {
                     stubSubjectKeyPair.private,
                     stubSubjectKeyPair.public,
                     stubValidityEndDate,
+                    isCA = true,
                     pathLenConstraint = 2
                 )
 
