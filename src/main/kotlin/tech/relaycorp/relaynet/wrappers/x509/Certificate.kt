@@ -14,6 +14,7 @@ import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter
 import org.bouncycastle.crypto.util.PrivateKeyFactory
+import org.bouncycastle.operator.ContentSigner
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
@@ -56,12 +57,15 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val basicConstraints = BasicConstraintsExtension(isCA, pathLenConstraint)
             builder.addExtension(Extension.basicConstraints, true, basicConstraints)
 
-            val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
-            val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-            val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
-            val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
-            val signerBuilder = contentSignerBuilder.build(privateKeyParam)
+            val signerBuilder = makeSigner(issuerPrivateKey)
             return Certificate(builder.build(signerBuilder))
+        }
+
+        @Throws(CertificateException::class)
+        private fun buildDistinguishedName(commonName: String): X500Name {
+            val builder = X500NameBuilder(BCStyle.INSTANCE)
+            builder.addRDN(BCStyle.C, commonName)
+            return builder.build()
         }
 
         private fun requireCertificateToBeCA(issuerCertificate: Certificate) {
@@ -76,11 +80,12 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             }
         }
 
-        @Throws(CertificateException::class)
-        private fun buildDistinguishedName(commonName: String): X500Name {
-            val builder = X500NameBuilder(BCStyle.INSTANCE)
-            builder.addRDN(BCStyle.C, commonName)
-            return builder.build()
+        private fun makeSigner(issuerPrivateKey: PrivateKey): ContentSigner {
+            val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
+            val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
+            val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
+            val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
+            return contentSignerBuilder.build(privateKeyParam)
         }
     }
 }
