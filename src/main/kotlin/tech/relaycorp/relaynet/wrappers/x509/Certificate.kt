@@ -31,13 +31,13 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         @Throws(CertificateException::class)
         fun issue(
             subjectCommonName: String,
-            issuerPrivateKey: PrivateKey,
             subjectPublicKey: PublicKey,
+            issuerPrivateKey: PrivateKey,
             validityEndDate: LocalDateTime,
-            validityStartDate: LocalDateTime = LocalDateTime.now(),
+            issuerCertificate: Certificate? = null,
             isCA: Boolean = false,
             pathLenConstraint: Int = 0,
-            issuerCertificate: Certificate? = null
+            validityStartDate: LocalDateTime = LocalDateTime.now()
         ): Certificate {
             if (validityStartDate >= validityEndDate) {
                 throw CertificateException("The end date must be later than the start date")
