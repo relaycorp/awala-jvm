@@ -32,14 +32,14 @@ val stubPlaintext = "The plaintext".toByteArray()
 val stubKeyPair = generateRSAKeyPair()
 val stubCertificate = Certificate.issue(
     "The Common Name",
-    stubKeyPair.private,
     stubKeyPair.public,
+    stubKeyPair.private,
     LocalDateTime.now().plusDays(1)
 )
 val anotherStubCertificate = Certificate.issue(
     "Another",
-    stubKeyPair.private,
     stubKeyPair.public,
+    stubKeyPair.private,
     LocalDateTime.now().plusDays(1)
 )
 
