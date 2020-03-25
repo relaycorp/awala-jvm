@@ -494,6 +494,33 @@ class CertificateTest {
     }
 
     @Nested
+    inner class Deserialize {
+        @Test
+        fun `Valid certificates should be parsed`() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.private,
+                stubSubjectKeyPair.public,
+                stubValidityEndDate
+            )
+            val certificateSerialized = certificate.serialize()
+
+            val certificateDeserialized = Certificate.deserialize(certificateSerialized)
+
+            assertEquals(certificate, certificateDeserialized)
+        }
+
+        @Test
+        fun `Invalid certificates should result in errors`() {
+            val exception = assertThrows<CertificateException> {
+                Certificate.deserialize("Not a certificate".toByteArray())
+            }
+
+            assertEquals("Value should be a DER-encoded, X.509 v3 certificate", exception.message)
+        }
+    }
+
+    @Nested
     inner class Equals {
         private val stubCertificate = Certificate.issue(
             stubSubjectCommonName,

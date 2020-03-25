@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
+import java.io.IOException
 import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -109,6 +110,18 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
             val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
             return contentSignerBuilder.build(privateKeyParam)
+        }
+
+        @Throws(CertificateException::class)
+        fun deserialize(certificateSerialized: ByteArray): Certificate {
+            val certificateHolder = try {
+                X509CertificateHolder(certificateSerialized)
+            } catch (_: IOException) {
+                throw CertificateException(
+                    "Value should be a DER-encoded, X.509 v3 certificate"
+                )
+            }
+            return Certificate(certificateHolder)
         }
     }
 
