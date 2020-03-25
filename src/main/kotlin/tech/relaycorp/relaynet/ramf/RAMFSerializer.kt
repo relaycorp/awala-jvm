@@ -10,8 +10,8 @@ import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.nio.charset.Charset
+import java.security.PrivateKey
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -23,25 +23,43 @@ import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
+import tech.relaycorp.relaynet.cms.SignedDataException
+import tech.relaycorp.relaynet.cms.sign
+import tech.relaycorp.relaynet.cms.verifySignature
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private const val OCTETS_IN_9_MIB = 9437184
 
 private val DER_SEQUENCE_TAG = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
+private val BER_DATETIME_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
 private val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
+
+@Suppress("ArrayInDataClass")
+private data class FieldSet(
+    val recipientAddress: String,
+    val messageId: String,
+    val creationDate: ZonedDateTime,
+    val ttl: Int,
+    val payload: ByteArray
+)
 
 internal open class RAMFSerializer<T : RAMFMessage>(
     val concreteMessageType: Byte,
     val concreteMessageVersion: Byte,
-    private val messageClazz: (String, String, ZonedDateTime, Int, ByteArray) -> T
+    private val messageClazz: (String, String, ZonedDateTime, Int, ByteArray, Certificate) -> T
 ) {
-    fun serialize(message: T): ByteArray {
+    fun serialize(message: T, signerPrivateKey: PrivateKey): ByteArray {
         val output = ByteArrayOutputStream()
 
         output.write("Relaynet".toByteArray())
         output.write(concreteMessageType.toInt())
         output.write(concreteMessageVersion.toInt())
-        output.write(serializeMessage(message))
+
+        val fieldSetSerialized = serializeMessage(message)
+        val signedData = sign(fieldSetSerialized, signerPrivateKey, message.senderCertificate)
+        output.write(signedData)
 
         return output.toByteArray()
     }
@@ -82,7 +100,7 @@ internal open class RAMFSerializer<T : RAMFMessage>(
         return reverseOS.array
     }
 
-    @Throws(RAMFException::class)
+    @Throws(RAMFException::class, SignedDataException::class)
     fun deserialize(serialization: ByteArray): T {
         val serializationStream = ByteArrayInputStream(serialization)
         val serializationSize = serializationStream.available()
@@ -114,11 +132,21 @@ internal open class RAMFSerializer<T : RAMFMessage>(
                 "Message version should be $concreteMessageVersion (got $messageVersion)"
             )
         }
-        return deserializeFields(serializationStream)
+
+        val cmsSignedDataResult = verifySignature(serializationStream.readBytes())
+        val fields = deserializeFields(cmsSignedDataResult.plaintext)
+        return messageClazz(
+            fields.recipientAddress,
+            fields.messageId,
+            fields.creationDate,
+            fields.ttl,
+            fields.payload,
+            cmsSignedDataResult.signerCertificate
+        )
     }
 
     @Throws(RAMFException::class)
-    private fun deserializeFields(serialization: InputStream): T {
+    private fun deserializeFields(serialization: ByteArray): FieldSet {
         val asn1InputStream = ASN1InputStream(serialization)
         val asn1Value = try {
             asn1InputStream.readObject()
@@ -157,7 +185,7 @@ internal open class RAMFSerializer<T : RAMFMessage>(
 
         val payloadDer = DEROctetString.getInstance(fields[4] as ASN1TaggedObject, false)
 
-        return messageClazz(
+        return FieldSet(
             recipientAddress.string,
             messageId.string,
             ZonedDateTime.of(creationTime, UTC_ZONE_ID),
@@ -166,6 +194,3 @@ internal open class RAMFSerializer<T : RAMFMessage>(
         )
     }
 }
-
-val BER_DATETIME_FORMATTER: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("yyyyMMddHHmmss")

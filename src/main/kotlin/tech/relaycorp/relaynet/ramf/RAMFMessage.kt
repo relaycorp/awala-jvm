@@ -1,6 +1,8 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.security.PrivateKey
 import java.time.ZonedDateTime
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1023
 private const val MAX_MESSAGE_ID_LENGTH = 255
@@ -14,7 +16,8 @@ internal open class RAMFMessage(
     val messageId: String,
     val creationTime: ZonedDateTime,
     val ttl: Int,
-    val payload: ByteArray
+    val payload: ByteArray,
+    val senderCertificate: Certificate
 ) {
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
@@ -42,8 +45,8 @@ internal open class RAMFMessage(
         }
     }
 
-    fun serialize(): ByteArray {
-        return serialize(this)
+    fun serialize(senderPrivateKey: PrivateKey): ByteArray {
+        return serialize(this, senderPrivateKey)
     }
 
     companion object : RAMFSerializer<RAMFMessage>(0, 0, ::RAMFMessage)
