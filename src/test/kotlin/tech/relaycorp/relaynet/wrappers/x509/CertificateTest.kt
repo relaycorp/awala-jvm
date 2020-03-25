@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -489,6 +490,55 @@ class CertificateTest {
 
             val certificateHolderDeserialized = X509CertificateHolder(certificateSerialized)
             assertEquals(certificate.certificateHolder, certificateHolderDeserialized)
+        }
+    }
+
+    @Nested
+    inner class Equals {
+        private val stubCertificate = Certificate.issue(
+            stubSubjectCommonName,
+            stubSubjectKeyPair.private,
+            stubSubjectKeyPair.public,
+            stubValidityEndDate
+        )
+
+        @Suppress("ReplaceCallWithBinaryOperator")
+        @Test
+        fun `A non-Certificate object should not equal`() {
+            assertFalse(stubCertificate.equals("Hey"))
+        }
+
+        @Test
+        fun `A different certificate should not equal`() {
+            val anotherKeyPair = generateRSAKeyPair()
+            val anotherCertificate = Certificate.issue(
+                stubSubjectCommonName,
+                anotherKeyPair.private,
+                anotherKeyPair.public,
+                stubValidityEndDate
+            )
+            assertNotEquals(anotherCertificate, stubCertificate)
+        }
+
+        @Test
+        fun `An equivalent certificate should equal`() {
+            val sameCertificate = Certificate(stubCertificate.certificateHolder)
+            assertEquals(stubCertificate, sameCertificate)
+        }
+    }
+
+    @Nested
+    inner class HashCode {
+        @Test
+        fun `Hashcode should be that of certificate holder`() {
+            val stubCertificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.private,
+                stubSubjectKeyPair.public,
+                stubValidityEndDate
+            )
+
+            assertEquals(stubCertificate.certificateHolder.hashCode(), stubCertificate.hashCode())
         }
     }
 }

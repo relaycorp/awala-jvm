@@ -112,6 +112,17 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (other !is Certificate) {
+            return false
+        }
+        return certificateHolder == other.certificateHolder
+    }
+
+    override fun hashCode(): Int {
+        return certificateHolder.hashCode()
+    }
+
     fun serialize(): ByteArray {
         return certificateHolder.encoded
     }
