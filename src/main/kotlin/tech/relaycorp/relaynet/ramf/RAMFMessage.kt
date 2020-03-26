@@ -11,7 +11,7 @@ private const val MAX_PAYLOAD_LENGTH = 8388608
 
 // This class should be abstract instead of open, but I couldn't find a way to make it work with
 // the companion object
-internal open class RAMFMessage(
+internal abstract class RAMFMessage(
     val recipientAddress: String,
     val messageId: String,
     val creationTime: ZonedDateTime,
@@ -45,9 +45,5 @@ internal open class RAMFMessage(
         }
     }
 
-    fun serialize(senderPrivateKey: PrivateKey): ByteArray {
-        return serialize(this, senderPrivateKey)
-    }
-
-    companion object : RAMFSerializer<RAMFMessage>(0, 0, ::RAMFMessage)
+    abstract fun serialize(senderPrivateKey: PrivateKey): ByteArray
 }

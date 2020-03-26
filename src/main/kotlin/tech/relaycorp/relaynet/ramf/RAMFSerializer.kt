@@ -45,12 +45,11 @@ private data class FieldSet(
     val payload: ByteArray
 )
 
-internal open class RAMFSerializer<T : RAMFMessage>(
+internal class RAMFSerializer(
     val concreteMessageType: Byte,
-    val concreteMessageVersion: Byte,
-    private val messageClazz: (String, String, ZonedDateTime, Int, ByteArray, Certificate) -> T
+    val concreteMessageVersion: Byte
 ) {
-    fun serialize(message: T, signerPrivateKey: PrivateKey): ByteArray {
+    fun serialize(message: RAMFMessage, signerPrivateKey: PrivateKey): ByteArray {
         val output = ByteArrayOutputStream()
 
         output.write("Relaynet".toByteArray())
@@ -65,7 +64,7 @@ internal open class RAMFSerializer<T : RAMFMessage>(
     }
 
     @Throws(IOException::class)
-    private fun serializeMessage(message: T): ByteArray {
+    private fun serializeMessage(message: RAMFMessage): ByteArray {
         val reverseOS = ReverseByteArrayOutputStream(1000, true)
         var codeLength = 0
 
@@ -101,7 +100,10 @@ internal open class RAMFSerializer<T : RAMFMessage>(
     }
 
     @Throws(RAMFException::class, SignedDataException::class)
-    fun deserialize(serialization: ByteArray): T {
+    fun <T> deserialize(
+        serialization: ByteArray,
+        messageClazz: (String, String, ZonedDateTime, Int, ByteArray, Certificate) -> T
+    ): T {
         val serializationStream = ByteArrayInputStream(serialization)
         val serializationSize = serializationStream.available()
 

@@ -1,6 +1,7 @@
 package tech.relaycorp.relaynet.ramf
 
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -130,7 +131,7 @@ class RAMFMessageTest {
     @Nested
     inner class Serialize {
         @Test
-        fun `Serialization should be delegated to companion object`() {
+        fun `Serialization should be delegated to serializer`() {
             val message = StubRAMFMessage(
                 stubRecipientAddress,
                 stubMessageId,
@@ -140,10 +141,19 @@ class RAMFMessageTest {
                 stubSenderCertificate
             )
 
-            val serialization = message.serialize(stubSenderKeyPair.private)
+            val serialization = STUB_SERIALIZER.serialize(message, stubSenderKeyPair.private)
 
             val messageDeserialized = StubRAMFMessage.deserialize(serialization)
-            assertEquals(message, messageDeserialized)
+            // TODO: Implement RAMFMessage.equals()
+            assertEquals(message.recipientAddress, messageDeserialized.recipientAddress)
+            assertEquals(message.messageId, messageDeserialized.messageId)
+            assertEquals(
+                message.creationTime.withNano(0).withZoneSameLocal(ZoneId.of("UTC")),
+                messageDeserialized.creationTime
+            )
+            assertEquals(message.ttl, messageDeserialized.ttl)
+            assertEquals(message.payload.asList(), messageDeserialized.payload.asList())
+            assertEquals(message.senderCertificate, messageDeserialized.senderCertificate)
         }
     }
 }

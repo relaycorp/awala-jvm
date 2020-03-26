@@ -56,14 +56,7 @@ class RAMFSerializerTest {
         stubSenderCertificate
     )
 
-    // TODO: REMOVE
-    private val stubSerializer = RAMFSerializer(
-        StubRAMFMessage.concreteMessageType,
-        StubRAMFMessage.concreteMessageVersion,
-        ::StubRAMFMessage
-    )
-
-    private val stubSerialization = stubSerializer.serialize(
+    private val stubSerialization = STUB_SERIALIZER.serialize(
         stubMessage,
         stubSenderKeyPair.private
     )
@@ -78,12 +71,12 @@ class RAMFSerializerTest {
 
         @Test
         fun `Concrete message type should be set`() {
-            assertEquals(StubRAMFMessage.concreteMessageType, stubSerialization[8])
+            assertEquals(STUB_SERIALIZER.concreteMessageType, stubSerialization[8])
         }
 
         @Test
         fun `Concrete message version should be set`() {
-            assertEquals(StubRAMFMessage.concreteMessageVersion, stubSerialization[9])
+            assertEquals(STUB_SERIALIZER.concreteMessageVersion, stubSerialization[9])
         }
 
         @Nested
@@ -148,7 +141,7 @@ class RAMFSerializerTest {
                         stubMessage.payload,
                         stubSenderCertificate
                     )
-                    val messageSerialized = stubSerializer.serialize(
+                    val messageSerialized = STUB_SERIALIZER.serialize(
                         message,
                         stubSenderKeyPair.private
                     )
@@ -199,7 +192,9 @@ class RAMFSerializerTest {
             val invalidSerialization = "a".repeat(octetsIn9Mib).toByteArray()
 
             // Deserialization still fails, but for a different reason
-            val exception = assertThrows<RAMFException> { stubSerializer.deserialize(invalidSerialization) }
+            val exception = assertThrows<RAMFException> {
+                STUB_SERIALIZER.deserialize(invalidSerialization, ::StubRAMFMessage)
+            }
             assertEquals("Format signature should start with magic constant 'Relaynet'", exception.message)
         }
 
@@ -207,7 +202,8 @@ class RAMFSerializerTest {
         fun `Messages larger than 9 MiB should be refused`() {
             val invalidSerialization = "a".repeat(octetsIn9Mib + 1).toByteArray()
 
-            val exception = assertThrows<RAMFException> { stubSerializer.deserialize(invalidSerialization) }
+            val exception =
+                assertThrows<RAMFException> { STUB_SERIALIZER.deserialize(invalidSerialization, ::StubRAMFMessage) }
 
             assertEquals("Message should not be larger than 9 MiB", exception.message)
         }
@@ -219,7 +215,8 @@ class RAMFSerializerTest {
                 val formatSignatureLength = 10
                 val invalidSerialization = "a".repeat(formatSignatureLength - 1).toByteArray()
 
-                val exception = assertThrows<RAMFException> { stubSerializer.deserialize(invalidSerialization) }
+                val exception =
+                    assertThrows<RAMFException> { STUB_SERIALIZER.deserialize(invalidSerialization, ::StubRAMFMessage) }
 
                 assertEquals("Serialization is too short to contain format signature", exception.message)
             }
@@ -228,43 +225,48 @@ class RAMFSerializerTest {
             fun `Magic constant should be ASCII string Relaynet`() {
                 val incompleteSerialization = "Relaynope01234".toByteArray()
 
-                val exception = assertThrows<RAMFException> { stubSerializer.deserialize(incompleteSerialization) }
+                val exception = assertThrows<RAMFException> {
+                    STUB_SERIALIZER.deserialize(
+                        incompleteSerialization,
+                        ::StubRAMFMessage
+                    )
+                }
 
                 assertEquals("Format signature should start with magic constant 'Relaynet'", exception.message)
             }
 
             @Test
             fun `Concrete message type should match expected one`() {
-                val invalidMessageType = stubSerializer.concreteMessageType.inc()
+                val invalidMessageType = STUB_SERIALIZER.concreteMessageType.inc()
                 val invalidSerialization = ByteArrayOutputStream(10)
                 invalidSerialization.write("Relaynet".toByteArray())
                 invalidSerialization.write(invalidMessageType.toInt())
-                invalidSerialization.write(stubSerializer.concreteMessageVersion.toInt())
+                invalidSerialization.write(STUB_SERIALIZER.concreteMessageVersion.toInt())
 
                 val exception = assertThrows<RAMFException> {
-                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                    STUB_SERIALIZER.deserialize(invalidSerialization.toByteArray(), ::StubRAMFMessage)
                 }
 
                 assertEquals(
-                    "Message type should be ${stubSerializer.concreteMessageType} (got $invalidMessageType)",
+                    "Message type should be ${STUB_SERIALIZER.concreteMessageType} (got $invalidMessageType)",
                     exception.message
                 )
             }
 
             @Test
             fun `Concrete message version should match expected one`() {
-                val invalidMessageVersion = stubSerializer.concreteMessageVersion.inc()
+                val invalidMessageVersion = STUB_SERIALIZER.concreteMessageVersion.inc()
                 val invalidSerialization = ByteArrayOutputStream(10)
                 invalidSerialization.write("Relaynet".toByteArray())
-                invalidSerialization.write(stubSerializer.concreteMessageType.toInt())
+                invalidSerialization.write(STUB_SERIALIZER.concreteMessageType.toInt())
                 invalidSerialization.write(invalidMessageVersion.toInt())
 
                 val exception = assertThrows<RAMFException> {
-                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                    STUB_SERIALIZER.deserialize(invalidSerialization.toByteArray(), ::StubRAMFMessage)
                 }
 
                 assertEquals(
-                    "Message version should be ${stubSerializer.concreteMessageVersion} (got $invalidMessageVersion)",
+                    "Message version should be ${STUB_SERIALIZER.concreteMessageVersion} (got $invalidMessageVersion)",
                     exception.message
                 )
             }
@@ -276,12 +278,12 @@ class RAMFSerializerTest {
             fun `Invalid signature should be refused`() {
                 val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write("Relaynet".toByteArray())
-                invalidSerialization.write(stubSerializer.concreteMessageType.toInt())
-                invalidSerialization.write(stubSerializer.concreteMessageVersion.toInt())
+                invalidSerialization.write(STUB_SERIALIZER.concreteMessageType.toInt())
+                invalidSerialization.write(STUB_SERIALIZER.concreteMessageVersion.toInt())
                 invalidSerialization.write("Not really CMS SignedData".toByteArray())
 
                 val exception = assertThrows<SignedDataException> {
-                    StubRAMFMessage.deserialize(invalidSerialization.toByteArray())
+                    STUB_SERIALIZER.deserialize(invalidSerialization.toByteArray(), ::StubRAMFMessage)
                 }
 
                 assertEquals("Value is not DER-encoded", exception.message)
@@ -289,7 +291,7 @@ class RAMFSerializerTest {
 
             @Test
             fun `Message should take sender certificate from valid SignedData value`() {
-                val messageDeserialized = StubRAMFMessage.deserialize(stubSerialization)
+                val messageDeserialized = STUB_SERIALIZER.deserialize(stubSerialization, ::StubRAMFMessage)
 
                 assertEquals(stubSenderCertificate, messageDeserialized.senderCertificate)
             }
@@ -303,8 +305,8 @@ class RAMFSerializerTest {
         @Nested
         inner class FieldSet {
             private val formatSignature: ByteArray = "Relaynet".toByteArray() + byteArrayOf(
-                stubSerializer.concreteMessageType,
-                stubSerializer.concreteMessageVersion
+                STUB_SERIALIZER.concreteMessageType,
+                STUB_SERIALIZER.concreteMessageVersion
             )
 
             @Test
@@ -320,7 +322,7 @@ class RAMFSerializerTest {
                 )
 
                 val exception = assertThrows<RAMFException> {
-                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                    STUB_SERIALIZER.deserialize(invalidSerialization.toByteArray(), ::StubRAMFMessage)
                 }
 
                 assertEquals("Message fields are not a DER-encoded", exception.message)
@@ -342,7 +344,7 @@ class RAMFSerializerTest {
                 )
 
                 val exception = assertThrows<RAMFException> {
-                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                    STUB_SERIALIZER.deserialize(invalidSerialization.toByteArray(), ::StubRAMFMessage)
                 }
 
                 assertEquals("Message fields are not a ASN.1 sequence", exception.message)
@@ -370,7 +372,7 @@ class RAMFSerializerTest {
                 )
 
                 val exception = assertThrows<RAMFException> {
-                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                    STUB_SERIALIZER.deserialize(invalidSerialization.toByteArray(), ::StubRAMFMessage)
                 }
 
                 assertEquals(
@@ -381,12 +383,12 @@ class RAMFSerializerTest {
 
             @Test
             fun `Message fields should be output when the serialization is valid`() {
-                val serialization = stubSerializer.serialize(
+                val serialization = STUB_SERIALIZER.serialize(
                     stubMessage,
                     stubSenderKeyPair.private
                 )
 
-                val parsedMessage = stubSerializer.deserialize(serialization)
+                val parsedMessage = STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
 
                 assertEquals(stubMessage.recipientAddress, parsedMessage.recipientAddress)
 
@@ -418,7 +420,7 @@ class RAMFSerializerTest {
                 )
 
                 val exception = assertThrows<RAMFException> {
-                    stubSerializer.deserialize(invalidSerialization.toByteArray())
+                    STUB_SERIALIZER.deserialize(invalidSerialization.toByteArray(), ::StubRAMFMessage)
                 }
 
                 assertEquals(
@@ -437,9 +439,9 @@ class RAMFSerializerTest {
                     stubMessage.payload,
                     stubSenderCertificate
                 )
-                val serialization = stubSerializer.serialize(message, stubSenderKeyPair.private)
+                val serialization = STUB_SERIALIZER.serialize(message, stubSenderKeyPair.private)
 
-                val parsedMessage = stubSerializer.deserialize(serialization)
+                val parsedMessage = STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
 
                 assertEquals(parsedMessage.creationTime.zone, ZoneId.of("UTC"))
             }
