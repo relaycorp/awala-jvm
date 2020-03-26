@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet.wrappers
 
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.RepeatedTest
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class PRNGTest {
     @Nested
@@ -14,8 +14,8 @@ class PRNGTest {
 
             assertEquals(1, value.signum(), "Value should be positive")
             assertTrue(
-                value.bitLength() in 56..64,
-                "Value should span up to 64 bits; got ${value.bitLength()}"
+                value.bitLength() in 48..64,
+                "Value should be between 48 and 64 bits; got ${value.bitLength()}"
             )
         }
     }
