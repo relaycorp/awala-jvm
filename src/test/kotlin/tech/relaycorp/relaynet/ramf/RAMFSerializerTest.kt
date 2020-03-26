@@ -55,11 +55,11 @@ class RAMFSerializerTest {
 
     private val stubMessage = StubRAMFMessage(
         "04334",
+        "payload".toByteArray(),
+        stubSenderCertificate,
         "message-id",
         ZonedDateTime.now(ZoneId.of("UTC")),
         12345,
-        "payload".toByteArray(),
-        stubSenderCertificate,
         stubSenderCertificateChain
     )
 
@@ -154,11 +154,11 @@ class RAMFSerializerTest {
                     val nowTimezoneUnaware = LocalDateTime.now()
                     val message = StubRAMFMessage(
                         stubMessage.recipientAddress,
+                        stubMessage.payload,
+                        stubSenderCertificate,
                         stubMessage.messageId,
                         ZonedDateTime.of(nowTimezoneUnaware, NON_UTC_ZONE_ID),
                         stubMessage.ttl,
-                        stubMessage.payload,
-                        stubSenderCertificate,
                         stubSenderCertificateChain
                     )
                     val messageSerialized = STUB_SERIALIZER.serialize(
@@ -502,11 +502,11 @@ class RAMFSerializerTest {
             fun `Creation time should be parsed as UTC`() {
                 val message = StubRAMFMessage(
                     stubMessage.recipientAddress,
+                    stubMessage.payload,
+                    stubSenderCertificate,
                     stubMessage.messageId,
                     stubMessage.creationTime.withZoneSameInstant(NON_UTC_ZONE_ID),
                     stubMessage.ttl,
-                    stubMessage.payload,
-                    stubSenderCertificate,
                     stubSenderCertificateChain
                 )
                 val serialization = STUB_SERIALIZER.serialize(message, stubSenderKeyPair.private)

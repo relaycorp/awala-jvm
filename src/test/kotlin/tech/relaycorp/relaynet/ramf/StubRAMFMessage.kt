@@ -8,13 +8,21 @@ internal val STUB_SERIALIZER = RAMFSerializer(32, 0)
 
 internal class StubRAMFMessage(
     recipientAddress: String,
-    messageId: String,
-    creationTime: ZonedDateTime,
-    ttl: Int,
     payload: ByteArray,
     senderCertificate: Certificate,
-    senderCertificateChain: Set<Certificate>
-) : RAMFMessage(recipientAddress, messageId, creationTime, ttl, payload, senderCertificate, senderCertificateChain) {
+    messageId: String? = null,
+    creationTime: ZonedDateTime? = null,
+    ttl: Int? = null,
+    senderCertificateChain: Set<Certificate>? = null
+) : RAMFMessage(
+    recipientAddress,
+    payload,
+    senderCertificate,
+    messageId,
+    creationTime,
+    ttl,
+    senderCertificateChain
+) {
     override fun serialize(senderPrivateKey: PrivateKey): ByteArray {
         return STUB_SERIALIZER.serialize(this, senderPrivateKey)
     }

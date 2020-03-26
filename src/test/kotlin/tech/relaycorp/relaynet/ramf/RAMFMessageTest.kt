@@ -2,8 +2,11 @@ package tech.relaycorp.relaynet.ramf
 
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.issueStubCertificate
@@ -30,12 +33,10 @@ class RAMFMessageTest {
             val exception = assertThrows<RAMFException> {
                 StubRAMFMessage(
                     longRecipientAddress,
-                    stubMessageId,
-                    stubCreationTimeUtc,
-                    stubTtl,
                     stubPayload,
                     stubSenderCertificate,
-                    setOf()
+                    stubMessageId,
+                    stubCreationTimeUtc
                 )
             }
 
@@ -51,12 +52,10 @@ class RAMFMessageTest {
             val exception = assertThrows<RAMFException> {
                 StubRAMFMessage(
                     stubRecipientAddress,
-                    longMessageId,
-                    stubCreationTimeUtc,
-                    stubTtl,
                     stubPayload,
                     stubSenderCertificate,
-                    setOf()
+                    longMessageId,
+                    stubCreationTimeUtc
                 )
             }
 
@@ -67,17 +66,76 @@ class RAMFMessageTest {
         }
 
         @Test
+        fun `Message id should be honored if set`() {
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
+                stubMessageId
+            )
+
+            assertEquals(stubMessageId, message.messageId)
+        }
+
+        @Test
+        fun `Message id should default to random UUID4 if unset`() {
+            val message1 = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate
+            )
+            val message2 = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate
+            )
+
+            UUID.fromString(message1.messageId)
+            UUID.fromString(message2.messageId)
+            assertNotEquals(message1.messageId, message2.messageId)
+        }
+
+        @Test
+        fun `Creation time should be honored if set`() {
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
+                stubMessageId,
+                stubCreationTimeUtc
+            )
+
+            assertEquals(stubCreationTimeUtc, message.creationTime)
+        }
+
+        @Test
+        fun `Creation date should default to current UTC time if unset`() {
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
+                stubMessageId
+            )
+
+            assertEquals("UTC", message.creationTime.zone.id)
+
+            val now = ZonedDateTime.now(ZoneId.of("UTC"))
+            val secondsAgo = now.minusSeconds(5)
+            assertTrue(secondsAgo < message.creationTime)
+            assertTrue(message.creationTime < now)
+        }
+
+        @Test
         fun `TTL should not be negative`() {
             val negativeTtl = -1
             val exception = assertThrows<RAMFException> {
                 StubRAMFMessage(
                     stubRecipientAddress,
-                    stubMessageId,
-                    stubCreationTimeUtc,
-                    negativeTtl,
                     stubPayload,
                     stubSenderCertificate,
-                    setOf()
+                    stubMessageId,
+                    stubCreationTimeUtc,
+                    negativeTtl
                 )
             }
 
@@ -91,12 +149,11 @@ class RAMFMessageTest {
             val exception = assertThrows<RAMFException> {
                 StubRAMFMessage(
                     stubRecipientAddress,
-                    stubMessageId,
-                    stubCreationTimeUtc,
-                    longTtl,
                     stubPayload,
                     stubSenderCertificate,
-                    setOf()
+                    stubMessageId,
+                    stubCreationTimeUtc,
+                    longTtl
                 )
             }
 
@@ -107,6 +164,34 @@ class RAMFMessageTest {
         }
 
         @Test
+        fun `TTL should be honored if set`() {
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
+                stubMessageId,
+                stubCreationTimeUtc,
+                stubTtl
+            )
+
+            assertEquals(stubTtl, message.ttl)
+        }
+
+        @Test
+        fun `TTL should default to 5 minutes if unset`() {
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
+                stubMessageId,
+                stubCreationTimeUtc
+            )
+
+            val secondsIn5Min = 5 * 60
+            assertEquals(secondsIn5Min, message.ttl)
+        }
+
+        @Test
         fun `Payload should not span more than 8 MiB`() {
             val octetsIn8Mib = 8388608
             val longPayloadLength = octetsIn8Mib + 1
@@ -114,12 +199,10 @@ class RAMFMessageTest {
             val exception = assertThrows<RAMFException> {
                 StubRAMFMessage(
                     stubRecipientAddress,
-                    stubMessageId,
-                    stubCreationTimeUtc,
-                    stubTtl,
                     longPayload,
                     stubSenderCertificate,
-                    setOf()
+                    stubMessageId,
+                    stubCreationTimeUtc
                 )
             }
 
@@ -127,6 +210,34 @@ class RAMFMessageTest {
                 "Payload cannot span more than $octetsIn8Mib octets (got $longPayloadLength)",
                 exception.message
             )
+        }
+
+        @Test
+        fun `Sender certificate chain should be honored if set`() {
+            val chain = setOf(stubSenderCertificate)
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
+                stubMessageId,
+                stubCreationTimeUtc,
+                senderCertificateChain = chain
+            )
+
+            assertEquals(chain, message.senderCertificateChain)
+        }
+
+        @Test
+        fun `Sender certificate chain should default to an empty set if unset`() {
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
+                stubMessageId,
+                stubCreationTimeUtc
+            )
+
+            assertEquals(0, message.senderCertificateChain.size)
         }
     }
 
@@ -140,11 +251,11 @@ class RAMFMessageTest {
             )
             val message = StubRAMFMessage(
                 stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate,
                 stubMessageId,
                 stubCreationTimeUtc,
                 stubTtl,
-                stubPayload,
-                stubSenderCertificate,
                 setOf(stubCaCertificate)
             )
 
