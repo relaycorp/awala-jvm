@@ -137,7 +137,8 @@ class Sign {
                 val signerInfo = cmsSignedData.signerInfos.first()
 
                 val cmsContentTypeAttrOid = "1.2.840.113549.1.9.3"
-                val contentTypeAttrs = signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsContentTypeAttrOid))
+                val contentTypeAttrs =
+                    signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsContentTypeAttrOid))
                 assertEquals(1, contentTypeAttrs.size())
                 val contentTypeAttr = contentTypeAttrs.get(0) as Attribute
                 assertEquals(1, contentTypeAttr.attributeValues.size)
@@ -153,7 +154,8 @@ class Sign {
 
                 val signerInfo = cmsSignedData.signerInfos.first()
 
-                val digestAttrs = signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsDigestAttributeOid))
+                val digestAttrs =
+                    signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsDigestAttributeOid))
                 assertEquals(1, digestAttrs.size())
                 val digestAttr = digestAttrs.get(0) as Attribute
                 assertEquals(1, digestAttr.attributeValues.size)
@@ -174,14 +176,20 @@ class Sign {
 
             val cmsSignedData = parseCmsSignedData(serialization)
 
-            val attachedCerts = (cmsSignedData.certificates as CollectionStore).asSequence().toList()
+            val attachedCerts =
+                (cmsSignedData.certificates as CollectionStore).asSequence().toList()
             assertEquals(1, attachedCerts.size)
             assertEquals(stubCertificate.certificateHolder, attachedCerts[0])
         }
 
         @Test
         fun `CA certificate chain should optionally be attached`() {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate, setOf(anotherStubCertificate))
+            val serialization = sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate,
+                setOf(anotherStubCertificate)
+            )
 
             val cmsSignedData = parseCmsSignedData(serialization)
 
@@ -222,7 +230,8 @@ class Sign {
         @ParameterizedTest(name = "{0} should be honored if explicitly set")
         @EnumSource
         fun `Hashing algorithm should be customizable`(algo: HashingAlgorithm) {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate, hashingAlgorithm = algo)
+            val serialization =
+                sign(stubPlaintext, stubKeyPair.private, stubCertificate, hashingAlgorithm = algo)
 
             val cmsSignedData = parseCmsSignedData(serialization)
 

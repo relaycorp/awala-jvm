@@ -111,9 +111,10 @@ private fun getSignerInfoFromSignedData(signedData: CMSSignedData): SignerInform
         throw SignedDataException("Signed plaintext should be encapsulated")
     }
 
-    if (signedData.signerInfos.size() != 1) {
+    val signersCount = signedData.signerInfos.size()
+    if (signersCount != 1) {
         throw SignedDataException(
-            "SignedData should contain exactly one SignerInfo (got ${signedData.signerInfos.size()})"
+            "SignedData should contain exactly one SignerInfo (got $signersCount)"
         )
     }
     return signedData.signerInfos.first()

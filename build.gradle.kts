@@ -157,8 +157,7 @@ publishing {
 
 spotless {
     kotlin {
-        // optionally takes a version
-        ktlint()
+        ktlint("0.36.0").userData(mapOf("max_line_length" to "100"))
     }
     kotlinGradle {
         ktlint()

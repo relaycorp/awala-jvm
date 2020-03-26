@@ -98,17 +98,21 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
                     ?: throw CertificateException(
                         "Issuer certificate should have basic constraints extension"
                     )
-            val issuerBasicConstraints = BasicConstraints.getInstance(issuerBasicConstraintsExtension.parsedValue)
+            val issuerBasicConstraints =
+                BasicConstraints.getInstance(issuerBasicConstraintsExtension.parsedValue)
             if (!issuerBasicConstraints.isCA) {
                 throw CertificateException("Issuer certificate should be marked as CA")
             }
         }
 
         private fun makeSigner(issuerPrivateKey: PrivateKey): ContentSigner {
-            val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
+            val signatureAlgorithm =
+                DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
             val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-            val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
-            val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
+            val privateKeyParam: AsymmetricKeyParameter =
+                PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
+            val contentSignerBuilder =
+                BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
             return contentSignerBuilder.build(privateKeyParam)
         }
 
