@@ -12,8 +12,9 @@ internal class StubRAMFMessage(
     creationTime: ZonedDateTime,
     ttl: Int,
     payload: ByteArray,
-    senderCertificate: Certificate
-) : RAMFMessage(recipientAddress, messageId, creationTime, ttl, payload, senderCertificate) {
+    senderCertificate: Certificate,
+    senderCertificateChain: Set<Certificate>
+) : RAMFMessage(recipientAddress, messageId, creationTime, ttl, payload, senderCertificate, senderCertificateChain) {
     override fun serialize(senderPrivateKey: PrivateKey): ByteArray {
         return STUB_SERIALIZER.serialize(this, senderPrivateKey)
     }

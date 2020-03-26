@@ -57,7 +57,12 @@ internal class RAMFSerializer(
         output.write(concreteMessageVersion.toInt())
 
         val fieldSetSerialized = serializeMessage(message)
-        val signedData = sign(fieldSetSerialized, signerPrivateKey, message.senderCertificate)
+        val signedData = sign(
+            fieldSetSerialized,
+            signerPrivateKey,
+            message.senderCertificate,
+            message.senderCertificateChain
+        )
         output.write(signedData)
 
         return output.toByteArray()
@@ -79,7 +84,10 @@ internal class RAMFSerializer(
         codeLength += 1
 
         val creationTimeUtc = message.creationTime.withZoneSameInstant(UTC_ZONE_ID)
-        codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(reverseOS, false)
+        codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(
+            reverseOS,
+            false
+        )
         // write tag: CONTEXT_CLASS, PRIMITIVE, 2
         reverseOS.write(0x82)
         codeLength += 1
@@ -102,7 +110,7 @@ internal class RAMFSerializer(
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serialization: ByteArray,
-        messageClazz: (String, String, ZonedDateTime, Int, ByteArray, Certificate) -> T
+        messageClazz: (String, String, ZonedDateTime, Int, ByteArray, Certificate, Set<Certificate>) -> T
     ): T {
         val serializationStream = ByteArrayInputStream(serialization)
         val serializationSize = serializationStream.available()
@@ -143,7 +151,8 @@ internal class RAMFSerializer(
             fields.creationDate,
             fields.ttl,
             fields.payload,
-            cmsSignedDataResult.signerCertificate
+            cmsSignedDataResult.signerCertificate,
+            cmsSignedDataResult.attachedCertificates
         )
     }
 

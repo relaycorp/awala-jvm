@@ -1,14 +1,13 @@
 package tech.relaycorp.relaynet.ramf
 
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 class RAMFMessageTest {
     private val stubRecipientAddress = "04334"
@@ -18,11 +17,9 @@ class RAMFMessageTest {
     private val stubPayload = "payload".toByteArray()
 
     private val stubSenderKeyPair = generateRSAKeyPair()
-    private val stubSenderCertificate = Certificate.issue(
-        "the subject",
-        stubSenderKeyPair.private,
+    private val stubSenderCertificate = issueStubCertificate(
         stubSenderKeyPair.public,
-        LocalDateTime.now().plusDays(1)
+        stubSenderKeyPair.private
     )
 
     @Nested
@@ -37,7 +34,8 @@ class RAMFMessageTest {
                     stubCreationTimeUtc,
                     stubTtl,
                     stubPayload,
-                    stubSenderCertificate
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -57,7 +55,8 @@ class RAMFMessageTest {
                     stubCreationTimeUtc,
                     stubTtl,
                     stubPayload,
-                    stubSenderCertificate
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -77,7 +76,8 @@ class RAMFMessageTest {
                     stubCreationTimeUtc,
                     negativeTtl,
                     stubPayload,
-                    stubSenderCertificate
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -95,7 +95,8 @@ class RAMFMessageTest {
                     stubCreationTimeUtc,
                     longTtl,
                     stubPayload,
-                    stubSenderCertificate
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -117,7 +118,8 @@ class RAMFMessageTest {
                     stubCreationTimeUtc,
                     stubTtl,
                     longPayload,
-                    stubSenderCertificate
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -132,13 +134,18 @@ class RAMFMessageTest {
     inner class Serialize {
         @Test
         fun `Serialization should be delegated to serializer`() {
+            val stubCaCertificate = issueStubCertificate(
+                stubSenderKeyPair.public,
+                stubSenderKeyPair.private
+            )
             val message = StubRAMFMessage(
                 stubRecipientAddress,
                 stubMessageId,
                 stubCreationTimeUtc,
                 stubTtl,
                 stubPayload,
-                stubSenderCertificate
+                stubSenderCertificate,
+                setOf(stubCaCertificate)
             )
 
             val serialization = STUB_SERIALIZER.serialize(message, stubSenderKeyPair.private)
@@ -154,6 +161,10 @@ class RAMFMessageTest {
             assertEquals(message.ttl, messageDeserialized.ttl)
             assertEquals(message.payload.asList(), messageDeserialized.payload.asList())
             assertEquals(message.senderCertificate, messageDeserialized.senderCertificate)
+            assertEquals(
+                setOf(message.senderCertificate, stubCaCertificate),
+                messageDeserialized.senderCertificateChain
+            )
         }
     }
 }

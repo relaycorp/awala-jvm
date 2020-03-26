@@ -17,7 +17,8 @@ internal abstract class RAMFMessage(
     val creationTime: ZonedDateTime,
     val ttl: Int,
     val payload: ByteArray,
-    val senderCertificate: Certificate
+    val senderCertificate: Certificate,
+    val senderCertificateChain: Set<Certificate>
 ) {
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
