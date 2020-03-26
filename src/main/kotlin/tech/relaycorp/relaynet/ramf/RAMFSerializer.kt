@@ -110,7 +110,7 @@ internal class RAMFSerializer(
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serialization: ByteArray,
-        messageClazz: (String, String, ZonedDateTime, Int, ByteArray, Certificate, Set<Certificate>) -> T
+        messageClazz: (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
     ): T {
         val serializationStream = ByteArrayInputStream(serialization)
         val serializationSize = serializationStream.available()
@@ -147,11 +147,11 @@ internal class RAMFSerializer(
         val fields = deserializeFields(cmsSignedDataResult.plaintext)
         return messageClazz(
             fields.recipientAddress,
+            fields.payload,
+            cmsSignedDataResult.signerCertificate,
             fields.messageId,
             fields.creationDate,
             fields.ttl,
-            fields.payload,
-            cmsSignedDataResult.signerCertificate,
             cmsSignedDataResult.attachedCertificates
         )
     }
