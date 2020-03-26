@@ -146,7 +146,9 @@ publishing {
     repositories {
         maven {
             // publish=1 automatically publishes the version
-            url = uri("https://api.bintray.com/maven/relaycorp/maven/tech.relaycorp.relaynet/;publish=1")
+            url = uri(
+                "https://api.bintray.com/maven/relaycorp/maven/tech.relaycorp.relaynet/;publish=1"
+            )
             credentials {
                 username = System.getenv("BINTRAY_USERNAME")
                 password = System.getenv("BINTRAY_KEY")
@@ -156,10 +158,15 @@ publishing {
 }
 
 spotless {
+    val ktlintUserData = mapOf(
+        "max_line_length" to "100",
+        "disabled_rules" to "import-ordering"
+    )
+
     kotlin {
-        ktlint("0.36.0").userData(mapOf("max_line_length" to "100"))
+        ktlint("0.36.0").userData(ktlintUserData)
     }
     kotlinGradle {
-        ktlint()
+        ktlint().userData(ktlintUserData)
     }
 }
