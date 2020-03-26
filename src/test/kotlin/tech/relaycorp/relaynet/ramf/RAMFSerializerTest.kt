@@ -150,7 +150,7 @@ class RAMFSerializerTest {
                 }
 
                 @Test
-                fun `Creation time should be converted to UTC when provided in different timezone`() {
+                fun `Creation time should be converted to UTC when provided in different TZ`() {
                     val nowTimezoneUnaware = LocalDateTime.now()
                     val message = StubRAMFMessage(
                         stubMessage.recipientAddress,
@@ -291,7 +291,8 @@ class RAMFSerializerTest {
                 }
 
                 assertEquals(
-                    "Message type should be ${STUB_SERIALIZER.concreteMessageType} (got $invalidMessageType)",
+                    "Message type should be ${STUB_SERIALIZER.concreteMessageType} " +
+                        "(got $invalidMessageType)",
                     exception.message
                 )
             }
@@ -312,7 +313,8 @@ class RAMFSerializerTest {
                 }
 
                 assertEquals(
-                    "Message version should be ${STUB_SERIALIZER.concreteMessageVersion} (got $invalidMessageVersion)",
+                    "Message version should be ${STUB_SERIALIZER.concreteMessageVersion} " +
+                        "(got $invalidMessageVersion)",
                     exception.message
                 )
             }

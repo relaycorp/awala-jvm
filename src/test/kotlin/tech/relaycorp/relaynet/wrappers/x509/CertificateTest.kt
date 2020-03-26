@@ -226,10 +226,14 @@ class CertificateTest {
                     issuerDistinguishedNameBuilder.build(),
                     SubjectPublicKeyInfo.getInstance(issuerKeyPair.public.encoded)
                 )
-                val signatureAlgorithm = DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption")
-                val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-                val privateKeyParam: AsymmetricKeyParameter = PrivateKeyFactory.createKey(issuerKeyPair.private.encoded)
-                val contentSignerBuilder = BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
+                val signatureAlgorithm =
+                    DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption")
+                val digestAlgorithm =
+                    DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
+                val privateKeyParam: AsymmetricKeyParameter =
+                    PrivateKeyFactory.createKey(issuerKeyPair.private.encoded)
+                val contentSignerBuilder =
+                    BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
                 val signerBuilder = contentSignerBuilder.build(privateKeyParam)
                 val issuerCertificate = Certificate(builder.build(signerBuilder))
 
@@ -243,7 +247,10 @@ class CertificateTest {
                     )
                 }
 
-                assertEquals("Issuer certificate should have basic constraints extension", exception.message)
+                assertEquals(
+                    "Issuer certificate should have basic constraints extension",
+                    exception.message
+                )
             }
 
             @Test
@@ -284,7 +291,8 @@ class CertificateTest {
                 )
 
                 assert(certificate.certificateHolder.hasExtensions())
-                val extension = certificate.certificateHolder.getExtension(ASN1ObjectIdentifier(extensionOid))
+                val extension =
+                    certificate.certificateHolder.getExtension(ASN1ObjectIdentifier(extensionOid))
                 assert(extension is Extension)
                 assert(extension.isCritical)
             }
@@ -298,7 +306,8 @@ class CertificateTest {
                     stubValidityEndDate
                 )
 
-                val basicConstraints = BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
+                val basicConstraints =
+                    BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
                 assertFalse(basicConstraints.isCA)
             }
 
@@ -386,7 +395,10 @@ class CertificateTest {
                     )
                 }
 
-                assertEquals("pathLenConstraint should be between 0 and 2 (got 3)", exception.message)
+                assertEquals(
+                    "pathLenConstraint should be between 0 and 2 (got 3)",
+                    exception.message
+                )
             }
 
             @Test
@@ -401,7 +413,10 @@ class CertificateTest {
                     )
                 }
 
-                assertEquals("pathLenConstraint should be between 0 and 2 (got -1)", exception.message)
+                assertEquals(
+                    "pathLenConstraint should be between 0 and 2 (got -1)",
+                    exception.message
+                )
             }
         }
 

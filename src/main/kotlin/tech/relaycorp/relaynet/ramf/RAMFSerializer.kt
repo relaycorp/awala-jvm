@@ -110,7 +110,8 @@ internal class RAMFSerializer(
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serialization: ByteArray,
-        messageClazz: (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
+        messageClazz:
+            (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
     ): T {
         val serializationStream = ByteArrayInputStream(serialization)
         val serializationSize = serializationStream.available()
