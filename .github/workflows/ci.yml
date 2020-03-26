@@ -39,7 +39,7 @@ jobs:
         with:
           node-version: 12
       - name: Install Node.js dependencies
-        run: npm ci
+        run: npm install
       - name: Release
         run: npx semantic-release
         env:
