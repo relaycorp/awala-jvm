@@ -19,9 +19,9 @@ internal abstract class RAMFMessage(
     val payload: ByteArray,
     val senderCertificate: Certificate,
     messageId: String?,
-    creationTime: ZonedDateTime? = null, // TODO: Rename to creationDate
-    ttl: Int? = null,
-    senderCertificateChain: Set<Certificate>? = null
+    creationTime: ZonedDateTime?, // TODO: Rename to creationDate
+    ttl: Int?,
+    senderCertificateChain: Set<Certificate>?
 ) {
     val messageId = messageId ?: UUID.randomUUID().toString()
     val creationTime: ZonedDateTime = creationTime ?: ZonedDateTime.now(ZoneId.of("UTC"))
