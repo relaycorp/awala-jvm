@@ -34,9 +34,7 @@ class RAMFMessageTest {
                 StubRAMFMessage(
                     longRecipientAddress,
                     stubPayload,
-                    stubSenderCertificate,
-                    stubMessageId,
-                    stubCreationTimeUtc
+                    stubSenderCertificate
                 )
             }
 
@@ -54,8 +52,7 @@ class RAMFMessageTest {
                     stubRecipientAddress,
                     stubPayload,
                     stubSenderCertificate,
-                    longMessageId,
-                    stubCreationTimeUtc
+                    longMessageId
                 )
             }
 
@@ -101,8 +98,7 @@ class RAMFMessageTest {
                 stubRecipientAddress,
                 stubPayload,
                 stubSenderCertificate,
-                stubMessageId,
-                stubCreationTimeUtc
+                creationTime = stubCreationTimeUtc
             )
 
             assertEquals(stubCreationTimeUtc, message.creationTime)
@@ -113,8 +109,7 @@ class RAMFMessageTest {
             val message = StubRAMFMessage(
                 stubRecipientAddress,
                 stubPayload,
-                stubSenderCertificate,
-                stubMessageId
+                stubSenderCertificate
             )
 
             assertEquals("UTC", message.creationTime.zone.id)
@@ -133,9 +128,7 @@ class RAMFMessageTest {
                     stubRecipientAddress,
                     stubPayload,
                     stubSenderCertificate,
-                    stubMessageId,
-                    stubCreationTimeUtc,
-                    negativeTtl
+                    ttl = negativeTtl
                 )
             }
 
@@ -151,9 +144,7 @@ class RAMFMessageTest {
                     stubRecipientAddress,
                     stubPayload,
                     stubSenderCertificate,
-                    stubMessageId,
-                    stubCreationTimeUtc,
-                    longTtl
+                    ttl = longTtl
                 )
             }
 
@@ -169,9 +160,7 @@ class RAMFMessageTest {
                 stubRecipientAddress,
                 stubPayload,
                 stubSenderCertificate,
-                stubMessageId,
-                stubCreationTimeUtc,
-                stubTtl
+                ttl = stubTtl
             )
 
             assertEquals(stubTtl, message.ttl)
@@ -182,9 +171,7 @@ class RAMFMessageTest {
             val message = StubRAMFMessage(
                 stubRecipientAddress,
                 stubPayload,
-                stubSenderCertificate,
-                stubMessageId,
-                stubCreationTimeUtc
+                stubSenderCertificate
             )
 
             val secondsIn5Min = 5 * 60
@@ -200,9 +187,7 @@ class RAMFMessageTest {
                 StubRAMFMessage(
                     stubRecipientAddress,
                     longPayload,
-                    stubSenderCertificate,
-                    stubMessageId,
-                    stubCreationTimeUtc
+                    stubSenderCertificate
                 )
             }
 
@@ -219,8 +204,6 @@ class RAMFMessageTest {
                 stubRecipientAddress,
                 stubPayload,
                 stubSenderCertificate,
-                stubMessageId,
-                stubCreationTimeUtc,
                 senderCertificateChain = chain
             )
 
@@ -232,9 +215,7 @@ class RAMFMessageTest {
             val message = StubRAMFMessage(
                 stubRecipientAddress,
                 stubPayload,
-                stubSenderCertificate,
-                stubMessageId,
-                stubCreationTimeUtc
+                stubSenderCertificate
             )
 
             assertEquals(0, message.senderCertificateChain.size)
