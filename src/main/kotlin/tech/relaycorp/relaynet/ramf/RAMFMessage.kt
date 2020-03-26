@@ -1,6 +1,8 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.security.PrivateKey
 import java.time.ZonedDateTime
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1023
 private const val MAX_MESSAGE_ID_LENGTH = 255
@@ -9,12 +11,14 @@ private const val MAX_PAYLOAD_LENGTH = 8388608
 
 // This class should be abstract instead of open, but I couldn't find a way to make it work with
 // the companion object
-internal open class RAMFMessage(
+internal abstract class RAMFMessage(
     val recipientAddress: String,
     val messageId: String,
     val creationTime: ZonedDateTime,
     val ttl: Int,
-    val payload: ByteArray
+    val payload: ByteArray,
+    val senderCertificate: Certificate,
+    val senderCertificateChain: Set<Certificate>
 ) {
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
@@ -42,9 +46,5 @@ internal open class RAMFMessage(
         }
     }
 
-    fun serialize(): ByteArray {
-        return serialize(this)
-    }
-
-    companion object : RAMFSerializer<RAMFMessage>(0, 0, ::RAMFMessage)
+    abstract fun serialize(senderPrivateKey: PrivateKey): ByteArray
 }

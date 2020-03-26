@@ -10,8 +10,8 @@ import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.nio.charset.Charset
+import java.security.PrivateKey
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -23,31 +23,53 @@ import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
+import tech.relaycorp.relaynet.cms.SignedDataException
+import tech.relaycorp.relaynet.cms.sign
+import tech.relaycorp.relaynet.cms.verifySignature
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private const val OCTETS_IN_9_MIB = 9437184
 
 private val DER_SEQUENCE_TAG = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
+private val BER_DATETIME_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
 private val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
 
-internal open class RAMFSerializer<T : RAMFMessage>(
+@Suppress("ArrayInDataClass")
+private data class FieldSet(
+    val recipientAddress: String,
+    val messageId: String,
+    val creationDate: ZonedDateTime,
+    val ttl: Int,
+    val payload: ByteArray
+)
+
+internal class RAMFSerializer(
     val concreteMessageType: Byte,
-    val concreteMessageVersion: Byte,
-    private val messageClazz: (String, String, ZonedDateTime, Int, ByteArray) -> T
+    val concreteMessageVersion: Byte
 ) {
-    fun serialize(message: T): ByteArray {
+    fun serialize(message: RAMFMessage, signerPrivateKey: PrivateKey): ByteArray {
         val output = ByteArrayOutputStream()
 
         output.write("Relaynet".toByteArray())
         output.write(concreteMessageType.toInt())
         output.write(concreteMessageVersion.toInt())
-        output.write(serializeMessage(message))
+
+        val fieldSetSerialized = serializeMessage(message)
+        val signedData = sign(
+            fieldSetSerialized,
+            signerPrivateKey,
+            message.senderCertificate,
+            message.senderCertificateChain
+        )
+        output.write(signedData)
 
         return output.toByteArray()
     }
 
     @Throws(IOException::class)
-    private fun serializeMessage(message: T): ByteArray {
+    private fun serializeMessage(message: RAMFMessage): ByteArray {
         val reverseOS = ReverseByteArrayOutputStream(1000, true)
         var codeLength = 0
 
@@ -62,7 +84,10 @@ internal open class RAMFSerializer<T : RAMFMessage>(
         codeLength += 1
 
         val creationTimeUtc = message.creationTime.withZoneSameInstant(UTC_ZONE_ID)
-        codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(reverseOS, false)
+        codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(
+            reverseOS,
+            false
+        )
         // write tag: CONTEXT_CLASS, PRIMITIVE, 2
         reverseOS.write(0x82)
         codeLength += 1
@@ -82,8 +107,11 @@ internal open class RAMFSerializer<T : RAMFMessage>(
         return reverseOS.array
     }
 
-    @Throws(RAMFException::class)
-    fun deserialize(serialization: ByteArray): T {
+    @Throws(RAMFException::class, SignedDataException::class)
+    fun <T> deserialize(
+        serialization: ByteArray,
+        messageClazz: (String, String, ZonedDateTime, Int, ByteArray, Certificate, Set<Certificate>) -> T
+    ): T {
         val serializationStream = ByteArrayInputStream(serialization)
         val serializationSize = serializationStream.available()
 
@@ -114,11 +142,22 @@ internal open class RAMFSerializer<T : RAMFMessage>(
                 "Message version should be $concreteMessageVersion (got $messageVersion)"
             )
         }
-        return deserializeFields(serializationStream)
+
+        val cmsSignedDataResult = verifySignature(serializationStream.readBytes())
+        val fields = deserializeFields(cmsSignedDataResult.plaintext)
+        return messageClazz(
+            fields.recipientAddress,
+            fields.messageId,
+            fields.creationDate,
+            fields.ttl,
+            fields.payload,
+            cmsSignedDataResult.signerCertificate,
+            cmsSignedDataResult.attachedCertificates
+        )
     }
 
     @Throws(RAMFException::class)
-    private fun deserializeFields(serialization: InputStream): T {
+    private fun deserializeFields(serialization: ByteArray): FieldSet {
         val asn1InputStream = ASN1InputStream(serialization)
         val asn1Value = try {
             asn1InputStream.readObject()
@@ -157,7 +196,7 @@ internal open class RAMFSerializer<T : RAMFMessage>(
 
         val payloadDer = DEROctetString.getInstance(fields[4] as ASN1TaggedObject, false)
 
-        return messageClazz(
+        return FieldSet(
             recipientAddress.string,
             messageId.string,
             ZonedDateTime.of(creationTime, UTC_ZONE_ID),
@@ -166,6 +205,3 @@ internal open class RAMFSerializer<T : RAMFMessage>(
         )
     }
 }
-
-val BER_DATETIME_FORMATTER: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("yyyyMMddHHmmss")

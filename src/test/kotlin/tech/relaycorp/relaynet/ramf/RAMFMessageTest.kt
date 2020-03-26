@@ -1,17 +1,26 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.issueStubCertificate
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class RAMFMessageTest {
-    val stubRecipientAddress = "04334"
-    val stubMessageId = "message-id"
-    val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now()
-    val stubTtl = 1
-    val stubPayload = "payload".toByteArray()
+    private val stubRecipientAddress = "04334"
+    private val stubMessageId = "message-id"
+    private val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now()
+    private val stubTtl = 1
+    private val stubPayload = "payload".toByteArray()
+
+    private val stubSenderKeyPair = generateRSAKeyPair()
+    private val stubSenderCertificate = issueStubCertificate(
+        stubSenderKeyPair.public,
+        stubSenderKeyPair.private
+    )
 
     @Nested
     inner class Constructor {
@@ -24,7 +33,9 @@ class RAMFMessageTest {
                     stubMessageId,
                     stubCreationTimeUtc,
                     stubTtl,
-                    stubPayload
+                    stubPayload,
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -43,7 +54,9 @@ class RAMFMessageTest {
                     longMessageId,
                     stubCreationTimeUtc,
                     stubTtl,
-                    stubPayload
+                    stubPayload,
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -62,7 +75,9 @@ class RAMFMessageTest {
                     stubMessageId,
                     stubCreationTimeUtc,
                     negativeTtl,
-                    stubPayload
+                    stubPayload,
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -79,7 +94,9 @@ class RAMFMessageTest {
                     stubMessageId,
                     stubCreationTimeUtc,
                     longTtl,
-                    stubPayload
+                    stubPayload,
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -100,7 +117,9 @@ class RAMFMessageTest {
                     stubMessageId,
                     stubCreationTimeUtc,
                     stubTtl,
-                    longPayload
+                    longPayload,
+                    stubSenderCertificate,
+                    setOf()
                 )
             }
 
@@ -114,14 +133,38 @@ class RAMFMessageTest {
     @Nested
     inner class Serialize {
         @Test
-        fun `Serialization should use format signature specified in companion object`() {
-            val message =
-                StubRAMFMessage(stubRecipientAddress, stubMessageId, stubCreationTimeUtc, stubTtl, stubPayload)
+        fun `Serialization should be delegated to serializer`() {
+            val stubCaCertificate = issueStubCertificate(
+                stubSenderKeyPair.public,
+                stubSenderKeyPair.private
+            )
+            val message = StubRAMFMessage(
+                stubRecipientAddress,
+                stubMessageId,
+                stubCreationTimeUtc,
+                stubTtl,
+                stubPayload,
+                stubSenderCertificate,
+                setOf(stubCaCertificate)
+            )
 
-            val serialization = message.serialize()
+            val serialization = STUB_SERIALIZER.serialize(message, stubSenderKeyPair.private)
 
-            val expectedSerialization = StubRAMFMessage.serialize(message)
-            assert(serialization contentEquals expectedSerialization)
+            val messageDeserialized = StubRAMFMessage.deserialize(serialization)
+            // TODO: Implement RAMFMessage.equals()
+            assertEquals(message.recipientAddress, messageDeserialized.recipientAddress)
+            assertEquals(message.messageId, messageDeserialized.messageId)
+            assertEquals(
+                message.creationTime.withNano(0).withZoneSameLocal(ZoneId.of("UTC")),
+                messageDeserialized.creationTime
+            )
+            assertEquals(message.ttl, messageDeserialized.ttl)
+            assertEquals(message.payload.asList(), messageDeserialized.payload.asList())
+            assertEquals(message.senderCertificate, messageDeserialized.senderCertificate)
+            assertEquals(
+                setOf(message.senderCertificate, stubCaCertificate),
+                messageDeserialized.senderCertificateChain
+            )
         }
     }
 }
