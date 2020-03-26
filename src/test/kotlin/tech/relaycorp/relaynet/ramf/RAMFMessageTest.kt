@@ -122,7 +122,7 @@ class RAMFMessageTest {
             val now = ZonedDateTime.now(ZoneId.of("UTC"))
             val secondsAgo = now.minusSeconds(5)
             assertTrue(secondsAgo < message.creationTime)
-            assertTrue(message.creationTime < now)
+            assertTrue(message.creationTime <= now)
         }
 
         @Test
