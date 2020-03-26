@@ -31,12 +31,14 @@ internal abstract class RAMFMessage(
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
             throw RAMFException(
-                "Recipient address cannot span more than $MAX_RECIPIENT_ADDRESS_LENGTH octets (got ${recipientAddress.length})"
+                "Recipient address cannot span more than $MAX_RECIPIENT_ADDRESS_LENGTH octets " +
+                    "(got ${recipientAddress.length})"
             )
         }
         if (MAX_MESSAGE_ID_LENGTH < this.messageId.length) {
             throw RAMFException(
-                "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets (got ${this.messageId.length})"
+                "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets " +
+                    "(got ${this.messageId.length})"
             )
         }
         if (this.ttl < 0) {
