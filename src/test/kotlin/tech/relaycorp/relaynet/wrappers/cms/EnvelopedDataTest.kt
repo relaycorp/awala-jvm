@@ -5,12 +5,14 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.RSAESOAEPparams
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier
 import org.bouncycastle.cms.CMSEnvelopedData
+import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.SymmetricEncryption
@@ -149,12 +151,12 @@ class SessionlessEnvelopedDataTest {
                 val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
 
                 val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
-                val recipientInfo = recipients.iterator().next() as KeyTransRecipientInformation
+                val recipientInfo = recipients.first() as KeyTransRecipientInformation
                 val recipient = JceKeyTransEnvelopedRecipient(KEYPAIR.private).setProvider(
                     BouncyCastleProvider()
                 )
-
-                assertEquals(PLAINTEXT.asList(), recipientInfo.getContent(recipient).asList())
+                val plaintext = recipientInfo.getContent(recipient)
+                assertEquals(PLAINTEXT.asList(), plaintext.asList())
             }
 
             @Test
@@ -183,6 +185,37 @@ class SessionlessEnvelopedDataTest {
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
+        }
+    }
+
+    @Nested
+    inner class Decrypt {
+        @Test
+        fun `Decryption with the right key should succeed`() {
+            val envelopedData = SessionlessEnvelopedData.encrypt(
+                PLAINTEXT,
+                CERTIFICATE
+            )
+
+            val plaintext = envelopedData.decrypt(KEYPAIR.private)
+
+            assertEquals(PLAINTEXT.asList(), plaintext.asList())
+        }
+
+        @Test
+        fun `Decryption with the wrong key should fail`() {
+            val envelopedData = SessionlessEnvelopedData.encrypt(
+                PLAINTEXT,
+                CERTIFICATE
+            )
+            val anotherKeyPair = generateRSAKeyPair()
+
+            val exception = assertThrows<EnvelopedDataException> {
+                envelopedData.decrypt(anotherKeyPair.private)
+            }
+
+            assertEquals("Could not decrypt value", exception.message)
+            assertTrue(exception.cause is CMSException)
         }
     }
 }

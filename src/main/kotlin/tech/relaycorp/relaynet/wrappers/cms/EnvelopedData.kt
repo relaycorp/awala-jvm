@@ -5,13 +5,17 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cms.CMSAlgorithm
 import org.bouncycastle.cms.CMSEnvelopedData
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator
+import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
+import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.security.PrivateKey
 import java.security.spec.MGF1ParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
@@ -26,6 +30,8 @@ sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
     fun serialize(): ByteArray {
         return bcEnvelopedData.encoded
     }
+
+    abstract fun decrypt(privateKey: PrivateKey): ByteArray
 }
 
 class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedData(bcEnvelopedData) {
@@ -73,6 +79,19 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
             return SessionlessEnvelopedData(
                 bcEnvelopedData
             )
+        }
+    }
+
+    override fun decrypt(privateKey: PrivateKey): ByteArray {
+        val recipients = bcEnvelopedData.recipientInfos.recipients
+        val recipientInfo = recipients.first() as KeyTransRecipientInformation
+        val recipient = JceKeyTransEnvelopedRecipient(privateKey).setProvider(
+            BouncyCastleProvider()
+        )
+        return try {
+            recipientInfo.getContent(recipient)
+        } catch (exception: CMSException) {
+            throw EnvelopedDataException("Could not decrypt value", exception)
         }
     }
 }
