@@ -17,7 +17,7 @@ sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
             val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
 
             val x509Certificate = JcaX509CertificateConverter()
-                .getCertificate( recipientCertificate.certificateHolder )
+                .getCertificate(recipientCertificate.certificateHolder)
             val transKeyGen =
                 JceKeyTransRecipientInfoGenerator(x509Certificate)
             cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
