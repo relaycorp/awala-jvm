@@ -1,5 +1,12 @@
 package tech.relaycorp.relaynet.ramf
 
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.issueStubCertificate
+import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
+import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -7,10 +14,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.issueStubCertificate
-import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class RAMFMessageTest {
     private val stubRecipientAddress = "04334"
@@ -243,7 +246,7 @@ class RAMFMessageTest {
             val serialization = STUB_SERIALIZER.serialize(message, stubSenderKeyPair.private)
 
             val messageDeserialized = StubRAMFMessage.deserialize(serialization)
-            // TODO: Implement RAMFMessage.equals()
+            // TODO: Implement RAMFMessage.equals() and use it here
             assertEquals(message.recipientAddress, messageDeserialized.recipientAddress)
             assertEquals(message.messageId, messageDeserialized.messageId)
             assertEquals(
@@ -257,6 +260,47 @@ class RAMFMessageTest {
                 setOf(message.senderCertificate, stubCaCertificate),
                 messageDeserialized.senderCertificateChain
             )
+        }
+
+        @Nested
+        inner class Hashing {
+            private val stubMessage = StubRAMFMessage(
+                stubRecipientAddress,
+                stubPayload,
+                stubSenderCertificate
+            )
+
+            @Test
+            fun `SHA-256 should be used by default`() {
+                val cmsSignedDataSerialized =
+                    skipFormatSignature(stubMessage.serialize(stubSenderKeyPair.private))
+
+                val cmsSignedData = parseCmsSignedData(cmsSignedDataSerialized)
+
+                assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
+                assertEquals(
+                    HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
+                    cmsSignedData.digestAlgorithmIDs.first().algorithm
+                )
+            }
+
+            @Test
+            fun `Hashing algorithm should be customizable`() {
+                val serialization = STUB_SERIALIZER.serialize(
+                    stubMessage,
+                    stubSenderKeyPair.private,
+                    hashingAlgorithm = HashingAlgorithm.SHA384
+                )
+                val signedDataSerialized = skipFormatSignature(serialization)
+
+                val signedData = parseCmsSignedData(signedDataSerialized)
+
+                assertEquals(1, signedData.digestAlgorithmIDs.size)
+                assertEquals(
+                    HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA384],
+                    signedData.digestAlgorithmIDs.first().algorithm
+                )
+            }
         }
     }
 }

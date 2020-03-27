@@ -1,8 +1,5 @@
 package tech.relaycorp.relaynet.wrappers.cms
 
-import java.security.MessageDigest
-import java.time.LocalDateTime
-import kotlin.test.assertEquals
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DEROctetString
@@ -27,6 +24,9 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.security.MessageDigest
+import java.time.LocalDateTime
+import kotlin.test.assertEquals
 
 val stubPlaintext = "The plaintext".toByteArray()
 val stubKeyPair = generateRSAKeyPair()
@@ -201,12 +201,6 @@ class Sign {
 
     @Nested
     inner class Hashing {
-        private val hashingAlgorithmsMap = mapOf(
-            HashingAlgorithm.SHA256 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.1"),
-            HashingAlgorithm.SHA384 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.2"),
-            HashingAlgorithm.SHA512 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.3")
-        )
-
         @Test
         fun `SHA-256 should be used by default`() {
             val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
@@ -215,27 +209,31 @@ class Sign {
 
             assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
             assertEquals(
-                hashingAlgorithmsMap[HashingAlgorithm.SHA256],
+                HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
                 cmsSignedData.digestAlgorithmIDs.first().algorithm
             )
 
             val signerInfo = cmsSignedData.signerInfos.first()
 
             assertEquals(
-                hashingAlgorithmsMap[HashingAlgorithm.SHA256],
+                HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
                 signerInfo.digestAlgorithmID.algorithm
             )
         }
 
         @ParameterizedTest(name = "{0} should be honored if explicitly set")
         @EnumSource
-        fun `Hashing algorithm should be customizable`(algo: HashingAlgorithm) {
-            val serialization =
-                sign(stubPlaintext, stubKeyPair.private, stubCertificate, hashingAlgorithm = algo)
+        fun `Hashing algorithm should be customizable`(algorithm: HashingAlgorithm) {
+            val serialization = sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate,
+                hashingAlgorithm = algorithm
+            )
 
             val cmsSignedData = parseCmsSignedData(serialization)
 
-            val hashingAlgorithmOid = hashingAlgorithmsMap[algo]
+            val hashingAlgorithmOid = HASHING_ALGORITHM_OIDS[algorithm]
 
             assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
             assertEquals(hashingAlgorithmOid, cmsSignedData.digestAlgorithmIDs.first().algorithm)
@@ -466,9 +464,4 @@ class VerifySignatureTest {
         assert(attachedCertificateHolders.contains(stubCertificate.certificateHolder))
         assert(attachedCertificateHolders.contains(anotherStubCertificate.certificateHolder))
     }
-}
-
-private fun parseCmsSignedData(serialization: ByteArray): CMSSignedData {
-    val contentInfo = ContentInfo.getInstance(parseDer(serialization))
-    return CMSSignedData(contentInfo)
 }

@@ -35,11 +35,12 @@ fun sign(
     signerPrivateKey: PrivateKey,
     signerCertificate: Certificate,
     caCertificates: Set<Certificate> = setOf(),
-    hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
+    hashingAlgorithm: HashingAlgorithm? = null
 ): ByteArray {
     val signedDataGenerator = CMSSignedDataGenerator()
 
-    val signerBuilder = JcaContentSignerBuilder(signatureAlgorithmMap[hashingAlgorithm])
+    val algorithm = hashingAlgorithm ?: HashingAlgorithm.SHA256
+    val signerBuilder = JcaContentSignerBuilder(signatureAlgorithmMap[algorithm])
     val contentSigner: ContentSigner = signerBuilder.build(signerPrivateKey)
     val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
         JcaDigestCalculatorProviderBuilder()
