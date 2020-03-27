@@ -1,7 +1,5 @@
-package tech.relaycorp.relaynet.cms
+package tech.relaycorp.relaynet.wrappers.cms
 
-import java.io.IOException
-import java.security.PrivateKey
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.cms.ContentInfo
 import org.bouncycastle.cert.X509CertificateHolder
@@ -22,6 +20,8 @@ import org.bouncycastle.util.CollectionStore
 import org.bouncycastle.util.Selector
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.io.IOException
+import java.security.PrivateKey
 
 private val signatureAlgorithmMap = mapOf(
     HashingAlgorithm.SHA256 to "SHA256withRSA",
@@ -35,11 +35,12 @@ fun sign(
     signerPrivateKey: PrivateKey,
     signerCertificate: Certificate,
     caCertificates: Set<Certificate> = setOf(),
-    hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
+    hashingAlgorithm: HashingAlgorithm? = null
 ): ByteArray {
     val signedDataGenerator = CMSSignedDataGenerator()
 
-    val signerBuilder = JcaContentSignerBuilder(signatureAlgorithmMap[hashingAlgorithm])
+    val algorithm = hashingAlgorithm ?: HashingAlgorithm.SHA256
+    val signerBuilder = JcaContentSignerBuilder(signatureAlgorithmMap[algorithm])
     val contentSigner: ContentSigner = signerBuilder.build(signerPrivateKey)
     val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
         JcaDigestCalculatorProviderBuilder()

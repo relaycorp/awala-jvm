@@ -7,6 +7,17 @@ import com.beanit.jasn1.ber.types.BerDateTime
 import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
+import org.bouncycastle.asn1.ASN1InputStream
+import org.bouncycastle.asn1.ASN1Integer
+import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.ASN1TaggedObject
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERVisibleString
+import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
+import tech.relaycorp.relaynet.wrappers.cms.sign
+import tech.relaycorp.relaynet.wrappers.cms.verifySignature
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -17,16 +28,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.ASN1Sequence
-import org.bouncycastle.asn1.ASN1TaggedObject
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERVisibleString
-import tech.relaycorp.relaynet.cms.SignedDataException
-import tech.relaycorp.relaynet.cms.sign
-import tech.relaycorp.relaynet.cms.verifySignature
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private const val OCTETS_IN_9_MIB = 9437184
 
@@ -49,7 +50,11 @@ internal class RAMFSerializer(
     val concreteMessageType: Byte,
     val concreteMessageVersion: Byte
 ) {
-    fun serialize(message: RAMFMessage, signerPrivateKey: PrivateKey): ByteArray {
+    fun serialize(
+        message: RAMFMessage,
+        signerPrivateKey: PrivateKey,
+        hashingAlgorithm: HashingAlgorithm? = null
+    ): ByteArray {
         val output = ByteArrayOutputStream()
 
         output.write("Relaynet".toByteArray())
@@ -61,7 +66,8 @@ internal class RAMFSerializer(
             fieldSetSerialized,
             signerPrivateKey,
             message.senderCertificate,
-            message.senderCertificateChain
+            message.senderCertificateChain,
+            hashingAlgorithm
         )
         output.write(signedData)
 

@@ -9,13 +9,6 @@ import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.BerType
 import com.beanit.jasn1.ber.types.string.BerVisibleString
-import java.io.ByteArrayOutputStream
-import java.nio.charset.Charset
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import kotlin.test.assertEquals
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
@@ -25,12 +18,22 @@ import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.cms.SignedDataException
-import tech.relaycorp.relaynet.cms.sign
-import tech.relaycorp.relaynet.cms.verifySignature
+import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.parseDer
+import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
+import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
+import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
+import tech.relaycorp.relaynet.wrappers.cms.sign
+import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import java.io.ByteArrayOutputStream
+import java.nio.charset.Charset
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.test.assertEquals
 
 private val BER_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
@@ -113,6 +116,40 @@ class RAMFSerializerTest {
                     stubSenderCertificateChain.union(setOf(stubSenderCertificate)),
                     attachedCertificates
                 )
+            }
+
+            @Nested
+            inner class Hashing {
+                @Test
+                fun `SHA-256 should be used by default`() {
+                    val cmsSignedDataSerialized = skipFormatSignature(stubSerialization)
+
+                    val cmsSignedData = parseCmsSignedData(cmsSignedDataSerialized)
+
+                    assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
+                    assertEquals(
+                        HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
+                        cmsSignedData.digestAlgorithmIDs.first().algorithm
+                    )
+                }
+
+                @Test
+                fun `Hashing algorithm should be customizable`() {
+                    val serialization = STUB_SERIALIZER.serialize(
+                        stubMessage,
+                        stubSenderKeyPair.private,
+                        hashingAlgorithm = HashingAlgorithm.SHA384
+                    )
+                    val signedDataSerialized = skipFormatSignature(serialization)
+
+                    val signedData = parseCmsSignedData(signedDataSerialized)
+
+                    assertEquals(1, signedData.digestAlgorithmIDs.size)
+                    assertEquals(
+                        HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA384],
+                        signedData.digestAlgorithmIDs.first().algorithm
+                    )
+                }
             }
         }
 
@@ -568,8 +605,4 @@ class RAMFSerializerTest {
             }
         }
     }
-}
-
-fun skipFormatSignature(ramfMessage: ByteArray): ByteArray {
-    return ramfMessage.copyOfRange(10, ramfMessage.lastIndex + 1)
 }
