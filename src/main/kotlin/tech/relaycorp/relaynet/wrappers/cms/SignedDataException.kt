@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet.cms
+package tech.relaycorp.relaynet.wrappers.cms
 
 import tech.relaycorp.relaynet.RelaynetException
 

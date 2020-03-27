@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet.cms
+package tech.relaycorp.relaynet.wrappers.cms
 
 import java.security.MessageDigest
 import java.time.LocalDateTime

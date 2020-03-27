@@ -23,9 +23,9 @@ import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
-import tech.relaycorp.relaynet.cms.SignedDataException
-import tech.relaycorp.relaynet.cms.sign
-import tech.relaycorp.relaynet.cms.verifySignature
+import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
+import tech.relaycorp.relaynet.wrappers.cms.sign
+import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private const val OCTETS_IN_9_MIB = 9437184

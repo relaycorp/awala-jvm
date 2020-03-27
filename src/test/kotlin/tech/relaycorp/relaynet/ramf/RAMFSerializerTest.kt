@@ -25,9 +25,9 @@ import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.cms.SignedDataException
-import tech.relaycorp.relaynet.cms.sign
-import tech.relaycorp.relaynet.cms.verifySignature
+import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
+import tech.relaycorp.relaynet.wrappers.cms.sign
+import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
