@@ -4,6 +4,7 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.RSAESOAEPparams
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier
+import org.bouncycastle.cms.CMSEnvelopedData
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
@@ -21,6 +22,20 @@ import kotlin.test.assertTrue
 private val PLAINTEXT = "hello".toByteArray()
 private val KEYPAIR = generateRSAKeyPair()
 private val CERTIFICATE = issueStubCertificate(KEYPAIR.public, KEYPAIR.private)
+
+class EnvelopedDataTest {
+    @Nested
+    inner class Serialize {
+        @Test
+        fun `EnvelopedData value should be DER-encoded`() {
+            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+
+            val serialization = envelopedData.serialize()
+
+            CMSEnvelopedData(serialization)
+        }
+    }
+}
 
 class SessionlessEnvelopedDataTest {
     @Nested

@@ -22,7 +22,11 @@ private val cmsContentEncryptionAlgorithm = mapOf(
     SymmetricEncryption.AES_GCM_256 to CMSAlgorithm.AES256_GCM
 )
 
-sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData)
+sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
+    fun serialize(): ByteArray {
+        return bcEnvelopedData.encoded
+    }
+}
 
 class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedData(bcEnvelopedData) {
     companion object {
