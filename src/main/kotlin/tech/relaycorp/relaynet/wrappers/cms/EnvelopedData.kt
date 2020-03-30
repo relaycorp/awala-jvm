@@ -157,12 +157,12 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
     @Throws(EnvelopedDataException::class)
     override fun validate() {
         val rid = bcEnvelopedData.recipientInfos.first().rid as KeyTransRecipientId
-        if (rid.issuer == null && rid.serialNumber == null) {
+        if (rid.serialNumber == null) {
             // KeyTransRecipientId doesn't offer an unambiguous way to tell whether the id is
             // using IssuerAndSerialNumber or SubjectKeyIdentifier. On the contrary, its data
             // model allows for the two to be used at the same time, which is illegal per the CMS
-            // spec. So for simplicity, we'll assume that if both the issuer and the serial number
-            // are missing, the key id is a SubjectKeyIdentifier.
+            // spec. So for simplicity, we'll assume that if the serial number is missing, the
+            // key id is a SubjectKeyIdentifier.
             throw EnvelopedDataException(
                 "Required recipient key id to be IssuerAndSerialNumber (got SubjectKeyIdentifier)"
             )
