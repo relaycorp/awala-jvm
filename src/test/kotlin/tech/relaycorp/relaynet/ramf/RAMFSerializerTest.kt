@@ -34,6 +34,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 private val BER_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
@@ -604,5 +605,25 @@ class RAMFSerializerTest {
                 return length + 1
             }
         }
+    }
+
+    @Test
+    fun `Input can be a ByteArray`() {
+        @Suppress("USELESS_IS_CHECK")
+        assertTrue(stubSerialization is ByteArray)
+
+        val message = STUB_SERIALIZER.deserialize(stubSerialization, ::StubRAMFMessage)
+
+        assertEquals(stubMessage.recipientAddress, message.recipientAddress)
+    }
+
+    @Test
+    fun `Input can be an InputStream`() {
+        val message = STUB_SERIALIZER.deserialize(
+            stubSerialization.inputStream(),
+            ::StubRAMFMessage
+        )
+
+        assertEquals(stubMessage.recipientAddress, message.recipientAddress)
     }
 }
