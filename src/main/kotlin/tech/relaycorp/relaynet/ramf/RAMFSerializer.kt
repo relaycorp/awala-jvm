@@ -18,9 +18,9 @@ import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.cms.sign
 import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.nio.charset.Charset
 import java.security.PrivateKey
 import java.time.LocalDateTime
@@ -112,14 +112,21 @@ internal class RAMFSerializer(
         DER_SEQUENCE_TAG.encode(reverseOS)
         return reverseOS.array
     }
-
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serialization: ByteArray,
         messageClazz:
             (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
     ): T {
-        val serializationStream = ByteArrayInputStream(serialization)
+        return deserialize(serialization.inputStream(), messageClazz)
+    }
+
+    @Throws(RAMFException::class, SignedDataException::class)
+    fun <T> deserialize(
+        serializationStream: InputStream,
+        messageClazz:
+            (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
+    ): T {
         val serializationSize = serializationStream.available()
 
         if (OCTETS_IN_9_MIB < serializationSize) {
