@@ -16,7 +16,7 @@ enum class HashingAlgorithm {
 }
 
 enum class SymmetricEncryption {
-    AES_GCM_128,
-    AES_GCM_192,
-    AES_GCM_256
+    AES_128,
+    AES_192,
+    AES_256
 }

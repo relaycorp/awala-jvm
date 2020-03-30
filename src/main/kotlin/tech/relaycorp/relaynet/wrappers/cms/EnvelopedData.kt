@@ -21,10 +21,11 @@ import java.security.spec.MGF1ParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 
+// Use GCM mode to encrypt payloads per RS-018
 private val cmsContentEncryptionAlgorithm = mapOf(
-    SymmetricEncryption.AES_GCM_128 to CMSAlgorithm.AES128_GCM,
-    SymmetricEncryption.AES_GCM_192 to CMSAlgorithm.AES192_GCM,
-    SymmetricEncryption.AES_GCM_256 to CMSAlgorithm.AES256_GCM
+    SymmetricEncryption.AES_128 to CMSAlgorithm.AES128_GCM,
+    SymmetricEncryption.AES_192 to CMSAlgorithm.AES192_GCM,
+    SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_GCM
 )
 
 sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
@@ -48,7 +49,6 @@ sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
             }
 
             val recipient = bcEnvelopedData.recipientInfos.first()
-
             if (recipient !is KeyTransRecipientInformation) {
                 throw EnvelopedDataException(
                     "Unsupported RecipientInfo (got ${recipient::class.java.simpleName})"
@@ -91,37 +91,42 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
         fun encrypt(
             plaintext: ByteArray,
             recipientCertificate: Certificate,
-            symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_GCM_128
+            symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128
         ): EnvelopedData {
             // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
             // CMSProcessableInputStream doesn't seem to be accessible here
             val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
 
-            val x509Certificate = JcaX509CertificateConverter()
-                .getCertificate(recipientCertificate.certificateHolder)
-            val paramsConverter = JcaAlgorithmParametersConverter()
-            val transKeyGen = JceKeyTransRecipientInfoGenerator(
-                x509Certificate,
-                paramsConverter.getAlgorithmIdentifier(
-                    PKCSObjectIdentifiers.id_RSAES_OAEP,
-                    OAEPParameterSpec(
-                        "SHA-256",
-                        "MGF1",
-                        MGF1ParameterSpec.SHA256,
-                        PSource.PSpecified.DEFAULT
-                    )
-                )
-            ).setProvider("BC")
-            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
+            val recipientInfoGenerator = makeRecipientInfoGenerator(recipientCertificate)
+            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
 
             val msg = CMSProcessableByteArray(plaintext)
             val contentEncryptionAlgorithm =
                 cmsContentEncryptionAlgorithm[symmetricEncryptionAlgorithm]
-            val jceCMSContentEncryptorBuilder =
-                JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm)
-            val encryptor = jceCMSContentEncryptorBuilder.setProvider("BC").build()
+            val encryptor =
+                JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm).setProvider("BC").build()
             val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptor)
             return SessionlessEnvelopedData(bcEnvelopedData)
+        }
+
+        private fun makeRecipientInfoGenerator(
+            recipientCertificate: Certificate
+        ): JceKeyTransRecipientInfoGenerator {
+            val x509Certificate = JcaX509CertificateConverter()
+                .getCertificate(recipientCertificate.certificateHolder)
+            val algorithmIdentifier = JcaAlgorithmParametersConverter().getAlgorithmIdentifier(
+                PKCSObjectIdentifiers.id_RSAES_OAEP,
+                OAEPParameterSpec(
+                    "SHA-256",
+                    "MGF1",
+                    MGF1ParameterSpec.SHA256,
+                    PSource.PSpecified.DEFAULT
+                )
+            )
+            return JceKeyTransRecipientInfoGenerator(
+                x509Certificate,
+                algorithmIdentifier
+            ).setProvider("BC")
         }
     }
 
