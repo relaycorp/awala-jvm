@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 class RAMFMessageTest {
     private val stubRecipientAddress = "04334"
     private val stubMessageId = "message-id"
-    private val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now()
+    private val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
     private val stubTtl = 1
     private val stubPayload = "payload".toByteArray()
 

@@ -27,6 +27,36 @@ private val cmsContentEncryptionAlgorithm = mapOf(
 )
 
 sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
+    companion object {
+        fun deserialize(envelopedDataSerialized: ByteArray): EnvelopedData {
+            val bcEnvelopedData = try {
+                CMSEnvelopedData(envelopedDataSerialized)
+            } catch (exception: CMSException) {
+                throw EnvelopedDataException(
+                    "Value should be a DER-encoded CMS EnvelopedData",
+                    exception
+                )
+            }
+
+            val recipientsSize = bcEnvelopedData.recipientInfos.size()
+            if (recipientsSize != 1) {
+                throw EnvelopedDataException(
+                    "Exactly one RecipientInfo is required (got $recipientsSize)"
+                )
+            }
+
+            val recipient = bcEnvelopedData.recipientInfos.first()
+
+            if (recipient !is KeyTransRecipientInformation) {
+                throw EnvelopedDataException(
+                    "Unsupported RecipientInfo (got ${recipient::class.java.simpleName})"
+                )
+            }
+
+            return SessionlessEnvelopedData(bcEnvelopedData)
+        }
+    }
+
     fun serialize(): ByteArray {
         return bcEnvelopedData.encoded
     }

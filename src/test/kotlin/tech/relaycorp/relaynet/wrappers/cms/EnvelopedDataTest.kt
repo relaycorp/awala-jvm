@@ -4,12 +4,20 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.RSAESOAEPparams
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
+import org.bouncycastle.cms.CMSAlgorithm
 import org.bouncycastle.cms.CMSEnvelopedData
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator
 import org.bouncycastle.cms.CMSException
+import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
+import org.bouncycastle.cms.jcajce.JceKEKRecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -18,6 +26,10 @@ import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import java.security.spec.MGF1ParameterSpec
+import javax.crypto.KeyGenerator
+import javax.crypto.spec.OAEPParameterSpec
+import javax.crypto.spec.PSource
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -35,6 +47,119 @@ class EnvelopedDataTest {
             val serialization = envelopedData.serialize()
 
             CMSEnvelopedData(serialization)
+        }
+    }
+
+    @Nested
+    inner class Deserialize {
+        @Test
+        fun `Invalid CMS EnvelopedData serializations should be refused`() {
+            val exception = assertThrows<EnvelopedDataException> {
+                EnvelopedData.deserialize("Not really EnvelopedData".toByteArray())
+            }
+
+            assertEquals("Value should be a DER-encoded CMS EnvelopedData", exception.message)
+            assertTrue(exception.cause is CMSException)
+        }
+
+        @Test
+        fun `EnvelopedData should not have zero recipients`() {
+            val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
+            val msg = CMSProcessableByteArray(PLAINTEXT)
+            val jceCMSContentEncryptorBuilder =
+                JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_GCM)
+            val encryptor = jceCMSContentEncryptorBuilder.setProvider(
+                BouncyCastleProvider()
+            ).build()
+            val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptor)
+
+            val exception = assertThrows<EnvelopedDataException> {
+                EnvelopedData.deserialize(bcEnvelopedData.encoded)
+            }
+
+            assertEquals(
+                "Exactly one RecipientInfo is required (got 0)",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `EnvelopedData value should not have two or more recipients`() {
+            val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
+
+            val x509Certificate = JcaX509CertificateConverter()
+                .getCertificate(CERTIFICATE.certificateHolder)
+            val paramsConverter = JcaAlgorithmParametersConverter()
+            val transKeyGen = JceKeyTransRecipientInfoGenerator(
+                x509Certificate,
+                paramsConverter.getAlgorithmIdentifier(
+                    PKCSObjectIdentifiers.id_RSAES_OAEP,
+                    OAEPParameterSpec(
+                        "SHA-256",
+                        "MGF1",
+                        MGF1ParameterSpec.SHA256,
+                        PSource.PSpecified.DEFAULT
+                    )
+                )
+            ).setProvider(BouncyCastleProvider())
+            // Add the same recipient twice
+            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
+            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
+
+            val msg = CMSProcessableByteArray(PLAINTEXT)
+            val jceCMSContentEncryptorBuilder =
+                JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_GCM)
+            val encryptor = jceCMSContentEncryptorBuilder.setProvider(
+                BouncyCastleProvider()
+            ).build()
+            val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptor)
+
+            val exception = assertThrows<EnvelopedDataException> {
+                EnvelopedData.deserialize(bcEnvelopedData.encoded)
+            }
+
+            assertEquals(
+                "Exactly one RecipientInfo is required (got 2)",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `SessionlessEnvelopedData should be returned if RecipientInfo uses key transport`() {
+            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+
+            val envelopedDataDeserialized = EnvelopedData.deserialize(envelopedData.serialize())
+            assertTrue(envelopedDataDeserialized is SessionlessEnvelopedData)
+        }
+
+        @Test
+        fun `Unsupported RecipientInfo types should result in an error`() {
+            // Use a KEKRecipientInfo
+
+            val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
+
+            val kekId = byteArrayOf(1, 2, 3, 4, 5)
+            val keyGen = KeyGenerator.getInstance("AES")
+            keyGen.init(128)
+            val recipientInfoGenerator = JceKEKRecipientInfoGenerator(kekId, keyGen.generateKey())
+            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
+
+            val msg = CMSProcessableByteArray(PLAINTEXT)
+            val jceCMSContentEncryptorBuilder =
+                JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_GCM)
+            val encryptor = jceCMSContentEncryptorBuilder.setProvider(
+                BouncyCastleProvider()
+            ).build()
+            val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptor)
+
+            val exception = assertThrows<EnvelopedDataException> {
+                EnvelopedData.deserialize(bcEnvelopedData.encoded)
+            }
+
+            assertEquals(
+                "Unsupported RecipientInfo (got KEKRecipientInformation)",
+                exception.message
+            )
         }
     }
 }
