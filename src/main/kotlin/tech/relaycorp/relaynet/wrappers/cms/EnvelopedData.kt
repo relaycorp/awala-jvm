@@ -144,7 +144,10 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
         )
         return try {
             recipientInfo.getContent(recipient)
-        } catch (exception: CMSException) {
+        } catch (exception: Exception) {
+            // BC usually throws CMSException when the key is invalid, but it occasionally
+            // throws DataLengthException. The latter isn't reproducible, so to avoid code
+            // coverage issues, we're handling all exceptions here. Yes, a name-your-poison thing.
             throw EnvelopedDataException("Could not decrypt value", exception)
         }
     }
