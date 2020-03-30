@@ -7,6 +7,7 @@ import org.bouncycastle.cms.CMSEnvelopedData
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator
 import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
+import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
@@ -15,6 +16,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.math.BigInteger
 import java.security.PrivateKey
 import java.security.spec.MGF1ParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
@@ -28,6 +30,7 @@ private val cmsContentEncryptionAlgorithm = mapOf(
 
 sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
     companion object {
+        @Throws(EnvelopedDataException::class)
         fun deserialize(envelopedDataSerialized: ByteArray): EnvelopedData {
             val bcEnvelopedData = try {
                 CMSEnvelopedData(envelopedDataSerialized)
@@ -53,7 +56,9 @@ sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
                 )
             }
 
-            return SessionlessEnvelopedData(bcEnvelopedData)
+            val envelopedData = SessionlessEnvelopedData(bcEnvelopedData)
+            envelopedData.validate()
+            return envelopedData
         }
     }
 
@@ -61,7 +66,25 @@ sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
         return bcEnvelopedData.encoded
     }
 
+    @Throws(EnvelopedDataException::class)
     abstract fun decrypt(privateKey: PrivateKey): ByteArray
+
+    /**
+     * Return the id of the recipient's key used to encrypt the content.
+     *
+     * This id will often be the recipient's certificate's serial number, in which case the issuer
+     * will be ignored: This method is meant to be used by the recipient so it can look up the
+     * corresponding private key to decrypt the content. We could certainly extract the issuer to
+     * verify it matches the expected one, but if the id doesn't match any key decryption
+     * won't even be attempted, so there's really no risk from ignoring the issuer.
+     */
+    abstract fun getRecipientKeyId(): BigInteger
+
+    /**
+     * Validate EnvelopedData value, post-deserialization.
+     */
+    @Throws(EnvelopedDataException::class)
+    abstract fun validate()
 }
 
 class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedData(bcEnvelopedData) {
@@ -112,6 +135,7 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
         }
     }
 
+    @Throws(EnvelopedDataException::class)
     override fun decrypt(privateKey: PrivateKey): ByteArray {
         val recipients = bcEnvelopedData.recipientInfos.recipients
         val recipientInfo = recipients.first() as KeyTransRecipientInformation
@@ -122,6 +146,26 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
             recipientInfo.getContent(recipient)
         } catch (exception: CMSException) {
             throw EnvelopedDataException("Could not decrypt value", exception)
+        }
+    }
+
+    override fun getRecipientKeyId(): BigInteger {
+        val rid = bcEnvelopedData.recipientInfos.first().rid as KeyTransRecipientId
+        return rid.serialNumber
+    }
+
+    @Throws(EnvelopedDataException::class)
+    override fun validate() {
+        val rid = bcEnvelopedData.recipientInfos.first().rid as KeyTransRecipientId
+        if (rid.issuer == null && rid.serialNumber == null) {
+            // KeyTransRecipientId doesn't offer an unambiguous way to tell whether the id is
+            // using IssuerAndSerialNumber or SubjectKeyIdentifier. On the contrary, its data
+            // model allows for the two to be used at the same time, which is illegal per the CMS
+            // spec. So for simplicity, we'll assume that if both the issuer and the serial number
+            // are missing, the key id is a SubjectKeyIdentifier.
+            throw EnvelopedDataException(
+                "Required recipient key id to be IssuerAndSerialNumber (got SubjectKeyIdentifier)"
+            )
         }
     }
 }

@@ -25,12 +25,14 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.issueStubCertificate
+import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.security.spec.MGF1ParameterSpec
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 private val PLAINTEXT = "hello".toByteArray()
@@ -341,6 +343,59 @@ class SessionlessEnvelopedDataTest {
 
             assertEquals("Could not decrypt value", exception.message)
             assertTrue(exception.cause is CMSException)
+        }
+    }
+
+    @Nested
+    inner class PostDeserializationValidation {
+        @Nested
+        inner class RecipientKeyId {
+            @Test
+            fun `Recipient key id should not be a SubjectKeyIdentifier`() {
+                val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
+
+                val transKeyGen = JceKeyTransRecipientInfoGenerator(
+                    sha256(KEYPAIR.public.encoded),
+                    KEYPAIR.public
+                ).setProvider(BouncyCastleProvider())
+                cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
+
+                val msg = CMSProcessableByteArray(PLAINTEXT)
+                val jceCMSContentEncryptorBuilder =
+                    JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_GCM)
+                val encryptor = jceCMSContentEncryptorBuilder.setProvider(
+                    BouncyCastleProvider()
+                ).build()
+                val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptor)
+
+                val rid = bcEnvelopedData.recipientInfos.first().rid as KeyTransRecipientId
+                assertEquals(null, rid.issuer)
+                assertEquals(null, rid.serialNumber)
+                assertNotEquals(null, rid.subjectKeyIdentifier)
+                val exception = assertThrows<EnvelopedDataException> {
+                    EnvelopedData.deserialize(bcEnvelopedData.encoded)
+                }
+
+                assertEquals(
+                    "Required recipient key id to be IssuerAndSerialNumber " +
+                        "(got SubjectKeyIdentifier)",
+                    exception.message
+                )
+            }
+        }
+    }
+
+    @Nested
+    inner class GetRecipientKeyId {
+        @Test
+        fun `Key id should be returned`() {
+            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+
+            val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
+            assertEquals(
+                (recipientInfo.rid as KeyTransRecipientId).serialNumber,
+                envelopedData.getRecipientKeyId()
+            )
         }
     }
 }
