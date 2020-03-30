@@ -12,7 +12,6 @@ import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -112,26 +111,17 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
                         PSource.PSpecified.DEFAULT
                     )
                 )
-            )
-            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(
-                transKeyGen.setProvider(
-                    BouncyCastleProvider()
-                )
-            )
+            ).setProvider("BC")
+            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
 
             val msg = CMSProcessableByteArray(plaintext)
             val contentEncryptionAlgorithm =
                 cmsContentEncryptionAlgorithm[symmetricEncryptionAlgorithm]
             val jceCMSContentEncryptorBuilder =
                 JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm)
-            val encryptor = jceCMSContentEncryptorBuilder.setProvider(
-                BouncyCastleProvider()
-            ).build()
+            val encryptor = jceCMSContentEncryptorBuilder.setProvider("BC").build()
             val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptor)
-
-            return SessionlessEnvelopedData(
-                bcEnvelopedData
-            )
+            return SessionlessEnvelopedData(bcEnvelopedData)
         }
     }
 
@@ -139,9 +129,7 @@ class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedDat
     override fun decrypt(privateKey: PrivateKey): ByteArray {
         val recipients = bcEnvelopedData.recipientInfos.recipients
         val recipientInfo = recipients.first() as KeyTransRecipientInformation
-        val recipient = JceKeyTransEnvelopedRecipient(privateKey).setProvider(
-            BouncyCastleProvider()
-        )
+        val recipient = JceKeyTransEnvelopedRecipient(privateKey).setProvider("BC")
         return try {
             recipientInfo.getContent(recipient)
         } catch (exception: Exception) {
