@@ -1,13 +1,13 @@
 package tech.relaycorp.relaynet.ramf
 
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
-private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1023
-private const val MAX_MESSAGE_ID_LENGTH = 255
+private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1024
+private const val MAX_MESSAGE_ID_LENGTH = 64
 private const val MAX_TTL = 15552000
 private const val MAX_PAYLOAD_LENGTH = 8388608
 

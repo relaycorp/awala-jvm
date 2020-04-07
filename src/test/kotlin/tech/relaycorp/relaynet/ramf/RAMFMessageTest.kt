@@ -31,8 +31,8 @@ class RAMFMessageTest {
     @Nested
     inner class Constructor {
         @Test
-        fun `Recipient address should not span more than 1023 octets`() {
-            val longRecipientAddress = "a".repeat(1024)
+        fun `Recipient address should not span more than 1024 octets`() {
+            val longRecipientAddress = "a".repeat(1025)
             val exception = assertThrows<RAMFException> {
                 StubRAMFMessage(
                     longRecipientAddress,
@@ -42,14 +42,14 @@ class RAMFMessageTest {
             }
 
             assertEquals(
-                "Recipient address cannot span more than 1023 octets (got 1024)",
+                "Recipient address cannot span more than 1024 octets (got 1025)",
                 exception.message
             )
         }
 
         @Test
-        fun `Message id should not span more than 255 octets`() {
-            val longMessageId = "a".repeat(256)
+        fun `Message id should not span more than 64 octets`() {
+            val longMessageId = "a".repeat(65)
             val exception = assertThrows<RAMFException> {
                 StubRAMFMessage(
                     stubRecipientAddress,
@@ -60,7 +60,7 @@ class RAMFMessageTest {
             }
 
             assertEquals(
-                "Message id cannot span more than 255 octets (got 256)",
+                "Message id cannot span more than 64 octets (got 65)",
                 exception.message
             )
         }
