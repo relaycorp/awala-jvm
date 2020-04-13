@@ -453,7 +453,7 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Fields should be a sequence of no more than 5 items`() {
+            fun `Fields should be a sequence of exactly 5 items`() {
                 val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
 
