@@ -1,11 +1,5 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
-import java.io.IOException
-import java.security.MessageDigest
-import java.security.PrivateKey
-import java.security.PublicKey
-import java.sql.Date
-import java.time.LocalDateTime
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -23,6 +17,12 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
+import java.io.IOException
+import java.security.MessageDigest
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.sql.Date
+import java.time.ZonedDateTime
 
 class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     companion object {
@@ -33,11 +33,11 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             subjectCommonName: String,
             subjectPublicKey: PublicKey,
             issuerPrivateKey: PrivateKey,
-            validityEndDate: LocalDateTime,
+            validityEndDate: ZonedDateTime,
             issuerCertificate: Certificate? = null,
             isCA: Boolean = false,
             pathLenConstraint: Int = 0,
-            validityStartDate: LocalDateTime = LocalDateTime.now()
+            validityStartDate: ZonedDateTime = ZonedDateTime.now()
         ): Certificate {
             if (validityStartDate >= validityEndDate) {
                 throw CertificateException("The end date must be later than the start date")
