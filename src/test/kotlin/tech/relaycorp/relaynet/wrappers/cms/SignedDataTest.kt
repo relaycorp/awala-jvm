@@ -25,7 +25,7 @@ import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 
 val stubPlaintext = "The plaintext".toByteArray()
@@ -34,13 +34,13 @@ val stubCertificate = Certificate.issue(
     "The Common Name",
     stubKeyPair.public,
     stubKeyPair.private,
-    LocalDateTime.now().plusDays(1)
+    ZonedDateTime.now().plusDays(1)
 )
 val anotherStubCertificate = Certificate.issue(
     "Another",
     stubKeyPair.public,
     stubKeyPair.private,
-    LocalDateTime.now().plusDays(1)
+    ZonedDateTime.now().plusDays(1)
 )
 
 const val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"

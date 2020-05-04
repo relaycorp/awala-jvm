@@ -1,10 +1,10 @@
 package tech.relaycorp.relaynet
 
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
-import java.time.LocalDateTime
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.time.ZonedDateTime
 
 fun sha256(input: ByteArray): ByteArray {
     val digest = MessageDigest.getInstance("SHA-256")
@@ -21,7 +21,7 @@ fun issueStubCertificate(
         "the subject for the stub cert",
         subjectPublicKey,
         issuerPrivateKey,
-        LocalDateTime.now().plusDays(1),
+        ZonedDateTime.now().plusDays(1),
         isCA = isCA,
         issuerCertificate = issuerCertificate
     )

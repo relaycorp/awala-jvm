@@ -1,12 +1,5 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
-import java.math.BigInteger
-import java.sql.Date
-import java.time.LocalDate
-import java.time.LocalDateTime
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -28,11 +21,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import java.math.BigInteger
+import java.sql.Date
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 
 class CertificateTest {
     private val stubSubjectCommonName = "The CommonName"
     private val stubSubjectKeyPair = generateRSAKeyPair()
-    private val stubValidityEndDate = LocalDateTime.now().plusMonths(2)
+    private val stubValidityEndDate = ZonedDateTime.now().plusMonths(2)
 
     @Nested
     inner class Issue {
@@ -110,7 +111,7 @@ class CertificateTest {
 
         @Test
         fun `Validity end date should be honored`() {
-            val endDate = LocalDateTime.now().plusDays(1)
+            val endDate = ZonedDateTime.now().plusDays(1)
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.public,
@@ -126,7 +127,7 @@ class CertificateTest {
 
         @Test
         fun `The end date should be later than the start date`() {
-            val validityStartDate = LocalDateTime.now().plusMonths(1)
+            val validityStartDate = ZonedDateTime.now().plusMonths(1)
 
             val exception = assertThrows<CertificateException> {
                 Certificate.issue(
