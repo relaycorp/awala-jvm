@@ -88,7 +88,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         @Throws(CertificateException::class)
         private fun buildDistinguishedName(commonName: String): X500Name {
             val builder = X500NameBuilder(BCStyle.INSTANCE)
-            builder.addRDN(BCStyle.C, commonName)
+            builder.addRDN(BCStyle.CN, commonName)
             return builder.build()
         }
 
