@@ -56,8 +56,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val builder = X509v3CertificateBuilder(
                 issuerDistinguishedName,
                 generateRandomBigInteger(),
-                Date.valueOf(validityStartDate.toLocalDate()),
-                Date.valueOf(validityEndDate.toLocalDate()),
+                Date.from(validityStartDate.toInstant()),
+                Date.from(validityEndDate.toInstant()),
                 subjectDistinguishedName,
                 subjectPublicKeyInfo
             )
