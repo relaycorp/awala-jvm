@@ -97,6 +97,8 @@ class CertificateTest {
 
         @Test
         fun `Validity start date should be set to current UTC time by default`() {
+            val nowDate = ZonedDateTime.now(UTC)
+
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.public,
@@ -104,8 +106,9 @@ class CertificateTest {
                 stubValidityEndDate
             )
 
-            val nowDate = Date.from(ZonedDateTime.now(UTC).toInstant())
-            assertTrue(nowDate.compareTo(certificate.certificateHolder.notBefore) < 2)
+            val startDateTimestamp = certificate.certificateHolder.notBefore.toInstant().epochSecond
+            assertTrue(nowDate.toEpochSecond() <= startDateTimestamp)
+            assertTrue(startDateTimestamp <= (nowDate.toEpochSecond() + 2))
         }
 
         @Test
@@ -118,8 +121,10 @@ class CertificateTest {
                 endZonedDate
             )
 
-            val endDate = Date.from(endZonedDate.toInstant())
-            assertTrue(endDate.compareTo(certificate.certificateHolder.notAfter) < 2)
+            assertEquals(
+                endZonedDate.toEpochSecond(),
+                certificate.certificateHolder.notAfter.toInstant().epochSecond
+            )
         }
 
         @Test
