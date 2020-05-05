@@ -151,12 +151,11 @@ class CertificateTest {
                 stubValidityEndDate
             )
 
-            assertEquals(1, certificate.certificateHolder.subject.rdNs.size)
-            assertEquals(false, certificate.certificateHolder.subject.rdNs[0].isMultiValued)
-            assertEquals(
-                commonName,
-                certificate.certificateHolder.subject.rdNs[0].first.value.toString()
-            )
+            val distinguishedNames = certificate.certificateHolder.subject.rdNs
+            assertEquals(1, distinguishedNames.size)
+            assertEquals(false, distinguishedNames[0].isMultiValued)
+            assertEquals(BCStyle.CN, distinguishedNames[0].first.type)
+            assertEquals(commonName, distinguishedNames[0].first.value.toString())
         }
 
         @Test
@@ -169,12 +168,11 @@ class CertificateTest {
                 stubValidityEndDate
             )
 
-            assertEquals(1, certificate.certificateHolder.issuer.rdNs.size)
-            assertEquals(false, certificate.certificateHolder.issuer.rdNs[0].isMultiValued)
-            assertEquals(
-                commonName,
-                certificate.certificateHolder.issuer.rdNs[0].first.value.toString()
-            )
+            val distinguishedNames = certificate.certificateHolder.issuer.rdNs
+            assertEquals(1, distinguishedNames.size)
+            assertEquals(false, distinguishedNames[0].isMultiValued)
+            assertEquals(BCStyle.CN, distinguishedNames[0].first.type)
+            assertEquals(commonName, distinguishedNames[0].first.value.toString())
         }
 
         @Nested
