@@ -23,12 +23,13 @@ import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.math.BigInteger
 import java.sql.Date
-import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 class CertificateTest {
     private val stubSubjectCommonName = "The CommonName"
@@ -95,7 +96,7 @@ class CertificateTest {
         }
 
         @Test
-        fun `Validity start date should be set to current time by default`() {
+        fun `Validity start date should be set to current UTC time by default`() {
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.public,
@@ -103,26 +104,22 @@ class CertificateTest {
                 stubValidityEndDate
             )
 
-            assertEquals(
-                Date.valueOf(LocalDate.now()),
-                certificate.certificateHolder.notBefore
-            )
+            val nowDate = Date.from(ZonedDateTime.now(UTC).toInstant())
+            assertTrue(nowDate.compareTo(certificate.certificateHolder.notBefore) < 2)
         }
 
         @Test
         fun `Validity end date should be honored`() {
-            val endDate = ZonedDateTime.now().plusDays(1)
+            val endZonedDate = ZonedDateTime.now().plusDays(1)
             val certificate = Certificate.issue(
                 stubSubjectCommonName,
                 stubSubjectKeyPair.public,
                 stubSubjectKeyPair.private,
-                endDate
+                endZonedDate
             )
 
-            assertEquals(
-                Date.valueOf(endDate.toLocalDate()),
-                certificate.certificateHolder.notAfter
-            )
+            val endDate = Date.from(endZonedDate.toInstant())
+            assertTrue(endDate.compareTo(certificate.certificateHolder.notAfter) < 2)
         }
 
         @Test
