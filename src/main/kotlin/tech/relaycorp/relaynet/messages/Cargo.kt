@@ -4,6 +4,7 @@ import tech.relaycorp.relaynet.ramf.RAMFMessage
 import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
 import tech.relaycorp.relaynet.ramf.RAMFSerializer
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.io.InputStream
 import java.time.ZonedDateTime
 
 private val SERIALIZER = RAMFSerializer(0x43, 0x00)
@@ -29,6 +30,10 @@ class Cargo(
     companion object : RAMFMessageCompanion<Cargo> {
         @JvmStatic
         override fun deserialize(serialization: ByteArray) =
+            SERIALIZER.deserialize(serialization, ::Cargo)
+
+        @JvmStatic
+        override fun deserialize(serialization: InputStream) =
             SERIALIZER.deserialize(serialization, ::Cargo)
     }
 }

@@ -11,13 +11,13 @@ private val payload = "Payload".toByteArray()
 private val keyPair = generateRSAKeyPair()
 private val senderCertificate = issueStubCertificate(keyPair.public, keyPair.private)
 
-fun <T : RAMFMessage> generateConstructorTests(
-    messageClazz: RAMFMessageConstructor<T>,
+fun <T : RAMFMessage> makeRAMFMessageConstructorTests(
+    messageConstructor: RAMFMessageConstructor<T>,
     expectedConcreteMessageType: Byte,
     expectedConcreteMessageVersion: Byte
 ): Collection<DynamicTest> {
     val simpleMessage =
-        messageClazz(recipientAddress, payload, senderCertificate, null, null, null, null)
+        messageConstructor(recipientAddress, payload, senderCertificate, null, null, null, null)
 
     return listOf(
         DynamicTest.dynamicTest("Recipient address should be honored") {
@@ -39,7 +39,7 @@ fun <T : RAMFMessage> generateConstructorTests(
         },
         DynamicTest.dynamicTest("Message id should be honored if set") {
             val messageId = "the-id"
-            val message = messageClazz(
+            val message = messageConstructor(
                 recipientAddress,
                 payload,
                 senderCertificate,
@@ -54,7 +54,7 @@ fun <T : RAMFMessage> generateConstructorTests(
         DynamicTest.dynamicTest("Creation time should be honored if set") {
             val creationDate = ZonedDateTime.now().minusMinutes(10)
             val message =
-                messageClazz(
+                messageConstructor(
                     recipientAddress,
                     payload,
                     senderCertificate,
@@ -69,7 +69,15 @@ fun <T : RAMFMessage> generateConstructorTests(
         DynamicTest.dynamicTest("TTL should be honored if set") {
             val ttl = 42
             val message =
-                messageClazz(recipientAddress, payload, senderCertificate, null, null, ttl, null)
+                messageConstructor(
+                    recipientAddress,
+                    payload,
+                    senderCertificate,
+                    null,
+                    null,
+                    ttl,
+                    null
+                )
 
             assertEquals(ttl, message.ttl)
         },
@@ -77,7 +85,7 @@ fun <T : RAMFMessage> generateConstructorTests(
             val senderCertificateChain = setOf(
                 issueStubCertificate(keyPair.public, keyPair.private)
             )
-            val message = messageClazz(
+            val message = messageConstructor(
                 recipientAddress,
                 payload,
                 senderCertificate,
@@ -88,6 +96,28 @@ fun <T : RAMFMessage> generateConstructorTests(
             )
 
             assertEquals(senderCertificateChain, message.senderCertificateChain)
+        }
+    )
+}
+
+fun <M : RAMFMessage> makeRAMFMessageCompanionTests(
+    companion: RAMFMessageCompanion<M>,
+    messageConstructor: RAMFMessageConstructor<M>
+): Collection<DynamicTest> {
+    val message =
+        messageConstructor(recipientAddress, payload, senderCertificate, null, null, null, null)
+    val messageSerialized = message.serialize(keyPair.private)
+
+    return listOf(
+        DynamicTest.dynamicTest("Valid ByteArray should be deserialized") {
+            val ccaDeserialized = companion.deserialize(messageSerialized)
+
+            assertEquals(message.messageId, ccaDeserialized.messageId)
+        },
+        DynamicTest.dynamicTest("Valid InputStream should be deserialized") {
+            val ccaDeserialized = companion.deserialize(messageSerialized.inputStream())
+
+            assertEquals(message.messageId, ccaDeserialized.messageId)
         }
     )
 }
