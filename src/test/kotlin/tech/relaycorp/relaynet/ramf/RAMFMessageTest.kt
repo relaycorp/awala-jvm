@@ -354,7 +354,7 @@ class RAMFMessageTest {
         }
 
         @Test
-        fun `Expiry date equal to the current date should be accepted`() {
+        fun `Creation date equal to the current date should be accepted`() {
             val message = StubRAMFMessage(recipientAddress, payload, senderCertificate)
 
             message.validate()
