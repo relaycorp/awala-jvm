@@ -6,6 +6,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.security.PrivateKey
 import java.time.ZoneId
+import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -75,7 +76,7 @@ abstract class RAMFMessage(
 
     @Throws(RAMFException::class)
     fun validate() {
-        val now = ZonedDateTime.now()
+        val now = ZonedDateTime.now(UTC)
         if (now < creationDate) {
             throw RAMFException("Creation date is in the future")
         }
