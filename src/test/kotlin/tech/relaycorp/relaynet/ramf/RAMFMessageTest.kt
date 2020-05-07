@@ -286,19 +286,18 @@ class RAMFMessageTest {
 
             @Test
             fun `Hashing algorithm should be customizable`() {
-                val serialization = STUB_SERIALIZER.serialize(
-                    stubMessage,
+                val messageSerialized = stubMessage.serialize(
                     stubSenderKeyPair.private,
                     hashingAlgorithm = HashingAlgorithm.SHA384
                 )
-                val signedDataSerialized = skipFormatSignature(serialization)
+                val cmsSignedDataSerialized = skipFormatSignature(messageSerialized)
 
-                val signedData = parseCmsSignedData(signedDataSerialized)
+                val cmsSignedData = parseCmsSignedData(cmsSignedDataSerialized)
 
-                assertEquals(1, signedData.digestAlgorithmIDs.size)
+                assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
                 assertEquals(
                     HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA384],
-                    signedData.digestAlgorithmIDs.first().algorithm
+                    cmsSignedData.digestAlgorithmIDs.first().algorithm
                 )
             }
         }

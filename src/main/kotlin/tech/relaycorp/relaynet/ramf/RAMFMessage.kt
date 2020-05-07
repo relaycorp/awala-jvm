@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.ramf
 
+import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
 import java.time.ZoneId
@@ -57,7 +58,10 @@ internal abstract class RAMFMessage(
         }
     }
 
-    fun serialize(senderPrivateKey: PrivateKey): ByteArray {
-        return this.serializer.serialize(this, senderPrivateKey)
+    fun serialize(
+        senderPrivateKey: PrivateKey,
+        hashingAlgorithm: HashingAlgorithm? = null
+    ): ByteArray {
+        return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
     }
 }
