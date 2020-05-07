@@ -3,7 +3,6 @@ package tech.relaycorp.relaynet.ramf
 import org.junit.jupiter.api.DynamicTest
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 
@@ -13,8 +12,7 @@ private val keyPair = generateRSAKeyPair()
 private val senderCertificate = issueStubCertificate(keyPair.public, keyPair.private)
 
 fun <T : RAMFMessage> generateConstructorTests(
-    messageClazz:
-        (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> T,
+    messageClazz: RAMFMessageConstructor<T>,
     expectedConcreteMessageType: Byte,
     expectedConcreteMessageVersion: Byte
 ): Collection<DynamicTest> {

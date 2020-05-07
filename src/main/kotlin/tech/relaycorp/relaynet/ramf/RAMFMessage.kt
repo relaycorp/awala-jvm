@@ -15,6 +15,9 @@ private const val MAX_PAYLOAD_LENGTH = 8388608
 private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
+typealias RAMFMessageConstructor<M> =
+        (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
+
 abstract class RAMFMessage(
     private val serializer: RAMFSerializer,
     val recipientAddress: String,

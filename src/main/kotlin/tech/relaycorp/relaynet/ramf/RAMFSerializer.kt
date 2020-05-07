@@ -17,7 +17,6 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.cms.sign
 import tech.relaycorp.relaynet.wrappers.cms.verifySignature
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -113,8 +112,7 @@ class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: 
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serialization: ByteArray,
-        messageClazz:
-            (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
+        messageClazz: RAMFMessageConstructor<T>
     ): T {
         return deserialize(serialization.inputStream(), messageClazz)
     }
@@ -122,8 +120,7 @@ class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: 
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serializationStream: InputStream,
-        messageClazz:
-            (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
+        messageClazz: RAMFMessageConstructor<T>
     ): T {
         val serializationSize = serializationStream.available()
 
