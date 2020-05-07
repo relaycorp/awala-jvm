@@ -355,13 +355,7 @@ class RAMFMessageTest {
 
         @Test
         fun `Creation date equal to the current date should be accepted`() {
-            val now = ZonedDateTime.now()
-            val message = StubRAMFMessage(
-                recipientAddress,
-                payload,
-                senderCertificate,
-                creationDate = now.plusSeconds(1) // Add some wiggle room
-            )
+            val message = StubRAMFMessage(recipientAddress, payload, senderCertificate)
 
             message.validate()
         }
