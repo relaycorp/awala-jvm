@@ -6,9 +6,9 @@ import tech.relaycorp.relaynet.ramf.RAMFSerializer
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.time.ZonedDateTime
 
-private val SERIALIZER = RAMFSerializer(0x43, 0x00)
+private val SERIALIZER = RAMFSerializer(0x51, 0x00)
 
-class Cargo(
+class CargoCollectionAuthorization(
     recipientAddress: String,
     payload: ByteArray,
     senderCertificate: Certificate,
@@ -26,9 +26,9 @@ class Cargo(
     ttl,
     senderCertificateChain
 ) {
-    companion object : RAMFMessageCompanion<Cargo> {
+    companion object : RAMFMessageCompanion<CargoCollectionAuthorization> {
         @JvmStatic
         override fun deserialize(serialization: ByteArray) =
-            SERIALIZER.deserialize(serialization, ::Cargo)
+            SERIALIZER.deserialize(serialization, ::CargoCollectionAuthorization)
     }
 }

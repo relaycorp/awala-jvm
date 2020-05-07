@@ -1,16 +1,17 @@
 package tech.relaycorp.relaynet.messages
 
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.ramf.generateConstructorTests
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class CargoTest {
+class CargoCollectionAuthorizationTest {
     @TestFactory
-    fun makeConstructorTests() = generateConstructorTests(::Cargo, 0x43, 0x00)
+    fun makeConstructorTests() =
+        generateConstructorTests(::CargoCollectionAuthorization, 0x51, 0x00)
 
     @Nested
     inner class Companion {
@@ -23,12 +24,12 @@ class CargoTest {
 
             @Test
             fun `Valid CCAs should be deserialized`() {
-                val cargo = Cargo(recipientAddress, payload, senderCertificate)
-                val cargoSerialized = cargo.serialize(keyPair.private)
+                val cca = CargoCollectionAuthorization(recipientAddress, payload, senderCertificate)
+                val ccaSerialized = cca.serialize(keyPair.private)
 
-                val cargoDeserialized = Cargo.deserialize(cargoSerialized)
+                val ccaDeserialized = CargoCollectionAuthorization.deserialize(ccaSerialized)
 
-                assertEquals(cargo.messageId, cargoDeserialized.messageId)
+                assertEquals(cca.messageId, ccaDeserialized.messageId)
             }
         }
     }
