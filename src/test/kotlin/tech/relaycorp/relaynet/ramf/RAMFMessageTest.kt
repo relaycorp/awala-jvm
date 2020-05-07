@@ -361,6 +361,27 @@ class RAMFMessageTest {
         }
 
         @Test
+        fun `Expiry date equal to the current date should be accepted`() {
+            val now = ZonedDateTime.now()
+            val certificate = Certificate.issue(
+                "the subject for the stub cert",
+                senderKeyPair.public,
+                senderKeyPair.private,
+                now.plusMinutes(1),
+                validityStartDate = now.minusMinutes(1)
+            )
+            val message = StubRAMFMessage(
+                recipientAddress,
+                payload,
+                certificate,
+                creationDate = now.minusNanos(500_000),
+                ttl = 1
+            )
+
+            message.validate()
+        }
+
+        @Test
         fun `Expiry date in the past should be refused`() {
             val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
                 .atZone(ZoneId.systemDefault())
