@@ -17,7 +17,6 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.cms.sign
 import tech.relaycorp.relaynet.wrappers.cms.verifySignature
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -46,10 +45,7 @@ private data class FieldSet(
     val payload: ByteArray
 )
 
-internal class RAMFSerializer(
-    val concreteMessageType: Byte,
-    val concreteMessageVersion: Byte
-) {
+class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
     fun serialize(
         message: RAMFMessage,
         signerPrivateKey: PrivateKey,
@@ -89,7 +85,7 @@ internal class RAMFSerializer(
         reverseOS.write(0x83)
         codeLength += 1
 
-        val creationTimeUtc = message.creationTime.withZoneSameInstant(UTC_ZONE_ID)
+        val creationTimeUtc = message.creationDate.withZoneSameInstant(UTC_ZONE_ID)
         codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(
             reverseOS,
             false
@@ -98,7 +94,7 @@ internal class RAMFSerializer(
         reverseOS.write(0x82)
         codeLength += 1
 
-        codeLength += BerVisibleString(message.messageId).encode(reverseOS, false)
+        codeLength += BerVisibleString(message.id).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 1
         reverseOS.write(0x81)
         codeLength += 1
@@ -112,11 +108,11 @@ internal class RAMFSerializer(
         DER_SEQUENCE_TAG.encode(reverseOS)
         return reverseOS.array
     }
+
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serialization: ByteArray,
-        messageClazz:
-            (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
+        messageClazz: RAMFMessageConstructor<T>
     ): T {
         return deserialize(serialization.inputStream(), messageClazz)
     }
@@ -124,8 +120,7 @@ internal class RAMFSerializer(
     @Throws(RAMFException::class, SignedDataException::class)
     fun <T> deserialize(
         serializationStream: InputStream,
-        messageClazz:
-            (String, ByteArray, Certificate, String, ZonedDateTime, Int, Set<Certificate>) -> T
+        messageClazz: RAMFMessageConstructor<T>
     ): T {
         val serializationSize = serializationStream.available()
 

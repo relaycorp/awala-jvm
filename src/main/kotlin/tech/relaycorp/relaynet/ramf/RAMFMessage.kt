@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.ramf
 
+import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
 import java.time.ZoneId
@@ -14,17 +15,21 @@ private const val MAX_PAYLOAD_LENGTH = 8388608
 private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
-internal abstract class RAMFMessage(
+typealias RAMFMessageConstructor<M> =
+        (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
+
+abstract class RAMFMessage(
+    private val serializer: RAMFSerializer,
     val recipientAddress: String,
     val payload: ByteArray,
     val senderCertificate: Certificate,
-    messageId: String?,
-    creationTime: ZonedDateTime?, // TODO: Rename to creationDate
+    id: String?,
+    creationDate: ZonedDateTime?,
     ttl: Int?,
     senderCertificateChain: Set<Certificate>?
 ) {
-    val messageId = messageId ?: UUID.randomUUID().toString()
-    val creationTime: ZonedDateTime = creationTime ?: ZonedDateTime.now(ZoneId.of("UTC"))
+    val id = id ?: UUID.randomUUID().toString()
+    val creationDate: ZonedDateTime = creationDate ?: ZonedDateTime.now(ZoneId.of("UTC"))
     val ttl = ttl ?: DEFAULT_TTL_SECONDS
     val senderCertificateChain = senderCertificateChain ?: setOf()
 
@@ -35,10 +40,10 @@ internal abstract class RAMFMessage(
                     "(got ${recipientAddress.length})"
             )
         }
-        if (MAX_MESSAGE_ID_LENGTH < this.messageId.length) {
+        if (MAX_MESSAGE_ID_LENGTH < this.id.length) {
             throw RAMFException(
                 "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets " +
-                    "(got ${this.messageId.length})"
+                    "(got ${this.id.length})"
             )
         }
         if (this.ttl < 0) {
@@ -56,5 +61,10 @@ internal abstract class RAMFMessage(
         }
     }
 
-    abstract fun serialize(senderPrivateKey: PrivateKey): ByteArray
+    fun serialize(
+        senderPrivateKey: PrivateKey,
+        hashingAlgorithm: HashingAlgorithm? = null
+    ): ByteArray {
+        return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
+    }
 }

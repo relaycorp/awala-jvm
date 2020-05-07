@@ -169,7 +169,7 @@ class RAMFSerializerTest {
                 val sequence = getFieldSequence(stubSerialization)
                 val messageIdRaw = sequence.getObjectAt(1) as DLTaggedObject
                 val messageIdDer = DERVisibleString.getInstance(messageIdRaw, false)
-                assertEquals(stubMessage.messageId, messageIdDer.string)
+                assertEquals(stubMessage.id, messageIdDer.string)
             }
 
             @Nested
@@ -182,7 +182,7 @@ class RAMFSerializerTest {
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                        stubMessage.creationTime.format(BER_DATETIME_FORMATTER),
+                        stubMessage.creationDate.format(BER_DATETIME_FORMATTER),
                         creationTimeDer.timeString
                     )
                 }
@@ -194,7 +194,7 @@ class RAMFSerializerTest {
                         stubMessage.recipientAddress,
                         stubMessage.payload,
                         stubSenderCertificate,
-                        stubMessage.messageId,
+                        stubMessage.id,
                         ZonedDateTime.of(nowTimezoneUnaware, NON_UTC_ZONE_ID),
                         stubMessage.ttl,
                         stubSenderCertificateChain
@@ -211,7 +211,7 @@ class RAMFSerializerTest {
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                        message.creationTime.withZoneSameInstant(ZoneId.of("UTC"))
+                        message.creationDate.withZoneSameInstant(ZoneId.of("UTC"))
                             .format(BER_DATETIME_FORMATTER),
                         creationTimeDer.timeString
                     )
@@ -497,11 +497,11 @@ class RAMFSerializerTest {
 
                 assertEquals(stubMessage.recipientAddress, parsedMessage.recipientAddress)
 
-                assertEquals(stubMessage.messageId, parsedMessage.messageId)
+                assertEquals(stubMessage.id, parsedMessage.id)
 
                 assertEquals(
-                    stubMessage.creationTime.withNano(0),
-                    parsedMessage.creationTime
+                    stubMessage.creationDate.withNano(0),
+                    parsedMessage.creationDate
                 )
 
                 assertEquals(stubMessage.ttl, parsedMessage.ttl)
@@ -544,8 +544,8 @@ class RAMFSerializerTest {
                     stubMessage.recipientAddress,
                     stubMessage.payload,
                     stubSenderCertificate,
-                    stubMessage.messageId,
-                    stubMessage.creationTime.withZoneSameInstant(NON_UTC_ZONE_ID),
+                    stubMessage.id,
+                    stubMessage.creationDate.withZoneSameInstant(NON_UTC_ZONE_ID),
                     stubMessage.ttl,
                     stubSenderCertificateChain
                 )
@@ -553,14 +553,14 @@ class RAMFSerializerTest {
 
                 val parsedMessage = STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
 
-                assertEquals(parsedMessage.creationTime.zone, ZoneId.of("UTC"))
+                assertEquals(parsedMessage.creationDate.zone, ZoneId.of("UTC"))
             }
 
             private fun serializeFieldSet(
                 recipientAddress: BerType = BerVisibleString(stubMessage.recipientAddress),
-                messageId: BerType = BerVisibleString(stubMessage.messageId),
+                messageId: BerType = BerVisibleString(stubMessage.id),
                 creationTime: BerType = BerDateTime(
-                    stubMessage.creationTime.format(
+                    stubMessage.creationDate.format(
                         BER_DATETIME_FORMATTER
                     )
                 ),

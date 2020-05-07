@@ -1,12 +1,15 @@
-package tech.relaycorp.relaynet.ramf
+package tech.relaycorp.relaynet.messages
 
+import tech.relaycorp.relaynet.ramf.RAMFMessage
+import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
+import tech.relaycorp.relaynet.ramf.RAMFSerializer
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.InputStream
 import java.time.ZonedDateTime
 
-internal val STUB_SERIALIZER = RAMFSerializer(32, 0)
+private val SERIALIZER = RAMFSerializer(0x51, 0x00)
 
-internal class StubRAMFMessage(
+class CargoCollectionAuthorization(
     recipientAddress: String,
     payload: ByteArray,
     senderCertificate: Certificate,
@@ -15,7 +18,7 @@ internal class StubRAMFMessage(
     ttl: Int? = null,
     senderCertificateChain: Set<Certificate>? = null
 ) : RAMFMessage(
-    STUB_SERIALIZER,
+    SERIALIZER,
     recipientAddress,
     payload,
     senderCertificate,
@@ -24,11 +27,13 @@ internal class StubRAMFMessage(
     ttl,
     senderCertificateChain
 ) {
-    companion object : RAMFMessageCompanion<StubRAMFMessage> {
+    companion object : RAMFMessageCompanion<CargoCollectionAuthorization> {
+        @JvmStatic
         override fun deserialize(serialization: ByteArray) =
-            STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
+            SERIALIZER.deserialize(serialization, ::CargoCollectionAuthorization)
 
+        @JvmStatic
         override fun deserialize(serialization: InputStream) =
-            STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
+            SERIALIZER.deserialize(serialization, ::CargoCollectionAuthorization)
     }
 }

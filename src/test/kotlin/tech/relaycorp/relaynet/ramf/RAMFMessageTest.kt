@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 class RAMFMessageTest {
     private val stubRecipientAddress = "04334"
     private val stubMessageId = "message-id"
-    private val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
+    private val stubCreationDateUtc: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
     private val stubTtl = 1
     private val stubPayload = "payload".toByteArray()
 
@@ -74,7 +74,7 @@ class RAMFMessageTest {
                 stubMessageId
             )
 
-            assertEquals(stubMessageId, message.messageId)
+            assertEquals(stubMessageId, message.id)
         }
 
         @Test
@@ -90,9 +90,9 @@ class RAMFMessageTest {
                 stubSenderCertificate
             )
 
-            UUID.fromString(message1.messageId)
-            UUID.fromString(message2.messageId)
-            assertNotEquals(message1.messageId, message2.messageId)
+            UUID.fromString(message1.id)
+            UUID.fromString(message2.id)
+            assertNotEquals(message1.id, message2.id)
         }
 
         @Test
@@ -101,10 +101,10 @@ class RAMFMessageTest {
                 stubRecipientAddress,
                 stubPayload,
                 stubSenderCertificate,
-                creationTime = stubCreationTimeUtc
+                creationDate = stubCreationDateUtc
             )
 
-            assertEquals(stubCreationTimeUtc, message.creationTime)
+            assertEquals(stubCreationDateUtc, message.creationDate)
         }
 
         @Test
@@ -115,12 +115,12 @@ class RAMFMessageTest {
                 stubSenderCertificate
             )
 
-            assertEquals("UTC", message.creationTime.zone.id)
+            assertEquals("UTC", message.creationDate.zone.id)
 
             val now = ZonedDateTime.now(ZoneId.of("UTC"))
-            val secondsAgo = now.minusSeconds(5)
-            assertTrue(secondsAgo < message.creationTime)
-            assertTrue(message.creationTime <= now)
+            val secondsAgo = now.minusSeconds(2)
+            assertTrue(secondsAgo < message.creationDate)
+            assertTrue(message.creationDate <= now)
         }
 
         @Test
@@ -238,7 +238,7 @@ class RAMFMessageTest {
                 stubPayload,
                 stubSenderCertificate,
                 stubMessageId,
-                stubCreationTimeUtc,
+                stubCreationDateUtc,
                 stubTtl,
                 setOf(stubCaCertificate)
             )
@@ -248,10 +248,10 @@ class RAMFMessageTest {
             val messageDeserialized = StubRAMFMessage.deserialize(serialization)
             // TODO: Implement RAMFMessage.equals() and use it here
             assertEquals(message.recipientAddress, messageDeserialized.recipientAddress)
-            assertEquals(message.messageId, messageDeserialized.messageId)
+            assertEquals(message.id, messageDeserialized.id)
             assertEquals(
-                message.creationTime.withNano(0).withZoneSameLocal(ZoneId.of("UTC")),
-                messageDeserialized.creationTime
+                message.creationDate.withNano(0).withZoneSameLocal(ZoneId.of("UTC")),
+                messageDeserialized.creationDate
             )
             assertEquals(message.ttl, messageDeserialized.ttl)
             assertEquals(message.payload.asList(), messageDeserialized.payload.asList())
@@ -286,19 +286,18 @@ class RAMFMessageTest {
 
             @Test
             fun `Hashing algorithm should be customizable`() {
-                val serialization = STUB_SERIALIZER.serialize(
-                    stubMessage,
+                val messageSerialized = stubMessage.serialize(
                     stubSenderKeyPair.private,
                     hashingAlgorithm = HashingAlgorithm.SHA384
                 )
-                val signedDataSerialized = skipFormatSignature(serialization)
+                val cmsSignedDataSerialized = skipFormatSignature(messageSerialized)
 
-                val signedData = parseCmsSignedData(signedDataSerialized)
+                val cmsSignedData = parseCmsSignedData(cmsSignedDataSerialized)
 
-                assertEquals(1, signedData.digestAlgorithmIDs.size)
+                assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
                 assertEquals(
                     HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA384],
-                    signedData.digestAlgorithmIDs.first().algorithm
+                    cmsSignedData.digestAlgorithmIDs.first().algorithm
                 )
             }
         }
