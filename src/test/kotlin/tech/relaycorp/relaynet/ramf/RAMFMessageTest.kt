@@ -74,7 +74,7 @@ class RAMFMessageTest {
                 stubMessageId
             )
 
-            assertEquals(stubMessageId, message.messageId)
+            assertEquals(stubMessageId, message.id)
         }
 
         @Test
@@ -90,9 +90,9 @@ class RAMFMessageTest {
                 stubSenderCertificate
             )
 
-            UUID.fromString(message1.messageId)
-            UUID.fromString(message2.messageId)
-            assertNotEquals(message1.messageId, message2.messageId)
+            UUID.fromString(message1.id)
+            UUID.fromString(message2.id)
+            assertNotEquals(message1.id, message2.id)
         }
 
         @Test
@@ -248,7 +248,7 @@ class RAMFMessageTest {
             val messageDeserialized = StubRAMFMessage.deserialize(serialization)
             // TODO: Implement RAMFMessage.equals() and use it here
             assertEquals(message.recipientAddress, messageDeserialized.recipientAddress)
-            assertEquals(message.messageId, messageDeserialized.messageId)
+            assertEquals(message.id, messageDeserialized.id)
             assertEquals(
                 message.creationDate.withNano(0).withZoneSameLocal(ZoneId.of("UTC")),
                 messageDeserialized.creationDate

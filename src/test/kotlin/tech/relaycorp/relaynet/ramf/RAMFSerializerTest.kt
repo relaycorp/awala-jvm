@@ -169,7 +169,7 @@ class RAMFSerializerTest {
                 val sequence = getFieldSequence(stubSerialization)
                 val messageIdRaw = sequence.getObjectAt(1) as DLTaggedObject
                 val messageIdDer = DERVisibleString.getInstance(messageIdRaw, false)
-                assertEquals(stubMessage.messageId, messageIdDer.string)
+                assertEquals(stubMessage.id, messageIdDer.string)
             }
 
             @Nested
@@ -194,7 +194,7 @@ class RAMFSerializerTest {
                         stubMessage.recipientAddress,
                         stubMessage.payload,
                         stubSenderCertificate,
-                        stubMessage.messageId,
+                        stubMessage.id,
                         ZonedDateTime.of(nowTimezoneUnaware, NON_UTC_ZONE_ID),
                         stubMessage.ttl,
                         stubSenderCertificateChain
@@ -497,7 +497,7 @@ class RAMFSerializerTest {
 
                 assertEquals(stubMessage.recipientAddress, parsedMessage.recipientAddress)
 
-                assertEquals(stubMessage.messageId, parsedMessage.messageId)
+                assertEquals(stubMessage.id, parsedMessage.id)
 
                 assertEquals(
                     stubMessage.creationDate.withNano(0),
@@ -544,7 +544,7 @@ class RAMFSerializerTest {
                     stubMessage.recipientAddress,
                     stubMessage.payload,
                     stubSenderCertificate,
-                    stubMessage.messageId,
+                    stubMessage.id,
                     stubMessage.creationDate.withZoneSameInstant(NON_UTC_ZONE_ID),
                     stubMessage.ttl,
                     stubSenderCertificateChain
@@ -558,7 +558,7 @@ class RAMFSerializerTest {
 
             private fun serializeFieldSet(
                 recipientAddress: BerType = BerVisibleString(stubMessage.recipientAddress),
-                messageId: BerType = BerVisibleString(stubMessage.messageId),
+                messageId: BerType = BerVisibleString(stubMessage.id),
                 creationTime: BerType = BerDateTime(
                     stubMessage.creationDate.format(
                         BER_DATETIME_FORMATTER

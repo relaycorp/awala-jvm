@@ -49,7 +49,7 @@ fun <T : RAMFMessage> makeRAMFMessageConstructorTests(
                 null
             )
 
-            assertEquals(messageId, message.messageId)
+            assertEquals(messageId, message.id)
         },
         DynamicTest.dynamicTest("Creation time should be honored if set") {
             val creationDate = ZonedDateTime.now().minusMinutes(10)
@@ -112,12 +112,12 @@ fun <M : RAMFMessage> makeRAMFMessageCompanionTests(
         DynamicTest.dynamicTest("Valid ByteArray should be deserialized") {
             val ccaDeserialized = companion.deserialize(messageSerialized)
 
-            assertEquals(message.messageId, ccaDeserialized.messageId)
+            assertEquals(message.id, ccaDeserialized.id)
         },
         DynamicTest.dynamicTest("Valid InputStream should be deserialized") {
             val ccaDeserialized = companion.deserialize(messageSerialized.inputStream())
 
-            assertEquals(message.messageId, ccaDeserialized.messageId)
+            assertEquals(message.id, ccaDeserialized.id)
         }
     )
 }

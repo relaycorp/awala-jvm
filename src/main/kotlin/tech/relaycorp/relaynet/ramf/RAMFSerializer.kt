@@ -94,7 +94,7 @@ class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: 
         reverseOS.write(0x82)
         codeLength += 1
 
-        codeLength += BerVisibleString(message.messageId).encode(reverseOS, false)
+        codeLength += BerVisibleString(message.id).encode(reverseOS, false)
         // write tag: CONTEXT_CLASS, PRIMITIVE, 1
         reverseOS.write(0x81)
         codeLength += 1

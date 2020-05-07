@@ -23,12 +23,12 @@ abstract class RAMFMessage(
     val recipientAddress: String,
     val payload: ByteArray,
     val senderCertificate: Certificate,
-    messageId: String?,
+    id: String?,
     creationDate: ZonedDateTime?,
     ttl: Int?,
     senderCertificateChain: Set<Certificate>?
 ) {
-    val messageId = messageId ?: UUID.randomUUID().toString()
+    val id = id ?: UUID.randomUUID().toString()
     val creationDate: ZonedDateTime = creationDate ?: ZonedDateTime.now(ZoneId.of("UTC"))
     val ttl = ttl ?: DEFAULT_TTL_SECONDS
     val senderCertificateChain = senderCertificateChain ?: setOf()
@@ -40,10 +40,10 @@ abstract class RAMFMessage(
                     "(got ${recipientAddress.length})"
             )
         }
-        if (MAX_MESSAGE_ID_LENGTH < this.messageId.length) {
+        if (MAX_MESSAGE_ID_LENGTH < this.id.length) {
             throw RAMFException(
                 "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets " +
-                    "(got ${this.messageId.length})"
+                    "(got ${this.id.length})"
             )
         }
         if (this.ttl < 0) {
