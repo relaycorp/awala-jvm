@@ -16,6 +16,7 @@ import org.bouncycastle.operator.ContentSigner
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
+import tech.relaycorp.relaynet.dateToZonedDateTime
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.io.IOException
 import java.security.MessageDigest
@@ -142,5 +143,16 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
     fun serialize(): ByteArray {
         return certificateHolder.encoded
+    }
+
+    @Throws(CertificateException::class)
+    fun validate() {
+        val now = ZonedDateTime.now()
+        if (now < dateToZonedDateTime(certificateHolder.notBefore)) {
+            throw CertificateException("Certificate is not yet valid")
+        }
+        if (dateToZonedDateTime(certificateHolder.notAfter) < now) {
+            throw CertificateException("Certificate already expired")
+        }
     }
 }

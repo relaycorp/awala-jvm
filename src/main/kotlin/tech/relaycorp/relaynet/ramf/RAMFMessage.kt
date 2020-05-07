@@ -1,9 +1,12 @@
 package tech.relaycorp.relaynet.ramf
 
 import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.dateToZonedDateTime
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.security.PrivateKey
 import java.time.ZoneId
+import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -32,6 +35,9 @@ abstract class RAMFMessage(
     val creationDate: ZonedDateTime = creationDate ?: ZonedDateTime.now(ZoneId.of("UTC"))
     val ttl = ttl ?: DEFAULT_TTL_SECONDS
     val senderCertificateChain = senderCertificateChain ?: setOf()
+
+    val expiryDate: ZonedDateTime
+        get() = creationDate.plusSeconds(ttl.toLong())
 
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
@@ -66,5 +72,25 @@ abstract class RAMFMessage(
         hashingAlgorithm: HashingAlgorithm? = null
     ): ByteArray {
         return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
+    }
+
+    @Throws(RAMFException::class)
+    fun validate() {
+        val now = ZonedDateTime.now(UTC)
+        if (now < creationDate) {
+            throw RAMFException("Creation date is in the future")
+        }
+        if (creationDate < dateToZonedDateTime(senderCertificate.certificateHolder.notBefore)
+        ) {
+            throw RAMFException("Message was created before sender certificate was valid")
+        }
+        if (expiryDate < now) {
+            throw RAMFException("Message already expired")
+        }
+        try {
+            senderCertificate.validate()
+        } catch (exc: CertificateException) {
+            throw RAMFException("Invalid sender certificate", exc)
+        }
     }
 }

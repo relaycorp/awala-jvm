@@ -584,4 +584,52 @@ class CertificateTest {
             assertEquals(stubCertificate.certificateHolder.hashCode(), stubCertificate.hashCode())
         }
     }
+
+    @Nested
+    inner class Validate {
+        @Test
+        fun `Start date in the future should be refused`() {
+            val startDate = ZonedDateTime.now().plusSeconds(2)
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate,
+                validityStartDate = startDate
+            )
+
+            val exception = assertThrows<CertificateException> { certificate.validate() }
+
+            assertEquals("Certificate is not yet valid", exception.message)
+        }
+
+        @Test
+        fun `Expiry date in the past should be refused`() {
+            val startDate = ZonedDateTime.now().minusSeconds(2)
+            val endDate = startDate.plusSeconds(1)
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                endDate,
+                validityStartDate = startDate
+            )
+
+            val exception = assertThrows<CertificateException> { certificate.validate() }
+
+            assertEquals("Certificate already expired", exception.message)
+        }
+
+        @Test
+        fun `Start date in the past and end date in the future should be accepted`() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate
+            )
+
+            certificate.validate()
+        }
+    }
 }
