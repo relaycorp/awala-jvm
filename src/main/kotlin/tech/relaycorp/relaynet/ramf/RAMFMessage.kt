@@ -15,6 +15,7 @@ private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
 internal abstract class RAMFMessage(
+    private val serializer: RAMFSerializer,
     val recipientAddress: String,
     val payload: ByteArray,
     val senderCertificate: Certificate,
@@ -56,5 +57,7 @@ internal abstract class RAMFMessage(
         }
     }
 
-    abstract fun serialize(senderPrivateKey: PrivateKey): ByteArray
+    fun serialize(senderPrivateKey: PrivateKey): ByteArray {
+        return this.serializer.serialize(this, senderPrivateKey)
+    }
 }
