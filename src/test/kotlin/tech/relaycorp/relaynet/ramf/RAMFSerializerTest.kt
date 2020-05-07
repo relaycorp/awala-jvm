@@ -182,7 +182,7 @@ class RAMFSerializerTest {
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                        stubMessage.creationTime.format(BER_DATETIME_FORMATTER),
+                        stubMessage.creationDate.format(BER_DATETIME_FORMATTER),
                         creationTimeDer.timeString
                     )
                 }
@@ -211,7 +211,7 @@ class RAMFSerializerTest {
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
                     assertEquals(
-                        message.creationTime.withZoneSameInstant(ZoneId.of("UTC"))
+                        message.creationDate.withZoneSameInstant(ZoneId.of("UTC"))
                             .format(BER_DATETIME_FORMATTER),
                         creationTimeDer.timeString
                     )
@@ -500,8 +500,8 @@ class RAMFSerializerTest {
                 assertEquals(stubMessage.messageId, parsedMessage.messageId)
 
                 assertEquals(
-                    stubMessage.creationTime.withNano(0),
-                    parsedMessage.creationTime
+                    stubMessage.creationDate.withNano(0),
+                    parsedMessage.creationDate
                 )
 
                 assertEquals(stubMessage.ttl, parsedMessage.ttl)
@@ -545,7 +545,7 @@ class RAMFSerializerTest {
                     stubMessage.payload,
                     stubSenderCertificate,
                     stubMessage.messageId,
-                    stubMessage.creationTime.withZoneSameInstant(NON_UTC_ZONE_ID),
+                    stubMessage.creationDate.withZoneSameInstant(NON_UTC_ZONE_ID),
                     stubMessage.ttl,
                     stubSenderCertificateChain
                 )
@@ -553,14 +553,14 @@ class RAMFSerializerTest {
 
                 val parsedMessage = STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
 
-                assertEquals(parsedMessage.creationTime.zone, ZoneId.of("UTC"))
+                assertEquals(parsedMessage.creationDate.zone, ZoneId.of("UTC"))
             }
 
             private fun serializeFieldSet(
                 recipientAddress: BerType = BerVisibleString(stubMessage.recipientAddress),
                 messageId: BerType = BerVisibleString(stubMessage.messageId),
                 creationTime: BerType = BerDateTime(
-                    stubMessage.creationTime.format(
+                    stubMessage.creationDate.format(
                         BER_DATETIME_FORMATTER
                     )
                 ),

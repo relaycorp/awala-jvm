@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 class RAMFMessageTest {
     private val stubRecipientAddress = "04334"
     private val stubMessageId = "message-id"
-    private val stubCreationTimeUtc: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
+    private val stubCreationDateUtc: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
     private val stubTtl = 1
     private val stubPayload = "payload".toByteArray()
 
@@ -101,10 +101,10 @@ class RAMFMessageTest {
                 stubRecipientAddress,
                 stubPayload,
                 stubSenderCertificate,
-                creationTime = stubCreationTimeUtc
+                creationDate = stubCreationDateUtc
             )
 
-            assertEquals(stubCreationTimeUtc, message.creationTime)
+            assertEquals(stubCreationDateUtc, message.creationDate)
         }
 
         @Test
@@ -115,12 +115,12 @@ class RAMFMessageTest {
                 stubSenderCertificate
             )
 
-            assertEquals("UTC", message.creationTime.zone.id)
+            assertEquals("UTC", message.creationDate.zone.id)
 
             val now = ZonedDateTime.now(ZoneId.of("UTC"))
-            val secondsAgo = now.minusSeconds(5)
-            assertTrue(secondsAgo < message.creationTime)
-            assertTrue(message.creationTime <= now)
+            val secondsAgo = now.minusSeconds(2)
+            assertTrue(secondsAgo < message.creationDate)
+            assertTrue(message.creationDate <= now)
         }
 
         @Test
@@ -238,7 +238,7 @@ class RAMFMessageTest {
                 stubPayload,
                 stubSenderCertificate,
                 stubMessageId,
-                stubCreationTimeUtc,
+                stubCreationDateUtc,
                 stubTtl,
                 setOf(stubCaCertificate)
             )
@@ -250,8 +250,8 @@ class RAMFMessageTest {
             assertEquals(message.recipientAddress, messageDeserialized.recipientAddress)
             assertEquals(message.messageId, messageDeserialized.messageId)
             assertEquals(
-                message.creationTime.withNano(0).withZoneSameLocal(ZoneId.of("UTC")),
-                messageDeserialized.creationTime
+                message.creationDate.withNano(0).withZoneSameLocal(ZoneId.of("UTC")),
+                messageDeserialized.creationDate
             )
             assertEquals(message.ttl, messageDeserialized.ttl)
             assertEquals(message.payload.asList(), messageDeserialized.payload.asList())

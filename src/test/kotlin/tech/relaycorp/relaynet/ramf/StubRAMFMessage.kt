@@ -1,8 +1,8 @@
 package tech.relaycorp.relaynet.ramf
 
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
 import java.time.ZonedDateTime
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 internal val STUB_SERIALIZER = RAMFSerializer(32, 0)
 
@@ -11,7 +11,7 @@ internal class StubRAMFMessage(
     payload: ByteArray,
     senderCertificate: Certificate,
     messageId: String? = null,
-    creationTime: ZonedDateTime? = null,
+    creationDate: ZonedDateTime? = null,
     ttl: Int? = null,
     senderCertificateChain: Set<Certificate>? = null
 ) : RAMFMessage(
@@ -19,7 +19,7 @@ internal class StubRAMFMessage(
     payload,
     senderCertificate,
     messageId,
-    creationTime,
+    creationDate,
     ttl,
     senderCertificateChain
 ) {

@@ -89,7 +89,7 @@ internal class RAMFSerializer(
         reverseOS.write(0x83)
         codeLength += 1
 
-        val creationTimeUtc = message.creationTime.withZoneSameInstant(UTC_ZONE_ID)
+        val creationTimeUtc = message.creationDate.withZoneSameInstant(UTC_ZONE_ID)
         codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(
             reverseOS,
             false
