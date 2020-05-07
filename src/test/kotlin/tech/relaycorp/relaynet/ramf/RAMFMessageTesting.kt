@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.ramf
 import org.junit.jupiter.api.DynamicTest
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 
@@ -11,13 +12,15 @@ private val payload = "Payload".toByteArray()
 private val keyPair = generateRSAKeyPair()
 private val senderCertificate = issueStubCertificate(keyPair.public, keyPair.private)
 
-fun <T : RAMFMessage> makeRAMFMessageConstructorTests(
-    messageConstructor: RAMFMessageConstructor<T>,
+typealias MinimalRAMFMessageConstructor<M> = (String, ByteArray, Certificate) -> M
+
+fun <M : RAMFMessage> makeRAMFMessageConstructorTests(
+    messageConstructor: RAMFMessageConstructor<M>,
+    requiredParamsConstructor: MinimalRAMFMessageConstructor<M>,
     expectedConcreteMessageType: Byte,
     expectedConcreteMessageVersion: Byte
 ): Collection<DynamicTest> {
-    val simpleMessage =
-        messageConstructor(recipientAddress, payload, senderCertificate, null, null, null, null)
+    val simpleMessage = requiredParamsConstructor(recipientAddress, payload, senderCertificate)
 
     return listOf(
         DynamicTest.dynamicTest("Recipient address should be honored") {
