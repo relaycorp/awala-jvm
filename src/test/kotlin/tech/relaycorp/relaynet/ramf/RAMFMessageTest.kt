@@ -7,6 +7,8 @@ import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -299,5 +301,116 @@ class RAMFMessageTest {
                 )
             }
         }
+    }
+
+    @Nested
+    inner class Validate {
+        @Test
+        fun `Creation date in the future should be refused`() {
+            val futureDate = ZonedDateTime.now().plusSeconds(2)
+            val message = StubRAMFMessage(
+                recipientAddress,
+                payload,
+                senderCertificate,
+                creationDate = futureDate
+            )
+
+            val exception = assertThrows<RAMFException> { message.validate() }
+
+            assertEquals("Creation date is in the future", exception.message)
+        }
+
+        @Test
+        fun `Creation date before start date of sender certificate should be refused`() {
+            val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
+                .atZone(ZoneId.systemDefault()).minusSeconds(1)
+            val message = StubRAMFMessage(
+                recipientAddress,
+                payload,
+                senderCertificate,
+                creationDate = creationDate
+            )
+
+            val exception = assertThrows<RAMFException> { message.validate() }
+
+            assertEquals(
+                "Message was created before sender certificate was valid",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Creation date matching start date of sender certificate should be accepted`() {
+            val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
+                .atZone(ZoneId.systemDefault())
+            val message = StubRAMFMessage(
+                recipientAddress,
+                payload,
+                senderCertificate,
+                creationDate = creationDate
+            )
+
+            message.validate()
+        }
+
+        @Test
+        fun `Expiry date equal to the current date should be accepted`() {
+            val message = StubRAMFMessage(recipientAddress, payload, senderCertificate)
+
+            message.validate()
+        }
+
+        @Test
+        fun `Expiry date in the past should be refused`() {
+            val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
+                .atZone(ZoneId.systemDefault())
+            val message = StubRAMFMessage(
+                recipientAddress,
+                payload,
+                senderCertificate,
+                creationDate = creationDate,
+                ttl = 0
+            )
+
+            val exception = assertThrows<RAMFException> { message.validate() }
+
+            assertEquals("Message already expired", exception.message)
+        }
+
+        @Test
+        fun `Invalid sender certificates should be refused`() {
+            val now = ZonedDateTime.now()
+            val expiredCertificate = Certificate.issue(
+                "foo",
+                senderKeyPair.public,
+                senderKeyPair.private,
+                now.minusSeconds(1),
+                validityStartDate = now.minusSeconds(2)
+            )
+            val message = StubRAMFMessage(
+                recipientAddress,
+                payload,
+                expiredCertificate,
+                creationDate = now
+            )
+
+            val exception = assertThrows<RAMFException> { message.validate() }
+
+            assertTrue(exception.cause is CertificateException)
+            assertEquals("Invalid sender certificate", exception.message)
+        }
+    }
+
+    @Test
+    fun `expiryDate should be calculated from the creationDate and ttl`() {
+        val message = StubRAMFMessage(
+            recipientAddress,
+            payload,
+            senderCertificate,
+            creationDate = creationDateUtc,
+            ttl = ttl
+        )
+
+        assertEquals(creationDateUtc.plusSeconds(ttl.toLong()), message.expiryDate)
     }
 }
