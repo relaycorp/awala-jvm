@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.messages
 
+import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.ramf.RAMFMessage
 import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
 import tech.relaycorp.relaynet.ramf.RAMFSerializer
@@ -29,10 +30,12 @@ class CargoCollectionAuthorization(
 ) {
     companion object : RAMFMessageCompanion<CargoCollectionAuthorization> {
         @JvmStatic
+        @Throws(RAMFException::class)
         override fun deserialize(serialization: ByteArray) =
             SERIALIZER.deserialize(serialization, ::CargoCollectionAuthorization)
 
         @JvmStatic
+        @Throws(RAMFException::class)
         override fun deserialize(serialization: InputStream) =
             SERIALIZER.deserialize(serialization, ::CargoCollectionAuthorization)
     }

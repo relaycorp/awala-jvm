@@ -117,7 +117,7 @@ class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: 
         return deserialize(serialization.inputStream(), messageClazz)
     }
 
-    @Throws(RAMFException::class, SignedDataException::class)
+    @Throws(RAMFException::class)
     fun <T> deserialize(
         serializationStream: InputStream,
         messageClazz: RAMFMessageConstructor<T>
@@ -152,7 +152,11 @@ class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: 
             )
         }
 
-        val cmsSignedDataResult = verifySignature(serializationStream.readBytes())
+        val cmsSignedDataResult = try {
+            verifySignature(serializationStream.readBytes())
+        } catch (exc: SignedDataException) {
+            throw RAMFException("Invalid CMS SignedData value", exc)
+        }
         val fields = deserializeFields(cmsSignedDataResult.plaintext)
         return messageClazz(
             fields.recipientAddress,
