@@ -368,14 +368,16 @@ class RAMFSerializerTest {
                 invalidSerialization.write(STUB_SERIALIZER.concreteMessageVersion.toInt())
                 invalidSerialization.write("Not really CMS SignedData".toByteArray())
 
-                val exception = assertThrows<SignedDataException> {
+                val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
                         ::StubRAMFMessage
                     )
                 }
 
-                assertEquals("Value is not DER-encoded", exception.message)
+                assertEquals("Invalid CMS SignedData value", exception.message)
+                assertTrue(exception.cause is SignedDataException)
+                assertEquals("Value is not DER-encoded", exception.cause?.message)
             }
 
             @Test
