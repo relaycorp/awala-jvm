@@ -17,9 +17,10 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import tech.relaycorp.relaynet.dateToZonedDateTime
+import tech.relaycorp.relaynet.getSHA256Digest
+import tech.relaycorp.relaynet.getSHA256DigestHex
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.io.IOException
-import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.sql.Date
@@ -30,7 +31,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
 
         @Throws(CertificateException::class)
-        fun issue(
+        internal fun issue(
             subjectCommonName: String,
             subjectPublicKey: PublicKey,
             issuerPrivateKey: PrivateKey,
@@ -66,12 +67,12 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val basicConstraints = BasicConstraintsExtension(isCA, pathLenConstraint)
             builder.addExtension(Extension.basicConstraints, true, basicConstraints)
 
-            val subjectPublicKeyDigest = getPublicKeyInfoDigest(subjectPublicKeyInfo)
+            val subjectPublicKeyDigest = getSHA256Digest(subjectPublicKeyInfo.encoded)
             val ski = SubjectKeyIdentifier(subjectPublicKeyDigest)
             builder.addExtension(Extension.subjectKeyIdentifier, false, ski)
 
             val issuerPublicKeyDigest = if (issuerCertificate != null)
-                getPublicKeyInfoDigest(issuerCertificate.certificateHolder.subjectPublicKeyInfo)
+                getSHA256Digest(issuerCertificate.certificateHolder.subjectPublicKeyInfo.encoded)
             else
                 subjectPublicKeyDigest
             val aki = AuthorityKeyIdentifier(issuerPublicKeyDigest)
@@ -79,11 +80,6 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
             val signerBuilder = makeSigner(issuerPrivateKey)
             return Certificate(builder.build(signerBuilder))
-        }
-
-        private fun getPublicKeyInfoDigest(keyInfo: SubjectPublicKeyInfo): ByteArray {
-            val digest = MessageDigest.getInstance("SHA-256")
-            return digest.digest(keyInfo.parsePublicKey().encoded)
         }
 
         @Throws(CertificateException::class)
@@ -130,6 +126,15 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         }
     }
 
+    val commonName: String
+        get() {
+            val commonNames = certificateHolder.subject.getRDNs(BCStyle.CN)
+            return commonNames.first().first.value.toString()
+        }
+
+    val subjectPrivateAddress
+        get() = "0" + getSHA256DigestHex(certificateHolder.subjectPublicKeyInfo.encoded)
+
     override fun equals(other: Any?): Boolean {
         if (other !is Certificate) {
             return false
@@ -147,12 +152,23 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
     @Throws(CertificateException::class)
     fun validate() {
+        validateValidityPeriod()
+        validateCommonNamePresence()
+    }
+
+    private fun validateValidityPeriod() {
         val now = ZonedDateTime.now()
         if (now < dateToZonedDateTime(certificateHolder.notBefore)) {
             throw CertificateException("Certificate is not yet valid")
         }
         if (dateToZonedDateTime(certificateHolder.notAfter) < now) {
             throw CertificateException("Certificate already expired")
+        }
+    }
+
+    private fun validateCommonNamePresence() {
+        if (certificateHolder.subject.getRDNs(BCStyle.CN).isEmpty()) {
+            throw CertificateException("Subject should have a Common Name")
         }
     }
 }

@@ -11,6 +11,8 @@ fun sha256(input: ByteArray): ByteArray {
     return digest.digest(input)
 }
 
+fun sha256Hex(input: ByteArray) = sha256(input).joinToString("") { "%02x".format(it) }
+
 fun issueStubCertificate(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
