@@ -31,7 +31,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
 
         @Throws(CertificateException::class)
-        fun issue(
+        internal fun issue(
             subjectCommonName: String,
             subjectPublicKey: PublicKey,
             issuerPrivateKey: PrivateKey,
