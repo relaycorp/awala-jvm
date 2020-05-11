@@ -36,8 +36,7 @@ abstract class RAMFMessage(
     val ttl = ttl ?: DEFAULT_TTL_SECONDS
     val senderCertificateChain = senderCertificateChain ?: setOf()
 
-    val expiryDate: ZonedDateTime
-        get() = creationDate.plusSeconds(ttl.toLong())
+    val expiryDate: ZonedDateTime get() = creationDate.plusSeconds(ttl.toLong())
 
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {

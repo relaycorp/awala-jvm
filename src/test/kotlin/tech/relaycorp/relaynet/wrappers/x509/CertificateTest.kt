@@ -17,15 +17,17 @@ import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.sha256
+import tech.relaycorp.relaynet.sha256Hex
+import tech.relaycorp.relaynet.wrappers.cms.stubKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.math.BigInteger
 import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
@@ -217,7 +219,7 @@ class CertificateTest {
             fun `Issuer certificate should have basicConstraints extension`() {
                 val issuerCommonName = "The issuer"
                 val issuerDistinguishedNameBuilder = X500NameBuilder(BCStyle.INSTANCE)
-                issuerDistinguishedNameBuilder.addRDN(BCStyle.C, issuerCommonName)
+                issuerDistinguishedNameBuilder.addRDN(BCStyle.CN, issuerCommonName)
 
                 val builder = X509v3CertificateBuilder(
                     issuerDistinguishedNameBuilder.build(),
@@ -437,7 +439,7 @@ class CertificateTest {
                 )
                 val subjectPublicKeyInfo = certificate.certificateHolder.subjectPublicKeyInfo
                 assertEquals(
-                    sha256(subjectPublicKeyInfo.parsePublicKey().encoded).asList(),
+                    sha256(subjectPublicKeyInfo.encoded).asList(),
                     aki.keyIdentifier.asList()
                 )
             }
@@ -465,7 +467,7 @@ class CertificateTest {
                     subjectCertificate.certificateHolder.extensions
                 )
                 assertEquals(
-                    sha256(issuerPublicKeyInfo.parsePublicKey().encoded).asList(),
+                    sha256(issuerPublicKeyInfo.encoded).asList(),
                     aki.keyIdentifier.asList()
                 )
             }
@@ -485,7 +487,7 @@ class CertificateTest {
             )
             val subjectPublicKeyInfo = certificate.certificateHolder.subjectPublicKeyInfo
             assertEquals(
-                sha256(subjectPublicKeyInfo.parsePublicKey().encoded).asList(),
+                sha256(subjectPublicKeyInfo.encoded).asList(),
                 ski.keyIdentifier.asList()
             )
         }
@@ -515,6 +517,34 @@ class CertificateTest {
             }
 
             assertEquals("Value should be a DER-encoded, X.509 v3 certificate", exception.message)
+        }
+    }
+
+    @Nested
+    inner class Properties {
+        @Test
+        fun commonName() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate
+            )
+
+            assertEquals(stubSubjectCommonName, certificate.commonName)
+        }
+
+        @Test
+        fun subjectPrivateAddress() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate
+            )
+
+            val expectedAddress = "0${sha256Hex(stubSubjectKeyPair.public.encoded)}"
+            assertEquals(expectedAddress, certificate.subjectPrivateAddress)
         }
     }
 
@@ -587,49 +617,95 @@ class CertificateTest {
 
     @Nested
     inner class Validate {
-        @Test
-        fun `Start date in the future should be refused`() {
-            val startDate = ZonedDateTime.now().plusSeconds(2)
-            val certificate = Certificate.issue(
-                stubSubjectCommonName,
-                stubSubjectKeyPair.public,
-                stubSubjectKeyPair.private,
-                stubValidityEndDate,
-                validityStartDate = startDate
-            )
+        @Nested
+        inner class ValidityPeriod {
+            @Test
+            fun `Start date in the future should be refused`() {
+                val startDate = ZonedDateTime.now().plusSeconds(2)
+                val certificate = Certificate.issue(
+                    stubSubjectCommonName,
+                    stubSubjectKeyPair.public,
+                    stubSubjectKeyPair.private,
+                    stubValidityEndDate,
+                    validityStartDate = startDate
+                )
 
-            val exception = assertThrows<CertificateException> { certificate.validate() }
+                val exception = assertThrows<CertificateException> { certificate.validate() }
 
-            assertEquals("Certificate is not yet valid", exception.message)
+                assertEquals("Certificate is not yet valid", exception.message)
+            }
+
+            @Test
+            fun `Expiry date in the past should be refused`() {
+                val startDate = ZonedDateTime.now().minusSeconds(2)
+                val endDate = startDate.plusSeconds(1)
+                val certificate = Certificate.issue(
+                    stubSubjectCommonName,
+                    stubSubjectKeyPair.public,
+                    stubSubjectKeyPair.private,
+                    endDate,
+                    validityStartDate = startDate
+                )
+
+                val exception = assertThrows<CertificateException> { certificate.validate() }
+
+                assertEquals("Certificate already expired", exception.message)
+            }
+
+            @Test
+            fun `Start date in the past and end date in the future should be accepted`() {
+                val certificate = Certificate.issue(
+                    stubSubjectCommonName,
+                    stubSubjectKeyPair.public,
+                    stubSubjectKeyPair.private,
+                    stubValidityEndDate
+                )
+
+                certificate.validate()
+            }
         }
 
-        @Test
-        fun `Expiry date in the past should be refused`() {
-            val startDate = ZonedDateTime.now().minusSeconds(2)
-            val endDate = startDate.plusSeconds(1)
-            val certificate = Certificate.issue(
-                stubSubjectCommonName,
-                stubSubjectKeyPair.public,
-                stubSubjectKeyPair.private,
-                endDate,
-                validityStartDate = startDate
-            )
+        @Nested
+        inner class CommonName {
+            @Test
+            fun `Validation should fail if Common Name is missing`() {
+                val issuerDistinguishedNameBuilder = X500NameBuilder(BCStyle.INSTANCE)
+                issuerDistinguishedNameBuilder.addRDN(BCStyle.C, "GB")
+                val builder = X509v3CertificateBuilder(
+                    issuerDistinguishedNameBuilder.build(),
+                    42.toBigInteger(),
+                    Date.valueOf(LocalDateTime.now().toLocalDate()),
+                    Date.valueOf(stubValidityEndDate.toLocalDate().plusMonths(1)),
+                    issuerDistinguishedNameBuilder.build(),
+                    SubjectPublicKeyInfo.getInstance(stubSubjectKeyPair.public.encoded)
+                )
+                val signatureAlgorithm =
+                    DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption")
+                val digestAlgorithm =
+                    DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
+                val privateKeyParam: AsymmetricKeyParameter =
+                    PrivateKeyFactory.createKey(stubSubjectKeyPair.private.encoded)
+                val contentSignerBuilder =
+                    BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
+                val signerBuilder = contentSignerBuilder.build(privateKeyParam)
+                val invalidCertificate = Certificate(builder.build(signerBuilder))
 
-            val exception = assertThrows<CertificateException> { certificate.validate() }
+                val exception = assertThrows<CertificateException> { invalidCertificate.validate() }
 
-            assertEquals("Certificate already expired", exception.message)
-        }
+                assertEquals("Subject should have a Common Name", exception.message)
+            }
 
-        @Test
-        fun `Start date in the past and end date in the future should be accepted`() {
-            val certificate = Certificate.issue(
-                stubSubjectCommonName,
-                stubSubjectKeyPair.public,
-                stubSubjectKeyPair.private,
-                stubValidityEndDate
-            )
+            @Test
+            fun `Validation should pass if Common Name is present`() {
+                val certificate = Certificate.issue(
+                    stubSubjectCommonName,
+                    stubSubjectKeyPair.public,
+                    stubKeyPair.private,
+                    stubValidityEndDate
+                )
 
-            certificate.validate()
+                certificate.validate()
+            }
         }
     }
 }

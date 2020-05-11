@@ -66,12 +66,12 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val basicConstraints = BasicConstraintsExtension(isCA, pathLenConstraint)
             builder.addExtension(Extension.basicConstraints, true, basicConstraints)
 
-            val subjectPublicKeyDigest = getPublicKeyInfoDigest(subjectPublicKeyInfo)
+            val subjectPublicKeyDigest = getSHA256Digest(subjectPublicKeyInfo.encoded)
             val ski = SubjectKeyIdentifier(subjectPublicKeyDigest)
             builder.addExtension(Extension.subjectKeyIdentifier, false, ski)
 
             val issuerPublicKeyDigest = if (issuerCertificate != null)
-                getPublicKeyInfoDigest(issuerCertificate.certificateHolder.subjectPublicKeyInfo)
+                getSHA256Digest(issuerCertificate.certificateHolder.subjectPublicKeyInfo.encoded)
             else
                 subjectPublicKeyDigest
             val aki = AuthorityKeyIdentifier(issuerPublicKeyDigest)
@@ -79,11 +79,6 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
             val signerBuilder = makeSigner(issuerPrivateKey)
             return Certificate(builder.build(signerBuilder))
-        }
-
-        private fun getPublicKeyInfoDigest(keyInfo: SubjectPublicKeyInfo): ByteArray {
-            val digest = MessageDigest.getInstance("SHA-256")
-            return digest.digest(keyInfo.parsePublicKey().encoded)
         }
 
         @Throws(CertificateException::class)
@@ -130,6 +125,19 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         }
     }
 
+    val commonName: String
+        get() {
+            val commonNames = certificateHolder.subject.getRDNs(BCStyle.CN)
+            return commonNames.first().first.value.toString()
+        }
+
+    val subjectPrivateAddress: String
+        get() {
+            val digestHex = getSHA256Digest(certificateHolder.subjectPublicKeyInfo.encoded)
+                .joinToString("") { "%02x".format(it) }
+            return "0$digestHex"
+        }
+
     override fun equals(other: Any?): Boolean {
         if (other !is Certificate) {
             return false
@@ -147,6 +155,11 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
     @Throws(CertificateException::class)
     fun validate() {
+        validateValidityPeriod()
+        validateCommonNamePresence()
+    }
+
+    private fun validateValidityPeriod() {
         val now = ZonedDateTime.now()
         if (now < dateToZonedDateTime(certificateHolder.notBefore)) {
             throw CertificateException("Certificate is not yet valid")
@@ -155,4 +168,15 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             throw CertificateException("Certificate already expired")
         }
     }
+
+    private fun validateCommonNamePresence() {
+        if (certificateHolder.subject.getRDNs(BCStyle.CN).isEmpty()) {
+            throw CertificateException("Subject should have a Common Name")
+        }
+    }
+}
+
+private fun getSHA256Digest(input: ByteArray): ByteArray {
+    val digest = MessageDigest.getInstance("SHA-256")
+    return digest.digest(input)
 }
