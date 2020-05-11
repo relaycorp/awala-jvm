@@ -17,9 +17,10 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import tech.relaycorp.relaynet.dateToZonedDateTime
+import tech.relaycorp.relaynet.getSHA256Digest
+import tech.relaycorp.relaynet.getSHA256DigestHex
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.io.IOException
-import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.sql.Date
@@ -131,12 +132,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             return commonNames.first().first.value.toString()
         }
 
-    val subjectPrivateAddress: String
-        get() {
-            val digestHex = getSHA256Digest(certificateHolder.subjectPublicKeyInfo.encoded)
-                .joinToString("") { "%02x".format(it) }
-            return "0$digestHex"
-        }
+    val subjectPrivateAddress
+        get() = "0" + getSHA256DigestHex(certificateHolder.subjectPublicKeyInfo.encoded)
 
     override fun equals(other: Any?): Boolean {
         if (other !is Certificate) {
@@ -174,9 +171,4 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             throw CertificateException("Subject should have a Common Name")
         }
     }
-}
-
-private fun getSHA256Digest(input: ByteArray): ByteArray {
-    val digest = MessageDigest.getInstance("SHA-256")
-    return digest.digest(input)
 }
