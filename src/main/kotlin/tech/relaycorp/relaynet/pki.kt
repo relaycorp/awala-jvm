@@ -24,6 +24,6 @@ fun issueGatewayCertificate(
         issuerCertificate,
         true,
         if (isSelfIssued) 2 else 1,
-        validityStartDate = validityStartDate
+        validityStartDate
     )
 }
