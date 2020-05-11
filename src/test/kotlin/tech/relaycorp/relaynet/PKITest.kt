@@ -119,10 +119,9 @@ class PKITest {
                 issuerCertificate = issuerCertificate
             )
 
-            assertEquals(
-                1,
-                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).pathLenConstraint.toInt()
-            )
+            val basicConstraints =
+                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
+            assertEquals(1, basicConstraints.pathLenConstraint.toInt())
         }
     }
 }
