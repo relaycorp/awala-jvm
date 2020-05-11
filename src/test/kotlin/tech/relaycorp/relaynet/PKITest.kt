@@ -101,10 +101,9 @@ class PKITest {
         fun `pathLenConstraint should be 2 if self-issued`() {
             val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
 
-            assertEquals(
-                2,
-                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).pathLenConstraint.toInt()
-            )
+            val basicConstraints =
+                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
+            assertEquals(2, basicConstraints.pathLenConstraint.toInt())
         }
 
         @Test
