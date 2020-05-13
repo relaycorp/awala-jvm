@@ -12,7 +12,7 @@ class CargoCollectionAuthorizationTest {
         makeRAMFMessageConstructorTests(
             ::CargoCollectionAuthorization,
             { r: String, p: ByteArray, s: Certificate -> CargoCollectionAuthorization(r, p, s) },
-            0x51,
+            0x44,
             0x00
         )
 

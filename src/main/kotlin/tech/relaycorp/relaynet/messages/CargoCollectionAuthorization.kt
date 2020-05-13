@@ -8,7 +8,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.InputStream
 import java.time.ZonedDateTime
 
-private val SERIALIZER = RAMFSerializer(0x51, 0x00)
+private val SERIALIZER = RAMFSerializer(0x44, 0x00)
 
 class CargoCollectionAuthorization(
     recipientAddress: String,
