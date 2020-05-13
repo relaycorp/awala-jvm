@@ -2,6 +2,7 @@
 
 package tech.relaycorp.relaynet
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.MessageDigest
 
 internal fun getSHA256Digest(input: ByteArray): ByteArray {
@@ -11,3 +12,5 @@ internal fun getSHA256Digest(input: ByteArray): ByteArray {
 
 internal fun getSHA256DigestHex(input: ByteArray) =
     getSHA256Digest(input).joinToString("") { "%02x".format(it) }
+
+internal val BC_PROVIDER = BouncyCastleProvider()

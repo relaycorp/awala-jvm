@@ -20,10 +20,9 @@ import org.bouncycastle.crypto.DataLengthException
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
-import tech.relaycorp.relaynet.BCProviderExtension
+import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.sha256
@@ -37,7 +36,6 @@ private val PLAINTEXT = "hello".toByteArray()
 private val KEYPAIR = generateRSAKeyPair()
 private val CERTIFICATE = issueStubCertificate(KEYPAIR.public, KEYPAIR.private)
 
-@ExtendWith(BCProviderExtension::class)
 class EnvelopedDataTest {
     @Nested
     inner class Serialize {
@@ -81,7 +79,8 @@ class EnvelopedDataTest {
 
             val x509Certificate = JcaX509CertificateConverter()
                 .getCertificate(CERTIFICATE.certificateHolder)
-            val transKeyGen = JceKeyTransRecipientInfoGenerator(x509Certificate).setProvider("BC")
+            val transKeyGen =
+                JceKeyTransRecipientInfoGenerator(x509Certificate).setProvider(BC_PROVIDER)
             // Add the same recipient twice
             cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
             cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
@@ -132,7 +131,6 @@ class EnvelopedDataTest {
     }
 }
 
-@ExtendWith(BCProviderExtension::class)
 class SessionlessEnvelopedDataTest {
     @Nested
     inner class Encrypt {
@@ -246,7 +244,8 @@ class SessionlessEnvelopedDataTest {
 
                 val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
                 val recipientInfo = recipients.first() as KeyTransRecipientInformation
-                val recipient = JceKeyTransEnvelopedRecipient(KEYPAIR.private).setProvider("BC")
+                val recipient =
+                    JceKeyTransEnvelopedRecipient(KEYPAIR.private).setProvider(BC_PROVIDER)
                 val plaintext = recipientInfo.getContent(recipient)
                 assertEquals(PLAINTEXT.asList(), plaintext.asList())
             }
@@ -322,7 +321,7 @@ class SessionlessEnvelopedDataTest {
                 val transKeyGen = JceKeyTransRecipientInfoGenerator(
                     sha256(KEYPAIR.public.encoded),
                     KEYPAIR.public
-                ).setProvider("BC")
+                ).setProvider(BC_PROVIDER)
                 cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
 
                 val bcEnvelopedData = generateBcEnvelopedData(cmsEnvelopedDataGenerator)
@@ -364,6 +363,7 @@ private fun generateBcEnvelopedData(
     cmsEnvelopedDataGenerator: CMSEnvelopedDataGenerator
 ): CMSEnvelopedData {
     val msg = CMSProcessableByteArray(PLAINTEXT)
-    val encryptor = JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_GCM).setProvider("BC").build()
-    return cmsEnvelopedDataGenerator.generate(msg, encryptor)
+    val encryptorBuilder =
+        JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_GCM).setProvider(BC_PROVIDER)
+    return cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())
 }
