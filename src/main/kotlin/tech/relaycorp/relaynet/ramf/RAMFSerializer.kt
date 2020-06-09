@@ -45,7 +45,7 @@ private data class FieldSet(
     val payload: ByteArray
 )
 
-class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
+internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
     fun serialize(
         message: RAMFMessage,
         signerPrivateKey: PrivateKey,
@@ -109,7 +109,7 @@ class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: 
         return reverseOS.array
     }
 
-    @Throws(RAMFException::class, SignedDataException::class)
+    @Throws(RAMFException::class)
     fun <T> deserialize(
         serialization: ByteArray,
         messageClazz: RAMFMessageConstructor<T>

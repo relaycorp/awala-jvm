@@ -26,10 +26,20 @@ import java.security.PublicKey
 import java.sql.Date
 import java.time.ZonedDateTime
 
+/**
+ * Relaynet PKI Certificate.
+ *
+ * @param certificateHolder Bouncy Castle representation of the X.509 certificate
+ */
 class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     companion object {
         private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
 
+        /**
+         * Issue a new Relaynet PKI certificate.
+         *
+         * @suppress
+         */
         @Throws(CertificateException::class)
         internal fun issue(
             subjectCommonName: String,
@@ -113,6 +123,11 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             return contentSignerBuilder.build(privateKeyParam)
         }
 
+        /**
+         * Deserialize certificate,
+         *
+         * @param certificateSerialized The DER-encoded serialization of the certificate
+         */
         @Throws(CertificateException::class)
         fun deserialize(certificateSerialized: ByteArray): Certificate {
             val certificateHolder = try {
@@ -126,15 +141,24 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         }
     }
 
+    /**
+     * Return the Common Name of the subject
+     */
     val commonName: String
         get() {
             val commonNames = certificateHolder.subject.getRDNs(BCStyle.CN)
             return commonNames.first().first.value.toString()
         }
 
+    /**
+     * Calculate the private address of the subject
+     */
     val subjectPrivateAddress
         get() = "0" + getSHA256DigestHex(certificateHolder.subjectPublicKeyInfo.encoded)
 
+    /**
+     * Report whether this certificate equals another.
+     */
     override fun equals(other: Any?): Boolean {
         if (other !is Certificate) {
             return false
@@ -142,14 +166,25 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         return certificateHolder == other.certificateHolder
     }
 
+    /**
+     * Return the hash code of the certificate.
+     */
     override fun hashCode(): Int {
         return certificateHolder.hashCode()
     }
 
+    /**
+     * Return the DER cerialization of the certificate.
+     */
     fun serialize(): ByteArray {
         return certificateHolder.encoded
     }
 
+    /**
+     * Validate the certificate.
+     *
+     * @throws CertificateException If the certificate is invalid
+     */
     @Throws(CertificateException::class)
     fun validate() {
         validateValidityPeriod()

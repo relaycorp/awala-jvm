@@ -30,7 +30,7 @@ private val signatureAlgorithmMap = mapOf(
 )
 
 @Throws(SignedDataException::class)
-fun sign(
+internal fun sign(
     plaintext: ByteArray,
     signerPrivateKey: PrivateKey,
     signerCertificate: Certificate,
@@ -65,14 +65,14 @@ fun sign(
 }
 
 @Suppress("ArrayInDataClass")
-data class SignatureVerification(
+internal data class SignatureVerification(
     val plaintext: ByteArray,
     val signerCertificate: Certificate,
     val attachedCertificates: Set<Certificate>
 )
 
 @Throws(SignedDataException::class)
-fun verifySignature(cmsSignedData: ByteArray): SignatureVerification {
+internal fun verifySignature(cmsSignedData: ByteArray): SignatureVerification {
     val signedData = parseCmsSignedData(cmsSignedData)
 
     val signerInfo = getSignerInfoFromSignedData(signedData)

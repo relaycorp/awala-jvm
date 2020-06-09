@@ -14,7 +14,7 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
-    id("org.jetbrains.dokka") version "0.10.0"
+    id("org.jetbrains.dokka") version "0.10.1"
 
     `maven-publish`
 
@@ -112,6 +112,10 @@ tasks.withType<KotlinCompile>().configureEach {
 tasks.dokka {
     outputFormat = "html"
     outputDirectory = "$buildDir/javadoc"
+
+    configuration {
+        reportUndocumented = true
+    }
 }
 
 publishing {

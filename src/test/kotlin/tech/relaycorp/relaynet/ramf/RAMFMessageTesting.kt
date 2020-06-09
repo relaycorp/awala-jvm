@@ -103,7 +103,7 @@ fun <M : RAMFMessage> makeRAMFMessageConstructorTests(
     )
 }
 
-fun <M : RAMFMessage> makeRAMFMessageCompanionTests(
+internal fun <M : RAMFMessage> makeRAMFMessageCompanionTests(
     companion: RAMFMessageCompanion<M>,
     messageConstructor: RAMFMessageConstructor<M>
 ): Collection<DynamicTest> {

@@ -29,7 +29,7 @@ private val cmsContentEncryptionAlgorithm = mapOf(
     SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_GCM
 )
 
-sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
+internal sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
     companion object {
         @Throws(EnvelopedDataException::class)
         fun deserialize(envelopedDataSerialized: ByteArray): EnvelopedData {
@@ -87,7 +87,8 @@ sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
     abstract fun validate()
 }
 
-class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) : EnvelopedData(bcEnvelopedData) {
+internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
+    EnvelopedData(bcEnvelopedData) {
     companion object {
         fun encrypt(
             plaintext: ByteArray,

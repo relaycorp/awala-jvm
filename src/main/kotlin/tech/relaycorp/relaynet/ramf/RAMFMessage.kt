@@ -20,12 +20,19 @@ private const val MAX_PAYLOAD_LENGTH = 8388608
 private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
-typealias RAMFMessageConstructor<M> =
+internal typealias RAMFMessageConstructor<M> =
         (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
 
 private val PRIVATE_ADDRESS_REGEX = "^0[a-f0-9]+$".toRegex()
 
-abstract class RAMFMessage(
+/**
+ * RAMF v1 message.
+ *
+ * @property recipientAddress The private or public address of the recipient
+ * @property payload The payload
+ * @property senderCertificate The sender's Relaynet PKI certificate
+ */
+abstract class RAMFMessage internal constructor(
     private val serializer: RAMFSerializer,
     val recipientAddress: String,
     val payload: ByteArray,
@@ -35,13 +42,34 @@ abstract class RAMFMessage(
     ttl: Int?,
     senderCertificateChain: Set<Certificate>?
 ) {
+    /**
+     * The id of the message
+     */
     val id = id ?: UUID.randomUUID().toString()
+
+    /**
+     * The creation date of the message
+     */
     val creationDate: ZonedDateTime = creationDate ?: ZonedDateTime.now(ZoneId.of("UTC"))
+
+    /**
+     * The time-to-live of the message (in seconds)
+     */
     val ttl = ttl ?: DEFAULT_TTL_SECONDS
+
+    /**
+     * Certificate chain of the sender
+     */
     val senderCertificateChain = senderCertificateChain ?: setOf()
 
+    /**
+     * Expiry date of the message
+     */
     val expiryDate: ZonedDateTime get() = creationDate.plusSeconds(ttl.toLong())
 
+    /**
+     * Report whether the recipient address is private
+     */
     val isRecipientAddressPrivate get() = !recipientAddress.contains(":")
 
     init {
@@ -72,6 +100,12 @@ abstract class RAMFMessage(
         }
     }
 
+    /**
+     * Serialize the message.
+     *
+     * @param senderPrivateKey The private key to sign the message
+     * @param hashingAlgorithm The hashing algorithm to use in the signature
+     */
     fun serialize(
         senderPrivateKey: PrivateKey,
         hashingAlgorithm: HashingAlgorithm? = null
@@ -79,6 +113,11 @@ abstract class RAMFMessage(
         return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
     }
 
+    /**
+     * Validate the message.
+     *
+     * @throws RAMFException If the message was never (or is no longer) valid
+     */
     @Throws(RAMFException::class)
     fun validate() {
         validateTiming()
