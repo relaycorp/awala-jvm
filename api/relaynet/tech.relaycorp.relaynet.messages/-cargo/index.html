@@ -1,0 +1,53 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Cargo - relaynet</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">relaynet</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.messages</a>&nbsp;/&nbsp;<a href="./index.html">Cargo</a><br/>
+<br/>
+<h1>Cargo</h1>
+<code><span class="keyword">class </span><span class="identifier">Cargo</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../tech.relaycorp.relaynet.ramf/-r-a-m-f-message/index.html"><span class="identifier">RAMFMessage</span></a></code>
+<p>Cargo</p>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-companion/index.html">Companion</a></h4>
+</td>
+<td>
+<code><span class="keyword">companion</span> <span class="keyword">object </span><span class="identifier">Companion</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">RAMFMessageCompanion</span><span class="symbol">&lt;</span><a href="./index.html"><span class="identifier">Cargo</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<p>Cargo</p>
+<code><span class="identifier">Cargo</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo$<init>(kotlin.String, kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate, kotlin.String, java.time.ZonedDateTime, kotlin.Int, kotlin.collections.Set((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/recipientAddress">recipientAddress</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo$<init>(kotlin.String, kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate, kotlin.String, java.time.ZonedDateTime, kotlin.Int, kotlin.collections.Set((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/payload">payload</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo$<init>(kotlin.String, kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate, kotlin.String, java.time.ZonedDateTime, kotlin.Int, kotlin.collections.Set((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/senderCertificate">senderCertificate</span><span class="symbol">:</span>&nbsp;<a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo$<init>(kotlin.String, kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate, kotlin.String, java.time.ZonedDateTime, kotlin.Int, kotlin.collections.Set((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/messageId">messageId</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo$<init>(kotlin.String, kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate, kotlin.String, java.time.ZonedDateTime, kotlin.Int, kotlin.collections.Set((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/creationDate">creationDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo$<init>(kotlin.String, kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate, kotlin.String, java.time.ZonedDateTime, kotlin.Int, kotlin.collections.Set((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/ttl">ttl</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo$<init>(kotlin.String, kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate, kotlin.String, java.time.ZonedDateTime, kotlin.Int, kotlin.collections.Set((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/senderCertificateChain">senderCertificateChain</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html"><span class="identifier">Set</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="deserialize.html">deserialize</a></h4>
+</td>
+<td>
+<p>Deserialize cargo</p>
+<code><span class="keyword">fun </span><span class="identifier">deserialize</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo.Companion$deserialize(kotlin.ByteArray)/serialization">serialization</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Cargo</span></a></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">deserialize</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.messages.Cargo.Companion$deserialize(java.io.InputStream)/serialization">serialization</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/io/InputStream.html"><span class="identifier">InputStream</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Cargo</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

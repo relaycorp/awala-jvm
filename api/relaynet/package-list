@@ -1,0 +1,8 @@
+$dokka.format:html
+$dokka.linkExtension:html
+
+tech.relaycorp.relaynet
+tech.relaycorp.relaynet.messages
+tech.relaycorp.relaynet.ramf
+tech.relaycorp.relaynet.wrappers
+tech.relaycorp.relaynet.wrappers.x509

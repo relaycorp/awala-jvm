@@ -1,0 +1,67 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>tech.relaycorp.relaynet - relaynet</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">relaynet</a>&nbsp;/&nbsp;<a href="./index.html">tech.relaycorp.relaynet</a><br/>
+<br/>
+<h2>Package tech.relaycorp.relaynet</h2>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-cargo-delivery-request/index.html">CargoDeliveryRequest</a></h4>
+</td>
+<td>
+<p>Cargo Delivery Request.</p>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">CargoDeliveryRequest</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-hashing-algorithm/index.html">HashingAlgorithm</a></h4>
+</td>
+<td>
+<p>Supported hashing algorithms</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">HashingAlgorithm</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-symmetric-encryption/index.html">SymmetricEncryption</a></h4>
+</td>
+<td>
+<p>Supported block ciphers</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">SymmetricEncryption</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Exceptions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-relaynet-exception/index.html">RelaynetException</a></h4>
+</td>
+<td>
+<p>Base class for all exceptions in this library</p>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">RelaynetException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="issue-gateway-certificate.html">issueGatewayCertificate</a></h4>
+</td>
+<td>
+<p>Issue Relaynet PKI certificate to a private or public gateway.</p>
+<code><span class="keyword">fun </span><span class="identifier">issueGatewayCertificate</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/subjectPublicKey">subjectPublicKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/issuerPrivateKey">issuerPrivateKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PrivateKey.html"><span class="identifier">PrivateKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/validityEndDate">validityEndDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/issuerCertificate">issuerCertificate</span><span class="symbol">:</span>&nbsp;<a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/validityStartDate">validityStartDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span>&nbsp;<span class="symbol">=</span>&nbsp;ZonedDateTime.now()<span class="symbol">)</span><span class="symbol">: </span><a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

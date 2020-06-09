@@ -1,0 +1,26 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>issueGatewayCertificate - relaynet</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">relaynet</a>&nbsp;/&nbsp;<a href="index.html">tech.relaycorp.relaynet</a>&nbsp;/&nbsp;<a href="./issue-gateway-certificate.html">issueGatewayCertificate</a><br/>
+<br/>
+<h1>issueGatewayCertificate</h1>
+<a name="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)"></a>
+<code><span class="keyword">fun </span><span class="identifier">issueGatewayCertificate</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/subjectPublicKey">subjectPublicKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/issuerPrivateKey">issuerPrivateKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PrivateKey.html"><span class="identifier">PrivateKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/validityEndDate">validityEndDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/issuerCertificate">issuerCertificate</span><span class="symbol">:</span>&nbsp;<a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/validityStartDate">validityStartDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span>&nbsp;<span class="symbol">=</span>&nbsp;ZonedDateTime.now()<span class="symbol">)</span><span class="symbol">: </span><a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a></code>
+<p>Issue Relaynet PKI certificate to a private or public gateway.</p>
+<h3>Parameters</h3>
+<p><a name="subjectPublicKey"></a>
+<code>subjectPublicKey</code> - The public key of the subject</p>
+<p><a name="issuerPrivateKey"></a>
+<code>issuerPrivateKey</code> - The private key of the issuer</p>
+<p><a name="validityEndDate"></a>
+<code>validityEndDate</code> - The end date of the certificate to be issued</p>
+<p><a name="issuerCertificate"></a>
+<code>issuerCertificate</code> - The certificate of the issuer, unless issuing a self-signed certificate</p>
+<p><a name="validityStartDate"></a>
+<code>validityStartDate</code> - The start date of the certificate to be issued</p>
+</BODY>
+</HTML>
