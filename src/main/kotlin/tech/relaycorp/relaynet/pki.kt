@@ -7,6 +7,15 @@ import java.security.PrivateKey
 import java.security.PublicKey
 import java.time.ZonedDateTime
 
+/**
+ * Issue Relaynet PKI certificate to a private or public gateway.
+ *
+ * @param subjectPublicKey The public key of the subject
+ * @param issuerPrivateKey The private key of the issuer
+ * @param validityEndDate The end date of the certificate to be issued
+ * @param issuerCertificate The certificate of the issuer, unless issuing a self-signed certificate
+ * @param validityStartDate The start date of the certificate to be issued
+ */
 fun issueGatewayCertificate(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,

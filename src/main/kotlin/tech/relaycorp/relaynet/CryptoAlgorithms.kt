@@ -1,6 +1,6 @@
 package tech.relaycorp.relaynet
 
-/**
+/*
  * Registries of cryptographic algorithms supported.
  *
  * Includes algorithms required and recommended by the Relaynet specs, and excludes those
@@ -9,12 +9,18 @@ package tech.relaycorp.relaynet
  * See: https://specs.relaynet.link/RS-018
  */
 
+/**
+ * Supported hashing algorithms
+ */
 enum class HashingAlgorithm {
     SHA256,
     SHA384,
     SHA512
 }
 
+/**
+ * Supported block ciphers
+ */
 enum class SymmetricEncryption {
     AES_128,
     AES_192,
