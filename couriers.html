@@ -1,0 +1,139 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  
+    <title>Implementing a courier - Relaynet JVM</title>
+
+    
+  
+
+  <link rel="shortcut icon" href="/relaynet-jvm/favicon.ico" type="image/x-icon">
+
+  <link rel="stylesheet" href="/relaynet-jvm/assets/css/just-the-docs.css">
+
+  
+
+  
+  <script type="text/javascript" src="/relaynet-jvm/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Implementing a courier | Relaynet JVM</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="Implementing a courier" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="JVM library for the core of Relaynet" />
+<meta property="og:description" content="JVM library for the core of Relaynet" />
+<meta property="og:site_name" content="Relaynet JVM" />
+<script type="application/ld+json">
+{"@type":"WebPage","url":"/relaynet-jvm/couriers","headline":"Implementing a courier","description":"JVM library for the core of Relaynet","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+</head>
+
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol id="link" viewBox="0 0 16 16">
+      <title>Link</title>
+      <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+    </symbol>
+  </svg>
+
+  <div class="page-wrap">
+    <div class="side-bar">
+      <div class="site-header">
+        <a href="/relaynet-jvm" class="site-title lh-tight">
+  Relaynet JVM
+
+</a>
+        <button class="menu-button fs-3 js-main-nav-trigger" data-text-toggle="Hide" type="button">Menu</button>
+      </div>
+
+      <div class="navigation main-nav js-main-nav">
+        <nav role="navigation" aria-label="Main navigation">
+  <ul class="navigation-list"><li class="navigation-list-item"><a href="/relaynet-jvm/" class="navigation-list-link">Relaynet JVM</a></li><li class="navigation-list-item"><a href="/relaynet-jvm/howto-service.html" class="navigation-list-link">Implementing a service</a></li><li class="navigation-list-item active"><a href="/relaynet-jvm/couriers" class="navigation-list-link active">Implementing a courier</a></li><li class="navigation-list-item"><a href="/relaynet-jvm/howto-gateway.html" class="navigation-list-link">Implementing a gateway</a></li></ul>
+</nav>
+
+      </div>
+      <footer class="site-footer">
+        <p class="text-small text-grey-dk-000 mb-4">This site uses <a href="https://github.com/pmarsceill/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.</p>
+      </footer>
+    </div>
+    <div class="main-content-wrap js-main-content" tabindex="0">
+      <div class="main-content">
+        <div class="page-header js-page-header">
+          
+          
+        </div>
+        <div class="page">
+          
+            
+          
+          <div id="main-content" class="page-content" role="main">
+            
+              <h1 id="implementing-a-courier">
+        
+        
+          <a href="#implementing-a-courier" class="anchor-heading"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#link"></use></svg></a> Implementing a courier
+        
+        
+      </h1>
+
+<p>If you’re implementing a courier, you’ll only need a very small subset of this library.</p>
+    
+      <h2 id="processing-ramf-messages">
+        
+        
+          <a href="#processing-ramf-messages" class="anchor-heading"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#link"></use></svg></a> Processing RAMF messages
+        
+        
+      </h2>
+
+<p>You’ll need the <a href="/relaynet-jvm/api/relaynet/tech.relaycorp.relaynet.messages/-cargo/"><code class="language-plaintext highlighter-rouge">Cargo</code></a> and <a href="/relaynet-jvm/api/relaynet/tech.relaycorp.relaynet.messages/-cargo-collection-authorization/"><code class="language-plaintext highlighter-rouge">CargoCollectionAuthorization</code></a> (CCA) classes to deserialize and inspect their corresponding RAMF messages.</p>
+
+<p>It is important to call the <code class="language-plaintext highlighter-rouge">validate()</code> method on any RAMF message received from any external source. Deserializing RAMF messages only proves that they are syntactically valid, but they may still be invalid (e.g., the message might’ve been created after the sender’s certificate expired).</p>
+    
+      <h2 id="delivering-cargo">
+        
+        
+          <a href="#delivering-cargo" class="anchor-heading"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#link"></use></svg></a> Delivering cargo
+        
+        
+      </h2>
+
+<p>When delivering cargo to a public gateway via a cargo relay implementation (e.g., CogRPC), you’ll need to pass <a href="/relaynet-jvm/api/relaynet/tech.relaycorp.relaynet/-cargo-delivery-request/"><code class="language-plaintext highlighter-rouge">CargoRelayRequest</code></a> instances to it so that you can track and delete cargo as it’s safely delivered to the gateway.</p>
+
+<p>The actual way to pass such instances will depend entirely on the cargo relay library, so make sure it read its documentation.</p>
+    
+      <h2 id="example">
+        
+        
+          <a href="#example" class="anchor-heading"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#link"></use></svg></a> Example
+        
+        
+      </h2>
+
+<p>To see this library in action in a courier implementation, <a href="https://github.com/relaycorp/relaynet-courier-android/search?q=%22tech.relaycorp.relaynet%22">check out how the Relaynet Courier by Relaycorp</a>.</p>
+            
+
+          
+
+          
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
