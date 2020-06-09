@@ -4,6 +4,8 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.dateToZonedDateTime
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
+import java.net.MalformedURLException
+import java.net.URL
 import java.security.PrivateKey
 import java.time.ZoneId
 import java.time.ZoneOffset.UTC
@@ -20,6 +22,8 @@ private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
 typealias RAMFMessageConstructor<M> =
         (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
+
+private val PRIVATE_ADDRESS_REGEX = "^0[a-f0-9]+$".toRegex()
 
 abstract class RAMFMessage(
     private val serializer: RAMFSerializer,
@@ -75,6 +79,18 @@ abstract class RAMFMessage(
 
     @Throws(RAMFException::class)
     fun validate() {
+        validateTiming()
+
+        try {
+            senderCertificate.validate()
+        } catch (exc: CertificateException) {
+            throw RAMFException("Invalid sender certificate", exc)
+        }
+
+        validateRecipientAddress()
+    }
+
+    private fun validateTiming() {
         val now = ZonedDateTime.now(UTC)
         if (now < creationDate) {
             throw RAMFException("Creation date is in the future")
@@ -86,10 +102,17 @@ abstract class RAMFMessage(
         if (expiryDate < now) {
             throw RAMFException("Message already expired")
         }
-        try {
-            senderCertificate.validate()
-        } catch (exc: CertificateException) {
-            throw RAMFException("Invalid sender certificate", exc)
+    }
+
+    private fun validateRecipientAddress() {
+        val isPublic = try {
+            URL(recipientAddress)
+            true
+        } catch (e: MalformedURLException) {
+            false
+        }
+        if (!isPublic && !PRIVATE_ADDRESS_REGEX.matches(recipientAddress)) {
+            throw RAMFException("Recipient address is invalid")
         }
     }
 }
