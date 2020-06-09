@@ -49,6 +49,10 @@ jobs:
           cd docs
           bundle install --path vendor/bundle
           bundle exec jekyll build
+          cd ..
+
+          # API docs:
+          ./gradlew dokka
 
       - name: Release
         run: npx semantic-release
