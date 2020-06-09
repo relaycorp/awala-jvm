@@ -14,6 +14,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -460,6 +461,33 @@ class RAMFMessageTest {
 
                 assertEquals("Recipient address is invalid", exception.message)
             }
+        }
+    }
+
+    @Nested
+    inner class IsRecipientAddressPrivate {
+        @Test
+        fun `Private addresses should be reported as such`() {
+            val message = StubRAMFMessage(
+                "0deadbeef",
+                payload,
+                senderCertificate,
+                messageId
+            )
+
+            assertTrue { message.isRecipientAddressPrivate }
+        }
+
+        @Test
+        fun `Public addresses should be reported as such`() {
+            val message = StubRAMFMessage(
+                "https://example.com",
+                payload,
+                senderCertificate,
+                messageId
+            )
+
+            assertFalse { message.isRecipientAddressPrivate }
         }
     }
 

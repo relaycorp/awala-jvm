@@ -42,6 +42,8 @@ abstract class RAMFMessage(
 
     val expiryDate: ZonedDateTime get() = creationDate.plusSeconds(ttl.toLong())
 
+    val isRecipientAddressPrivate get() = !recipientAddress.contains(":")
+
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
             throw RAMFException(
