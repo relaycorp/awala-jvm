@@ -14,6 +14,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -419,6 +420,74 @@ class RAMFMessageTest {
 
             assertTrue(exception.cause is CertificateException)
             assertEquals("Invalid sender certificate", exception.message)
+        }
+
+        @Nested
+        inner class RecipientAddress {
+            @Test
+            fun `Public addresses should be accepted`() {
+                val message = StubRAMFMessage(
+                    "https://example.com",
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                message.validate()
+            }
+
+            @Test
+            fun `Private addresses should be accepted`() {
+                val message = StubRAMFMessage(
+                    "0deadbeef",
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                message.validate()
+            }
+
+            @Test
+            fun `Invalid addresses should be refused`() {
+                val message = StubRAMFMessage(
+                    "this is private",
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                val exception = assertThrows<RAMFException> { message.validate() }
+
+                assertEquals("Recipient address is invalid", exception.message)
+            }
+        }
+    }
+
+    @Nested
+    inner class IsRecipientAddressPrivate {
+        @Test
+        fun `Private addresses should be reported as such`() {
+            val message = StubRAMFMessage(
+                "0deadbeef",
+                payload,
+                senderCertificate,
+                messageId
+            )
+
+            assertTrue { message.isRecipientAddressPrivate }
+        }
+
+        @Test
+        fun `Public addresses should be reported as such`() {
+            val message = StubRAMFMessage(
+                "https://example.com",
+                payload,
+                senderCertificate,
+                messageId
+            )
+
+            assertFalse { message.isRecipientAddressPrivate }
         }
     }
 
