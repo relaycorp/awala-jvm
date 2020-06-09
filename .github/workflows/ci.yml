@@ -38,9 +38,30 @@ jobs:
           node-version: 12
       - name: Install Node.js dependencies
         run: npm install
+
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.5'
+      - name: Generate docs
+        run: |
+          # Jekyll docs:
+          gem install bundler
+          cd docs
+          bundle install --path vendor/bundle
+          bundle exec jekyll build
+
       - name: Release
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BINTRAY_USERNAME: relaybot
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+
+      - name: Publish documentation
+        uses: peaceiris/actions-gh-pages@v3.6.1
+        with:
+          publish_branch: gh-pages
+          publish_dir: ./build/docs
+          allow_empty_commit: false
+          commit_message: "${{ github.event.head_commit.message }} [skip ci]"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
