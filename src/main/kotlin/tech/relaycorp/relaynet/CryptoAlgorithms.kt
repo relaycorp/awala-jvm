@@ -19,7 +19,7 @@ enum class HashingAlgorithm {
 }
 
 /**
- * Support block ciphers
+ * Supported block ciphers
  */
 enum class SymmetricEncryption {
     AES_128,
