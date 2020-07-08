@@ -23,10 +23,9 @@ fun issueGatewayCertificate(
     issuerCertificate: Certificate? = null,
     validityStartDate: ZonedDateTime = ZonedDateTime.now()
 ): Certificate {
-    val privateAddress = "0${getSHA256DigestHex(subjectPublicKey.encoded)}"
     val isSelfIssued = issuerCertificate == null
     return Certificate.issue(
-        privateAddress,
+        computePrivateAddress(subjectPublicKey),
         subjectPublicKey,
         issuerPrivateKey,
         validityEndDate,
@@ -36,3 +35,25 @@ fun issueGatewayCertificate(
         validityStartDate
     )
 }
+
+fun issueEndpointCertificate(
+    subjectPublicKey: PublicKey,
+    issuerPrivateKey: PrivateKey,
+    validityEndDate: ZonedDateTime,
+    issuerCertificate: Certificate? = null,
+    validityStartDate: ZonedDateTime = ZonedDateTime.now()
+): Certificate {
+    return Certificate.issue(
+        computePrivateAddress(subjectPublicKey),
+        subjectPublicKey,
+        issuerPrivateKey,
+        validityEndDate,
+        issuerCertificate,
+        true,
+        0,
+        validityStartDate
+    )
+}
+
+private fun computePrivateAddress(subjectPublicKey: PublicKey) =
+    "0${getSHA256DigestHex(subjectPublicKey.encoded)}"
