@@ -43,7 +43,7 @@ internal class CargoMessageSetTest {
 
             val messages = deserializeDERSequence(serialization)
             assertEquals(1, messages.size)
-            val messageDer = DEROctetString.getInstance(messages.first() as ASN1TaggedObject, false)
+            val messageDer = DEROctetString.getInstance(messages.first())
             assertEquals(message.asList(), messageDer.octets.asList())
         }
 
@@ -57,8 +57,8 @@ internal class CargoMessageSetTest {
 
             val messages = deserializeDERSequence(serialization)
             assertEquals(2, messages.size)
-            val message1Der = DEROctetString.getInstance(messages[0] as ASN1TaggedObject, false)
-            val message2Der = DEROctetString.getInstance(messages[1] as ASN1TaggedObject, false)
+            val message1Der = DEROctetString.getInstance(messages[0])
+            val message2Der = DEROctetString.getInstance(messages[1])
             assertEquals(message1.asList(), message1Der.octets.asList())
             assertEquals(message2.asList(), message2Der.octets.asList())
         }
