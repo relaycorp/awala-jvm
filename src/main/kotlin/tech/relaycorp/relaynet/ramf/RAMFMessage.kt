@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.ramf
 
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.dateToZonedDateTime
+import tech.relaycorp.relaynet.messages.payloads.PayloadPlaintext
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.net.MalformedURLException
@@ -32,7 +33,7 @@ private val PRIVATE_ADDRESS_REGEX = "^0[a-f0-9]+$".toRegex()
  * @property payload The payload
  * @property senderCertificate The sender's Relaynet PKI certificate
  */
-abstract class RAMFMessage internal constructor(
+abstract class RAMFMessage<Payload : PayloadPlaintext> internal constructor(
     private val serializer: RAMFSerializer,
     val recipientAddress: String,
     val payload: ByteArray,
@@ -112,6 +113,8 @@ abstract class RAMFMessage internal constructor(
     ): ByteArray {
         return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
     }
+
+    protected abstract fun deserializePayload(payloadPlaintext: ByteArray): Payload
 
     /**
      * Validate the message.
