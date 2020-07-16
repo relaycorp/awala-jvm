@@ -7,13 +7,13 @@ import com.beanit.jasn1.ber.types.BerDateTime
 import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
-import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.cms.sign
 import tech.relaycorp.relaynet.wrappers.cms.verifySignature
@@ -171,18 +171,11 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
 
     @Throws(RAMFException::class)
     private fun deserializeFields(serialization: ByteArray): FieldSet {
-        val asn1InputStream = ASN1InputStream(serialization)
-        val asn1Value = try {
-            asn1InputStream.readObject()
-        } catch (_: IOException) {
-            throw RAMFException("Message fields are not a DER-encoded")
+        val fields = try {
+            ASN1Utils.deserializeSequence(serialization)
+        } catch (exc: ASN1Exception) {
+            throw RAMFException("Invalid RAMF message", exc)
         }
-        val fieldSequence: ASN1Sequence = try {
-            ASN1Sequence.getInstance(asn1Value)
-        } catch (_: IllegalArgumentException) {
-            throw RAMFException("Message fields are not a ASN.1 sequence")
-        }
-        val fields = fieldSequence.toArray()
         if (fields.size != 5) {
             throw RAMFException(
                 "Field sequence should contain 5 items (got ${fields.size})"

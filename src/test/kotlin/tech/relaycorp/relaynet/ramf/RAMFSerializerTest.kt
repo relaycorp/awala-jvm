@@ -34,6 +34,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 private val BER_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
@@ -426,7 +427,9 @@ class RAMFSerializerTest {
                     )
                 }
 
-                assertEquals("Message fields are not a DER-encoded", exception.message)
+                assertEquals("Invalid RAMF message", exception.message)
+                assertNotNull(exception.cause)
+                assertEquals("Value is not DER-encoded", exception.cause!!.message)
             }
 
             @Test
@@ -451,7 +454,9 @@ class RAMFSerializerTest {
                     )
                 }
 
-                assertEquals("Message fields are not a ASN.1 sequence", exception.message)
+                assertEquals("Invalid RAMF message", exception.message)
+                assertNotNull(exception.cause)
+                assertEquals("Value is not an ASN.1 sequence", exception.cause!!.message)
             }
 
             @Test
