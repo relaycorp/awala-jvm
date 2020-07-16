@@ -10,6 +10,18 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 internal class CargoMessageSetTest {
+    @Test
+    fun `Messages are accessible from instance`() {
+        val message1 = "uno".toByteArray()
+        val message2 = "dos".toByteArray()
+        val cargoMessageSet = CargoMessageSet(arrayOf(message1, message2))
+
+        assertEquals(
+            listOf(message1.asList(), message2.asList()),
+            cargoMessageSet.messages.map { it.asList() }
+        )
+    }
+
     @Nested
     inner class Serialize {
         @Test
