@@ -16,6 +16,8 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
       - uses: eskatos/gradle-command-action@v1
         with:
           arguments: build
