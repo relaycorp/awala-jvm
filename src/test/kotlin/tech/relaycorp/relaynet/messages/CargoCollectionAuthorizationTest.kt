@@ -14,7 +14,7 @@ internal class CargoCollectionAuthorizationTest :
         CargoCollectionAuthorization.Companion
     ) {
     @Test
-    fun `Payload deserialization should be delegated to CargoMessageSet`() {
+    fun `Payload deserialization should be delegated to EmptyPayloadPlaintext`() {
         val cca = CargoCollectionAuthorization(
             "https://gb.relaycorp.tech", "".toByteArray(), CERTIFICATE
         )
