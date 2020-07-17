@@ -7,4 +7,5 @@ tech.relaycorp.relaynet.messages.payloads
 tech.relaycorp.relaynet.ramf
 tech.relaycorp.relaynet.wrappers
 tech.relaycorp.relaynet.wrappers.asn1
+tech.relaycorp.relaynet.wrappers.cms
 tech.relaycorp.relaynet.wrappers.x509

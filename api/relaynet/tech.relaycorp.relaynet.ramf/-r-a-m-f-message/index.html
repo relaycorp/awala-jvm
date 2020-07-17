@@ -8,7 +8,7 @@
 <a href="../../index.html">relaynet</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.ramf</a>&nbsp;/&nbsp;<a href="./index.html">RAMFMessage</a><br/>
 <br/>
 <h1>RAMFMessage</h1>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">RAMFMessage</span></code>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">RAMFMessage</span><span class="symbol">&lt;</span><span class="identifier">Payload</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../tech.relaycorp.relaynet.messages.payloads/-payload-plaintext/index.html"><span class="identifier">PayloadPlaintext</span></a><span class="symbol">&gt;</span></code>
 <p>RAMF v1 message.</p>
 <h3>Properties</h3>
 <table>
@@ -100,6 +100,14 @@
 </tr>
 <tr>
 <td>
+<h4><a href="unwrap-payload.html">unwrapPayload</a></h4>
+</td>
+<td>
+<p>Decrypt and deserialize payload.</p>
+<code><span class="keyword">fun </span><span class="identifier">unwrapPayload</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.ramf.RAMFMessage$unwrapPayload(java.security.PrivateKey)/privateKey">privateKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PrivateKey.html"><span class="identifier">PrivateKey</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Payload</span></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="validate.html">validate</a></h4>
 </td>
 <td>
@@ -117,7 +125,7 @@
 </td>
 <td>
 <p>Cargo</p>
-<code><span class="keyword">class </span><span class="identifier">Cargo</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">RAMFMessage</span></a></code></td>
+<code><span class="keyword">class </span><span class="identifier">Cargo</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">RAMFMessage</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.messages.payloads/-cargo-message-set/index.html"><span class="identifier">CargoMessageSet</span></a><span class="symbol">&gt;</span></code></td>
 </tr>
 <tr>
 <td>
@@ -125,7 +133,7 @@
 </td>
 <td>
 <p>Cargo Collection Authorization (CCA)</p>
-<code><span class="keyword">class </span><span class="identifier">CargoCollectionAuthorization</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">RAMFMessage</span></a></code></td>
+<code><span class="keyword">class </span><span class="identifier">CargoCollectionAuthorization</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">RAMFMessage</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.messages.payloads/-empty-payload-plaintext/index.html"><span class="identifier">EmptyPayloadPlaintext</span></a><span class="symbol">&gt;</span></code></td>
 </tr>
 <tr>
 <td>
@@ -133,7 +141,7 @@
 </td>
 <td>
 <p>Parcel</p>
-<code><span class="keyword">class </span><span class="identifier">Parcel</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">RAMFMessage</span></a></code></td>
+<code><span class="keyword">class </span><span class="identifier">Parcel</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">RAMFMessage</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.messages.payloads/-service-message/index.html"><span class="identifier">ServiceMessage</span></a><span class="symbol">&gt;</span></code></td>
 </tr>
 </tbody>
 </table>
