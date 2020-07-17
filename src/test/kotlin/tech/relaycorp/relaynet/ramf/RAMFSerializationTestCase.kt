@@ -1,46 +1,51 @@
 package tech.relaycorp.relaynet.ramf
 
-import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 
-private const val recipientAddress = "0deadbeef"
-private val payload = "Payload".toByteArray()
-private val keyPair = generateRSAKeyPair()
-private val senderCertificate = issueStubCertificate(keyPair.public, keyPair.private)
-
 typealias MinimalRAMFMessageConstructor<M> = (String, ByteArray, Certificate) -> M
 
-fun <M : RAMFMessage<*>> makeRAMFMessageConstructorTests(
-    messageConstructor: RAMFMessageConstructor<M>,
+internal abstract class RAMFSerializationTestCase<M : RAMFMessage<*>>(
+    private val messageConstructor: RAMFMessageConstructor<M>,
     requiredParamsConstructor: MinimalRAMFMessageConstructor<M>,
-    expectedConcreteMessageType: Byte,
-    expectedConcreteMessageVersion: Byte
-): Collection<DynamicTest> {
+    private val expectedConcreteMessageType: Byte,
+    private val expectedConcreteMessageVersion: Byte,
+    private val companion: RAMFMessageCompanion<M>
+) {
     val simpleMessage = requiredParamsConstructor(recipientAddress, payload, senderCertificate)
 
-    return listOf(
-        DynamicTest.dynamicTest("Recipient address should be honored") {
+    @Nested
+    inner class Serialization {
+        @Test
+        fun `Recipient address should be honored`() {
             assertEquals(recipientAddress, simpleMessage.recipientAddress)
-        },
-        DynamicTest.dynamicTest("Payload should be honored") {
+        }
+
+        @Test
+        fun `Payload should be honored`() {
             assertEquals(payload, simpleMessage.payload)
-        },
-        DynamicTest.dynamicTest("Sender certificate should be honored") {
+        }
+
+        @Test
+        fun `Sender certificate should be honored`() {
             assertEquals(senderCertificate, simpleMessage.senderCertificate)
-        },
-        DynamicTest.dynamicTest(
-            "Serializer should be configured to use specified message type and version"
-        ) {
+        }
+
+        @Test
+        fun `Serializer should be configured to use specified message type and version`() {
             val messageSerialized = simpleMessage.serialize(keyPair.private)
 
             assertEquals(expectedConcreteMessageType, messageSerialized[8])
             assertEquals(expectedConcreteMessageVersion, messageSerialized[9])
-        },
-        DynamicTest.dynamicTest("Message id should be honored if set") {
+        }
+
+        @Test
+        fun `Message id should be honored if set`() {
             val messageId = "the-id"
             val message = messageConstructor(
                 recipientAddress,
@@ -53,8 +58,10 @@ fun <M : RAMFMessage<*>> makeRAMFMessageConstructorTests(
             )
 
             assertEquals(messageId, message.id)
-        },
-        DynamicTest.dynamicTest("Creation time should be honored if set") {
+        }
+
+        @Test
+        fun `Creation time should be honored if set`() {
             val creationDate = ZonedDateTime.now().minusMinutes(10)
             val message =
                 messageConstructor(
@@ -68,8 +75,10 @@ fun <M : RAMFMessage<*>> makeRAMFMessageConstructorTests(
                 )
 
             assertEquals(creationDate, message.creationDate)
-        },
-        DynamicTest.dynamicTest("TTL should be honored if set") {
+        }
+
+        @Test
+        fun `TTL should be honored if set`() {
             val ttl = 42
             val message =
                 messageConstructor(
@@ -83,8 +92,10 @@ fun <M : RAMFMessage<*>> makeRAMFMessageConstructorTests(
                 )
 
             assertEquals(ttl, message.ttl)
-        },
-        DynamicTest.dynamicTest("Sender certificate chain should be honored if set") {
+        }
+
+        @Test
+        fun `Sender certificate chain should be honored if set`() {
             val senderCertificateChain = setOf(
                 issueStubCertificate(keyPair.public, keyPair.private)
             )
@@ -100,27 +111,31 @@ fun <M : RAMFMessage<*>> makeRAMFMessageConstructorTests(
 
             assertEquals(senderCertificateChain, message.senderCertificateChain)
         }
-    )
-}
+    }
 
-internal fun <M : RAMFMessage<*>> makeRAMFMessageCompanionTests(
-    companion: RAMFMessageCompanion<M>,
-    messageConstructor: RAMFMessageConstructor<M>
-): Collection<DynamicTest> {
-    val message =
-        messageConstructor(recipientAddress, payload, senderCertificate, null, null, null, null)
-    val messageSerialized = message.serialize(keyPair.private)
+    @Nested
+    inner class Deserialization {
+        private val messageSerialized = simpleMessage.serialize(keyPair.private)
 
-    return listOf(
-        DynamicTest.dynamicTest("Valid ByteArray should be deserialized") {
+        @Test
+        fun `Valid ByteArray should be deserialized`() {
             val ccaDeserialized = companion.deserialize(messageSerialized)
 
-            assertEquals(message.id, ccaDeserialized.id)
-        },
-        DynamicTest.dynamicTest("Valid InputStream should be deserialized") {
+            assertEquals(simpleMessage.id, ccaDeserialized.id)
+        }
+
+        @Test
+        fun `Valid InputStream should be deserialized`() {
             val ccaDeserialized = companion.deserialize(messageSerialized.inputStream())
 
-            assertEquals(message.id, ccaDeserialized.id)
+            assertEquals(simpleMessage.id, ccaDeserialized.id)
         }
-    )
+    }
+
+    companion object {
+        private const val recipientAddress = "0deadbeef"
+        private val payload = "Payload".toByteArray()
+        private val keyPair = generateRSAKeyPair()
+        private val senderCertificate = issueStubCertificate(keyPair.public, keyPair.private)
+    }
 }
