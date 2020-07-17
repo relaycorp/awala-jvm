@@ -1,23 +1,29 @@
 package tech.relaycorp.relaynet.messages
 
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.TestFactory
-import tech.relaycorp.relaynet.ramf.makeRAMFMessageCompanionTests
-import tech.relaycorp.relaynet.ramf.makeRAMFMessageConstructorTests
+import tech.relaycorp.relaynet.CERTIFICATE
+import tech.relaycorp.relaynet.messages.payloads.CargoMessageSet
+import tech.relaycorp.relaynet.ramf.RAMFSerializationTestCase
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-class CargoTest {
-    @TestFactory
-    fun makeConstructorTests() = makeRAMFMessageConstructorTests(
-        ::Cargo,
-        { r: String, p: ByteArray, s: Certificate -> Cargo(r, p, s) },
-        0x43,
-        0x00
-    )
+internal class CargoTest : RAMFSerializationTestCase<Cargo>(
+    ::Cargo,
+    { r: String, p: ByteArray, s: Certificate -> Cargo(r, p, s) },
+    0x43,
+    0x00,
+    Cargo.Companion
+) {
+    @Test
+    fun `Payload deserialization should be delegated to CargoMessageSet`() {
+        val cargoMessageSet = CargoMessageSet(arrayOf("msg1".toByteArray(), "msg2".toByteArray()))
+        val cargo = Cargo("https://gb.relaycorp.tech", "".toByteArray(), CERTIFICATE)
 
-    @Nested
-    inner class Companion {
-        @TestFactory
-        fun makeDeserializationTests() = makeRAMFMessageCompanionTests(Cargo.Companion, ::Cargo)
+        val payloadDeserialized = cargo.deserializePayload(cargoMessageSet.serialize())
+
+        assertEquals(
+            cargoMessageSet.messages.map { it.asList() },
+            payloadDeserialized.messages.map { it.asList() }
+        )
     }
 }

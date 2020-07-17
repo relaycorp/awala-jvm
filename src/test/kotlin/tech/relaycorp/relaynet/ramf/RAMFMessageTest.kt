@@ -5,6 +5,7 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
+import tech.relaycorp.relaynet.wrappers.cms.SessionlessEnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -461,6 +462,25 @@ class RAMFMessageTest {
 
                 assertEquals("Recipient address is invalid", exception.message)
             }
+        }
+    }
+
+    @Nested
+    inner class UnwrapPayload {
+        @Test
+        fun `SessionlessEnvelopedData payload should be decrypted`() {
+            val payloadPlaintext = StubPayload("the payload")
+            val recipientKeyPair = generateRSAKeyPair()
+            val recipientCertificate =
+                issueStubCertificate(recipientKeyPair.public, recipientKeyPair.private)
+            val payloadCiphertext =
+                SessionlessEnvelopedData.encrypt(payloadPlaintext.serialize(), recipientCertificate)
+            val message =
+                StubRAMFMessage(recipientAddress, payloadCiphertext.serialize(), senderCertificate)
+
+            val plaintextDeserialized = message.unwrapPayload(recipientKeyPair.private)
+
+            assertEquals(payloadPlaintext.payload, plaintextDeserialized.payload)
         }
     }
 

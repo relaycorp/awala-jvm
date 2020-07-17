@@ -47,7 +47,7 @@ private data class FieldSet(
 
 internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
     fun serialize(
-        message: RAMFMessage,
+        message: RAMFMessage<*>,
         signerPrivateKey: PrivateKey,
         hashingAlgorithm: HashingAlgorithm? = null
     ): ByteArray {
@@ -71,7 +71,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
     }
 
     @Throws(IOException::class)
-    private fun serializeMessage(message: RAMFMessage): ByteArray {
+    private fun serializeMessage(message: RAMFMessage<*>): ByteArray {
         val reverseOS = ReverseByteArrayOutputStream(1000, true)
         var codeLength = 0
 

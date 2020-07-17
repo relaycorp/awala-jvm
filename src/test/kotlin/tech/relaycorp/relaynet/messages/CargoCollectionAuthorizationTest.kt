@@ -1,27 +1,24 @@
 package tech.relaycorp.relaynet.messages
 
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.TestFactory
-import tech.relaycorp.relaynet.ramf.makeRAMFMessageCompanionTests
-import tech.relaycorp.relaynet.ramf.makeRAMFMessageConstructorTests
+import tech.relaycorp.relaynet.CERTIFICATE
+import tech.relaycorp.relaynet.ramf.RAMFSerializationTestCase
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import kotlin.test.Test
 
-class CargoCollectionAuthorizationTest {
-    @TestFactory
-    fun makeConstructorTests() =
-        makeRAMFMessageConstructorTests(
-            ::CargoCollectionAuthorization,
-            { r: String, p: ByteArray, s: Certificate -> CargoCollectionAuthorization(r, p, s) },
-            0x44,
-            0x00
+internal class CargoCollectionAuthorizationTest :
+    RAMFSerializationTestCase<CargoCollectionAuthorization>(
+        ::CargoCollectionAuthorization,
+        { r: String, p: ByteArray, s: Certificate -> CargoCollectionAuthorization(r, p, s) },
+        0x44,
+        0x00,
+        CargoCollectionAuthorization.Companion
+    ) {
+    @Test
+    fun `Payload deserialization should be delegated to EmptyPayloadPlaintext`() {
+        val cca = CargoCollectionAuthorization(
+            "https://gb.relaycorp.tech", "".toByteArray(), CERTIFICATE
         )
 
-    @Nested
-    inner class Companion {
-        @TestFactory
-        fun makeDeserializationTests() = makeRAMFMessageCompanionTests(
-            CargoCollectionAuthorization.Companion,
-            ::CargoCollectionAuthorization
-        )
+        cca.deserializePayload("".toByteArray())
     }
 }

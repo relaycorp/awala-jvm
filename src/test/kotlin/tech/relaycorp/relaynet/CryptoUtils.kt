@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet
 
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest
 import java.security.PrivateKey
@@ -28,3 +29,6 @@ fun issueStubCertificate(
         issuerCertificate = issuerCertificate
     )
 }
+
+val KEY_PAIR = generateRSAKeyPair()
+val CERTIFICATE = issueStubCertificate(KEY_PAIR.public, KEY_PAIR.private)

@@ -1,23 +1,23 @@
 package tech.relaycorp.relaynet.messages
 
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.TestFactory
-import tech.relaycorp.relaynet.ramf.makeRAMFMessageCompanionTests
-import tech.relaycorp.relaynet.ramf.makeRAMFMessageConstructorTests
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.CERTIFICATE
+import tech.relaycorp.relaynet.ramf.RAMFSerializationTestCase
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import kotlin.test.Test
 
-class ParcelTest {
-    @TestFactory
-    fun makeConstructorTests() = makeRAMFMessageConstructorTests(
-        ::Parcel,
-        { r: String, p: ByteArray, s: Certificate -> Parcel(r, p, s) },
-        0x50,
-        0x00
-    )
+internal class ParcelTest : RAMFSerializationTestCase<Parcel>(
+    ::Parcel,
+    { r: String, p: ByteArray, s: Certificate -> Parcel(r, p, s) },
+    0x50,
+    0x00,
+    Parcel.Companion
+) {
+    @Test
+    fun `Payload deserialization should be delegated to ServiceMessage`() {
+        val parcel = Parcel("https://gb.relaycorp.tech", "".toByteArray(), CERTIFICATE)
 
-    @Nested
-    inner class Companion {
-        @TestFactory
-        fun makeDeserializationTests() = makeRAMFMessageCompanionTests(Parcel.Companion, ::Parcel)
+        // TODO
+        assertThrows<NotImplementedError> { parcel.deserializePayload("invalid".toByteArray()) }
     }
 }
