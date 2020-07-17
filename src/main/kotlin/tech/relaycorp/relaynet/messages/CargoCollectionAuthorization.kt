@@ -32,9 +32,8 @@ class CargoCollectionAuthorization(
     ttl,
     senderCertificateChain
 ) {
-    override fun deserializePayload(payloadPlaintext: ByteArray): EmptyPayloadPlaintext {
-        TODO("Not yet implemented")
-    }
+    override fun deserializePayload(payloadPlaintext: ByteArray) =
+        EmptyPayloadPlaintext.deserialize(payloadPlaintext)
 
     companion object : RAMFMessageCompanion<CargoCollectionAuthorization> {
         /**

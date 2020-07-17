@@ -1,7 +1,9 @@
 package tech.relaycorp.relaynet.messages
 
+import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.ramf.RAMFSerializationTestCase
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import kotlin.test.Test
 
 internal class CargoCollectionAuthorizationTest :
     RAMFSerializationTestCase<CargoCollectionAuthorization>(
@@ -10,4 +12,13 @@ internal class CargoCollectionAuthorizationTest :
         0x44,
         0x00,
         CargoCollectionAuthorization.Companion
-    )
+    ) {
+    @Test
+    fun `Payload deserialization should be delegated to CargoMessageSet`() {
+        val cca = CargoCollectionAuthorization(
+            "https://gb.relaycorp.tech", "".toByteArray(), CERTIFICATE
+        )
+
+        cca.deserializePayload("".toByteArray())
+    }
+}

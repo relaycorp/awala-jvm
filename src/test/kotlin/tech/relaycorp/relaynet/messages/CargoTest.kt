@@ -1,10 +1,10 @@
 package tech.relaycorp.relaynet.messages
 
-import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.messages.payloads.CargoMessageSet
 import tech.relaycorp.relaynet.ramf.RAMFSerializationTestCase
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class CargoTest : RAMFSerializationTestCase<Cargo>(
