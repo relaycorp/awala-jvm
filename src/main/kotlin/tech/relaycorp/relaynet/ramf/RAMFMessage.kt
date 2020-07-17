@@ -150,7 +150,7 @@ abstract class RAMFMessage<Payload : PayloadPlaintext> internal constructor(
     }
 
     @Throws(RAMFException::class)
-    protected abstract fun deserializePayload(payloadPlaintext: ByteArray): Payload
+    internal abstract fun deserializePayload(payloadPlaintext: ByteArray): Payload
 
     private fun validateTiming() {
         val now = ZonedDateTime.now(UTC)

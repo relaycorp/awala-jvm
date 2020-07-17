@@ -32,9 +32,8 @@ class Cargo(
     ttl,
     senderCertificateChain
 ) {
-    override fun deserializePayload(payloadPlaintext: ByteArray): CargoMessageSet {
-        TODO("Not yet implemented")
-    }
+    override fun deserializePayload(payloadPlaintext: ByteArray) =
+        CargoMessageSet.deserialize(payloadPlaintext)
 
     companion object : RAMFMessageCompanion<Cargo> {
         /**
