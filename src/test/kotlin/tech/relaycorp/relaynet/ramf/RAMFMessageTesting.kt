@@ -14,7 +14,7 @@ private val senderCertificate = issueStubCertificate(keyPair.public, keyPair.pri
 
 typealias MinimalRAMFMessageConstructor<M> = (String, ByteArray, Certificate) -> M
 
-fun <M : RAMFMessage> makeRAMFMessageConstructorTests(
+fun <M : RAMFMessage<*>> makeRAMFMessageConstructorTests(
     messageConstructor: RAMFMessageConstructor<M>,
     requiredParamsConstructor: MinimalRAMFMessageConstructor<M>,
     expectedConcreteMessageType: Byte,
@@ -103,7 +103,7 @@ fun <M : RAMFMessage> makeRAMFMessageConstructorTests(
     )
 }
 
-internal fun <M : RAMFMessage> makeRAMFMessageCompanionTests(
+internal fun <M : RAMFMessage<*>> makeRAMFMessageCompanionTests(
     companion: RAMFMessageCompanion<M>,
     messageConstructor: RAMFMessageConstructor<M>
 ): Collection<DynamicTest> {

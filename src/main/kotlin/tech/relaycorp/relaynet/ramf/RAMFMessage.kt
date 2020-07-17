@@ -3,6 +3,9 @@ package tech.relaycorp.relaynet.ramf
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.dateToZonedDateTime
 import tech.relaycorp.relaynet.messages.payloads.PayloadPlaintext
+import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
+import tech.relaycorp.relaynet.wrappers.cms.EnvelopedDataException
+import tech.relaycorp.relaynet.wrappers.cms.SessionlessEnvelopedData
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.net.MalformedURLException
@@ -114,8 +117,6 @@ abstract class RAMFMessage<Payload : PayloadPlaintext> internal constructor(
         return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
     }
 
-    protected abstract fun deserializePayload(payloadPlaintext: ByteArray): Payload
-
     /**
      * Validate the message.
      *
@@ -133,6 +134,23 @@ abstract class RAMFMessage<Payload : PayloadPlaintext> internal constructor(
 
         validateRecipientAddress()
     }
+
+    /**
+     * Decrypt and deserialize payload.
+     *
+     * @throws EnvelopedDataException if the CMS EnvelopedData value is invalid or the
+     *      `privateKey` is invalid.
+     * @throws RAMFException if the plaintext is invalid.
+     */
+    @Throws(RAMFException::class, EnvelopedDataException::class)
+    fun unwrapPayload(privateKey: PrivateKey): Payload {
+        val envelopedData = EnvelopedData.deserialize(payload) as SessionlessEnvelopedData
+        val plaintext = envelopedData.decrypt(privateKey)
+        return deserializePayload(plaintext)
+    }
+
+    @Throws(RAMFException::class)
+    protected abstract fun deserializePayload(payloadPlaintext: ByteArray): Payload
 
     private fun validateTiming() {
         val now = ZonedDateTime.now(UTC)

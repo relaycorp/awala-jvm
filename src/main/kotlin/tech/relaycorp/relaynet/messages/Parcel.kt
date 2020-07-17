@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.messages
 
+import tech.relaycorp.relaynet.messages.payloads.ServiceMessage
 import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.ramf.RAMFMessage
 import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
@@ -21,7 +22,7 @@ class Parcel(
     creationDate: ZonedDateTime? = null,
     ttl: Int? = null,
     senderCertificateChain: Set<Certificate>? = null
-) : RAMFMessage(
+) : RAMFMessage<ServiceMessage>(
     SERIALIZER,
     recipientAddress,
     payload,
@@ -31,6 +32,10 @@ class Parcel(
     ttl,
     senderCertificateChain
 ) {
+    override fun deserializePayload(payloadPlaintext: ByteArray): ServiceMessage {
+        TODO("Not yet implemented")
+    }
+
     companion object : RAMFMessageCompanion<Parcel> {
         /**
          * Deserialize parcel
