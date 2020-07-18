@@ -469,18 +469,18 @@ class RAMFMessageTest {
     inner class UnwrapPayload {
         @Test
         fun `SessionlessEnvelopedData payload should be decrypted`() {
-            val payloadPlaintext = StubPayload("the payload")
+            val payload = StubPayload("the payload")
             val recipientKeyPair = generateRSAKeyPair()
             val recipientCertificate =
                 issueStubCertificate(recipientKeyPair.public, recipientKeyPair.private)
             val payloadCiphertext =
-                SessionlessEnvelopedData.encrypt(payloadPlaintext.serialize(), recipientCertificate)
+                SessionlessEnvelopedData.encrypt(payload.serializePlaintext(), recipientCertificate)
             val message =
                 StubRAMFMessage(recipientAddress, payloadCiphertext.serialize(), senderCertificate)
 
             val plaintextDeserialized = message.unwrapPayload(recipientKeyPair.private)
 
-            assertEquals(payloadPlaintext.payload, plaintextDeserialized.payload)
+            assertEquals(payload.payload, plaintextDeserialized.payload)
         }
     }
 

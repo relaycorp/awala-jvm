@@ -7,6 +7,6 @@ internal class ServiceMessageTest {
     @Test
     fun deserialize() {
         // TODO
-        assertThrows<NotImplementedError> { ServiceMessage().serialize() }
+        assertThrows<NotImplementedError> { ServiceMessage().serializePlaintext() }
     }
 }

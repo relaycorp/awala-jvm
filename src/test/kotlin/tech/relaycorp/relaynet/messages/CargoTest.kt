@@ -19,7 +19,7 @@ internal class CargoTest : RAMFSerializationTestCase<Cargo>(
         val cargoMessageSet = CargoMessageSet(arrayOf("msg1".toByteArray(), "msg2".toByteArray()))
         val cargo = Cargo("https://gb.relaycorp.tech", "".toByteArray(), CERTIFICATE)
 
-        val payloadDeserialized = cargo.deserializePayload(cargoMessageSet.serialize())
+        val payloadDeserialized = cargo.deserializePayload(cargoMessageSet.serializePlaintext())
 
         assertEquals(
             cargoMessageSet.messages.map { it.asList() },

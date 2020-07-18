@@ -1,7 +1,7 @@
 package tech.relaycorp.relaynet.messages.payloads
 
-class ServiceMessage : PayloadPlaintext {
-    override fun serialize(): ByteArray {
+class ServiceMessage : Payload {
+    override fun serializePlaintext(): ByteArray {
         TODO("Not yet implemented")
     }
 }

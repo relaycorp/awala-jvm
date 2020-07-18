@@ -32,7 +32,7 @@ internal class CargoMessageSetTest {
         fun `An empty array should be serialized as such`() {
             val cargoMessageSet = CargoMessageSet(emptyArray())
 
-            val serialization = cargoMessageSet.serialize()
+            val serialization = cargoMessageSet.serializePlaintext()
 
             val messages = deserializeDERSequence(serialization)
             assertEquals(0, messages.size)
@@ -43,7 +43,7 @@ internal class CargoMessageSetTest {
             val message = "the message".toByteArray()
             val cargoMessageSet = CargoMessageSet(arrayOf(message))
 
-            val serialization = cargoMessageSet.serialize()
+            val serialization = cargoMessageSet.serializePlaintext()
 
             val messages = deserializeDERSequence(serialization)
             assertEquals(1, messages.size)
@@ -57,7 +57,7 @@ internal class CargoMessageSetTest {
             val message2 = "message 1".toByteArray()
             val cargoMessageSet = CargoMessageSet(arrayOf(message1, message2))
 
-            val serialization = cargoMessageSet.serialize()
+            val serialization = cargoMessageSet.serializePlaintext()
 
             val messages = deserializeDERSequence(serialization)
             assertEquals(2, messages.size)
