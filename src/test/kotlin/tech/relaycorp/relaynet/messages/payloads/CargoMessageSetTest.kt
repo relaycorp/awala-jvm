@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.ramf.RAMFException
-import tech.relaycorp.relaynet.serializeSequence
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -101,7 +101,7 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `Inner value should be an ASN1 OCTET STRING`() {
-            val serialization = serializeSequence(DERVisibleString("item"))
+            val serialization = ASN1Utils.serializeSequence(arrayOf(DERVisibleString("item")))
             val exception = assertThrows<RAMFException> {
                 CargoMessageSet.deserialize(serialization)
             }
@@ -111,7 +111,7 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `An empty sequence should be accepted`() {
-            val serialization = serializeSequence()
+            val serialization = ASN1Utils.serializeSequence(emptyArray())
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 
@@ -121,7 +121,7 @@ internal class CargoMessageSetTest {
         @Test
         fun `A single-item sequence should be accepted`() {
             val message = "the message".toByteArray()
-            val serialization = serializeSequence(DEROctetString(message))
+            val serialization = ASN1Utils.serializeSequence(arrayOf(DEROctetString(message)))
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 
@@ -133,8 +133,12 @@ internal class CargoMessageSetTest {
         fun `A multi-item sequence should be accepted`() {
             val message1 = "message 1".toByteArray()
             val message2 = "message 2".toByteArray()
-            val serialization =
-                serializeSequence(DEROctetString(message1), DEROctetString(message2))
+            val serialization = ASN1Utils.serializeSequence(
+                arrayOf(
+                    DEROctetString(message1),
+                    DEROctetString(message2)
+                )
+            )
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 
