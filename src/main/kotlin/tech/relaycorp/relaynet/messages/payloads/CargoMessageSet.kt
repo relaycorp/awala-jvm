@@ -22,6 +22,11 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
     }
 
     companion object {
+        enum class ItemType(protected val concreteMessageType: Byte) {
+            PARCEL(0x50),
+            PCA(0x51)
+        }
+
         /**
          * Deserialize a cargo message set.
          */
