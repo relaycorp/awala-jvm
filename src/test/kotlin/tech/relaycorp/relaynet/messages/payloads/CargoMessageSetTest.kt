@@ -5,6 +5,7 @@ import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -27,7 +28,7 @@ internal class CargoMessageSetTest {
     }
 
     @Nested
-    inner class Serialize {
+    inner class SerializePlaintext {
         @Test
         fun `An empty array should be serialized as such`() {
             val cargoMessageSet = CargoMessageSet(emptyArray())
@@ -145,6 +146,29 @@ internal class CargoMessageSetTest {
             assertEquals(2, cargoMessageSet.messages.size)
             assertEquals(message1.asList(), cargoMessageSet.messages[0].asList())
             assertEquals(message2.asList(), cargoMessageSet.messages[1].asList())
+        }
+    }
+
+    @Nested
+    inner class ForEachMessage {
+        @Test
+        @Disabled
+        fun `Lambda should not be called if there are no messages`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Parcels should be correctly identified as such`() {
+        }
+
+        @Test
+        @Disabled
+        fun `PCAs should be correctly identified as such`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Invalid messages should not be assigned a type`() {
         }
     }
 }

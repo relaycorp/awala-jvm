@@ -18,6 +18,10 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
         return ASN1Utils.serializeSequence(items)
     }
 
+    fun forEachMessage(lambda : (message: ByteArray, type: ItemType?) -> Unit) {
+        TODO()
+    }
+
     companion object {
         enum class ItemType(protected val concreteMessageType: Byte) {
             PARCEL(0x50),
