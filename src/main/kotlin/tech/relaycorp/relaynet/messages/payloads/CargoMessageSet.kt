@@ -1,8 +1,7 @@
 package tech.relaycorp.relaynet.messages.payloads
 
-import org.bouncycastle.asn1.ASN1EncodableVector
+import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERSequence
 import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -15,10 +14,8 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
      * Serialize cargo message set.
      */
     override fun serializePlaintext(): ByteArray {
-        val messagesVector = ASN1EncodableVector(messages.size)
-        messages.forEach { messagesVector.add(DEROctetString(it)) }
-        val sequence = DERSequence(messagesVector)
-        return sequence.encoded
+        val items = messages.map { DEROctetString(it) as ASN1Encodable }.toTypedArray()
+        return ASN1Utils.serializeSequence(items)
     }
 
     companion object {

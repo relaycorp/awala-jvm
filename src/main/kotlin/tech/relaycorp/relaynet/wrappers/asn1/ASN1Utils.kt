@@ -1,11 +1,20 @@
 package tech.relaycorp.relaynet.wrappers.asn1
 
 import org.bouncycastle.asn1.ASN1Encodable
+import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.DERSequence
 import java.io.IOException
 
 internal object ASN1Utils {
+    fun serializeSequence(items: Array<ASN1Encodable>): ByteArray {
+        val messagesVector = ASN1EncodableVector(items.size)
+        items.forEach { messagesVector.add(it) }
+        val sequence = DERSequence(messagesVector)
+        return sequence.encoded
+    }
+
     @Throws(ASN1Exception::class)
     fun deserializeSequence(serialization: ByteArray): Array<ASN1Encodable> {
         val asn1InputStream = ASN1InputStream(serialization)
