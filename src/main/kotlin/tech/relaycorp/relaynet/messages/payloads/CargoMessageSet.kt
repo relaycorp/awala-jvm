@@ -10,11 +10,11 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 /**
  * Cargo message set.
  */
-class CargoMessageSet(val messages: Array<ByteArray>) : PayloadPlaintext {
+class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
     /**
      * Serialize cargo message set.
      */
-    override fun serialize(): ByteArray {
+    override fun serializePlaintext(): ByteArray {
         val messagesVector = ASN1EncodableVector(messages.size)
         messages.forEach { messagesVector.add(DEROctetString(it)) }
         val sequence = DERSequence(messagesVector)

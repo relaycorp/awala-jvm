@@ -1,7 +1,7 @@
 package tech.relaycorp.relaynet.ramf
 
-import tech.relaycorp.relaynet.messages.payloads.PayloadPlaintext
+import tech.relaycorp.relaynet.messages.payloads.Payload
 
-class StubPayload(val payload: String) : PayloadPlaintext {
-    override fun serialize() = payload.toByteArray()
+class StubPayload(val payload: String) : Payload {
+    override fun serializePlaintext() = payload.toByteArray()
 }

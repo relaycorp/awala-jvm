@@ -5,11 +5,11 @@ import tech.relaycorp.relaynet.ramf.RAMFException
 /**
  * Empty payload plaintext.
  */
-class EmptyPayloadPlaintext : PayloadPlaintext {
+class EmptyPayload : UnencryptedPayload() {
     /**
      * Serialize empty payload plaintext.
      */
-    override fun serialize() = ByteArray(0)
+    override fun serializePlaintext() = ByteArray(0)
 
     companion object {
         /**
@@ -18,11 +18,11 @@ class EmptyPayloadPlaintext : PayloadPlaintext {
          * @throws RAMFException if `serialization` is not empty
          */
         @Throws(RAMFException::class)
-        fun deserialize(serialization: ByteArray): EmptyPayloadPlaintext {
+        fun deserialize(serialization: ByteArray): EmptyPayload {
             if (serialization.isNotEmpty()) {
                 throw RAMFException("Payload is not empty")
             }
-            return EmptyPayloadPlaintext()
+            return EmptyPayload()
         }
     }
 }

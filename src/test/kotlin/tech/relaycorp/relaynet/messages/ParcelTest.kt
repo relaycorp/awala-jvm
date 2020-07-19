@@ -2,11 +2,11 @@ package tech.relaycorp.relaynet.messages
 
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.CERTIFICATE
-import tech.relaycorp.relaynet.ramf.RAMFSerializationTestCase
+import tech.relaycorp.relaynet.ramf.RAMFSpecializationTestCase
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import kotlin.test.Test
 
-internal class ParcelTest : RAMFSerializationTestCase<Parcel>(
+internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     ::Parcel,
     { r: String, p: ByteArray, s: Certificate -> Parcel(r, p, s) },
     0x50,

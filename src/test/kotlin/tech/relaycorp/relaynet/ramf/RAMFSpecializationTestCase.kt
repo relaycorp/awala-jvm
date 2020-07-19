@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.ramf
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -10,14 +11,49 @@ import kotlin.test.assertEquals
 
 typealias MinimalRAMFMessageConstructor<M> = (String, ByteArray, Certificate) -> M
 
-internal abstract class RAMFSerializationTestCase<M : RAMFMessage<*>>(
+internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
     private val messageConstructor: RAMFMessageConstructor<M>,
-    requiredParamsConstructor: MinimalRAMFMessageConstructor<M>,
+    private val requiredParamsConstructor: MinimalRAMFMessageConstructor<M>,
     private val expectedConcreteMessageType: Byte,
     private val expectedConcreteMessageVersion: Byte,
     private val companion: RAMFMessageCompanion<M>
 ) {
     val simpleMessage = requiredParamsConstructor(recipientAddress, payload, senderCertificate)
+
+    @Nested
+    inner class Constructor {
+        @Test
+        fun `Required arguments should be honored`() {
+            val message = requiredParamsConstructor(recipientAddress, payload, senderCertificate)
+
+            assertEquals(recipientAddress, message.recipientAddress)
+            assertEquals(payload.asList(), message.payload.asList())
+            assertEquals(senderCertificate, message.senderCertificate)
+        }
+
+        @Test
+        fun `Optional arguments should be honored`() {
+            val id = "the-id"
+            val ttl = 1234
+            val senderCertChain = setOf(CERTIFICATE)
+            val date = ZonedDateTime.now()
+
+            val message = messageConstructor(
+                recipientAddress,
+                payload,
+                senderCertificate,
+                id,
+                date,
+                ttl,
+                senderCertChain
+            )
+
+            assertEquals(id, message.id)
+            assertEquals(date, message.creationDate)
+            assertEquals(ttl, message.ttl)
+            assertEquals(senderCertChain, message.senderCertificateChain)
+        }
+    }
 
     @Nested
     inner class Serialization {

@@ -6,14 +6,14 @@ import tech.relaycorp.relaynet.ramf.RAMFException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-internal class EmptyPayloadPlaintextTest {
+internal class EmptyPayloadTest {
     @Nested
     inner class Serialize {
         @Test
         fun `An empty ByteArray should be returned`() {
-            val payloadPlaintext = EmptyPayloadPlaintext()
+            val payload = EmptyPayload()
 
-            assertEquals(0, payloadPlaintext.serialize().size)
+            assertEquals(0, payload.serializePlaintext().size)
         }
     }
 
@@ -21,13 +21,13 @@ internal class EmptyPayloadPlaintextTest {
     inner class Deserialize {
         @Test
         fun `An empty buffer should be accepted`() {
-            EmptyPayloadPlaintext.deserialize(ByteArray(0))
+            EmptyPayload.deserialize(ByteArray(0))
         }
 
         @Test
         fun `An error should be thrown if buffer is not empty`() {
             val exception = assertThrows<RAMFException> {
-                EmptyPayloadPlaintext.deserialize("a".toByteArray())
+                EmptyPayload.deserialize("a".toByteArray())
             }
 
             assertEquals("Payload is not empty", exception.message)

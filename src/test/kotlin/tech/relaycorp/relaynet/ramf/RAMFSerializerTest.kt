@@ -58,7 +58,7 @@ class RAMFSerializerTest {
         stubCaCertificate
     )
 
-    private val stubMessage = StubRAMFMessage(
+    private val stubMessage = StubEncryptedRAMFMessage(
         "04334",
         "payload".toByteArray(),
         stubSenderCertificate,
@@ -191,7 +191,7 @@ class RAMFSerializerTest {
                 @Test
                 fun `Creation time should be converted to UTC when provided in different TZ`() {
                     val nowTimezoneUnaware = LocalDateTime.now()
-                    val message = StubRAMFMessage(
+                    val message = StubEncryptedRAMFMessage(
                         stubMessage.recipientAddress,
                         stubMessage.payload,
                         stubSenderCertificate,
@@ -253,7 +253,7 @@ class RAMFSerializerTest {
 
             // Deserialization still fails, but for a different reason
             val exception = assertThrows<RAMFException> {
-                STUB_SERIALIZER.deserialize(invalidSerialization, ::StubRAMFMessage)
+                STUB_SERIALIZER.deserialize(invalidSerialization, ::StubEncryptedRAMFMessage)
             }
             assertEquals(
                 "Format signature should start with magic constant 'Relaynet'",
@@ -269,7 +269,7 @@ class RAMFSerializerTest {
                 assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization,
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -287,7 +287,7 @@ class RAMFSerializerTest {
                     assertThrows<RAMFException> {
                         STUB_SERIALIZER.deserialize(
                             invalidSerialization,
-                            ::StubRAMFMessage
+                            ::StubEncryptedRAMFMessage
                         )
                     }
 
@@ -304,7 +304,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         incompleteSerialization,
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -325,7 +325,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -347,7 +347,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -372,7 +372,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -384,7 +384,7 @@ class RAMFSerializerTest {
             @Test
             fun `Message should take sender certificate from valid SignedData value`() {
                 val messageDeserialized =
-                    STUB_SERIALIZER.deserialize(stubSerialization, ::StubRAMFMessage)
+                    STUB_SERIALIZER.deserialize(stubSerialization, ::StubEncryptedRAMFMessage)
 
                 assertEquals(stubSenderCertificate, messageDeserialized.senderCertificate)
             }
@@ -392,7 +392,7 @@ class RAMFSerializerTest {
             @Test
             fun `Message should take sender certificate chain from valid SignedData value`() {
                 val messageDeserialized =
-                    STUB_SERIALIZER.deserialize(stubSerialization, ::StubRAMFMessage)
+                    STUB_SERIALIZER.deserialize(stubSerialization, ::StubEncryptedRAMFMessage)
 
                 assertEquals(
                     stubSenderCertificateChain.union(setOf(stubSenderCertificate)),
@@ -423,7 +423,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -450,7 +450,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -483,7 +483,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -500,7 +500,8 @@ class RAMFSerializerTest {
                     stubSenderKeyPair.private
                 )
 
-                val parsedMessage = STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
+                val parsedMessage =
+                    STUB_SERIALIZER.deserialize(serialization, ::StubEncryptedRAMFMessage)
 
                 assertEquals(stubMessage.recipientAddress, parsedMessage.recipientAddress)
 
@@ -535,7 +536,7 @@ class RAMFSerializerTest {
                 val exception = assertThrows<RAMFException> {
                     STUB_SERIALIZER.deserialize(
                         invalidSerialization.toByteArray(),
-                        ::StubRAMFMessage
+                        ::StubEncryptedRAMFMessage
                     )
                 }
 
@@ -547,7 +548,7 @@ class RAMFSerializerTest {
 
             @Test
             fun `Creation time should be parsed as UTC`() {
-                val message = StubRAMFMessage(
+                val message = StubEncryptedRAMFMessage(
                     stubMessage.recipientAddress,
                     stubMessage.payload,
                     stubSenderCertificate,
@@ -558,7 +559,8 @@ class RAMFSerializerTest {
                 )
                 val serialization = STUB_SERIALIZER.serialize(message, stubSenderKeyPair.private)
 
-                val parsedMessage = STUB_SERIALIZER.deserialize(serialization, ::StubRAMFMessage)
+                val parsedMessage =
+                    STUB_SERIALIZER.deserialize(serialization, ::StubEncryptedRAMFMessage)
 
                 assertEquals(parsedMessage.creationDate.zone, ZoneId.of("UTC"))
             }
@@ -619,7 +621,7 @@ class RAMFSerializerTest {
         @Suppress("USELESS_IS_CHECK")
         assertTrue(stubSerialization is ByteArray)
 
-        val message = STUB_SERIALIZER.deserialize(stubSerialization, ::StubRAMFMessage)
+        val message = STUB_SERIALIZER.deserialize(stubSerialization, ::StubEncryptedRAMFMessage)
 
         assertEquals(stubMessage.recipientAddress, message.recipientAddress)
     }
@@ -628,7 +630,7 @@ class RAMFSerializerTest {
     fun `Input can be an InputStream`() {
         val message = STUB_SERIALIZER.deserialize(
             stubSerialization.inputStream(),
-            ::StubRAMFMessage
+            ::StubEncryptedRAMFMessage
         )
 
         assertEquals(stubMessage.recipientAddress, message.recipientAddress)

@@ -1,8 +1,8 @@
 package tech.relaycorp.relaynet.messages
 
 import tech.relaycorp.relaynet.messages.payloads.CargoMessageSet
+import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
 import tech.relaycorp.relaynet.ramf.RAMFException
-import tech.relaycorp.relaynet.ramf.RAMFMessage
 import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
 import tech.relaycorp.relaynet.ramf.RAMFSerializer
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -22,7 +22,7 @@ class Cargo(
     creationDate: ZonedDateTime? = null,
     ttl: Int? = null,
     senderCertificateChain: Set<Certificate>? = null
-) : RAMFMessage<CargoMessageSet>(
+) : EncryptedRAMFMessage<CargoMessageSet>(
     SERIALIZER,
     recipientAddress,
     payload,
