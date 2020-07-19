@@ -5,12 +5,16 @@ import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DERSequence
+import org.bouncycastle.asn1.DERTaggedObject
 import java.io.IOException
 
 internal object ASN1Utils {
-    fun serializeSequence(items: Array<ASN1Encodable>): ByteArray {
+    fun serializeSequence(items: Array<ASN1Encodable>, explicitTagging: Boolean = true): ByteArray {
         val messagesVector = ASN1EncodableVector(items.size)
-        items.forEach { messagesVector.add(it) }
+        val finalItems = if (explicitTagging) items.asList() else items.mapIndexed { index, item ->
+            DERTaggedObject(false, index, item)
+        }
+        finalItems.forEach { messagesVector.add(it) }
         val sequence = DERSequence(messagesVector)
         return sequence.encoded
     }

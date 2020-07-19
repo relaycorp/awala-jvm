@@ -15,13 +15,15 @@ class ParcelCollectionAck(
      * Serialize PCA.
      */
     fun serialize(): ByteArray {
-        return FORMAT_SIGNATURE + ASN1Utils.serializeSequence(
+        val sequence = ASN1Utils.serializeSequence(
             arrayOf(
                 DERVisibleString(senderEndpointPrivateAddress),
                 DERVisibleString(recipientEndpointAddress),
                 DERVisibleString(parcelId)
-            )
+            ),
+            false
         )
+        return FORMAT_SIGNATURE + sequence
     }
 
     companion object {
