@@ -2,18 +2,20 @@ package tech.relaycorp.relaynet.messages
 
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERVisibleString
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.serializeSequence
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class ParcelCollectionAckTest {
     private val senderEndpointPrivateAddress = "0deadbeef"
     private val recipientEndpointAddress = "https://ping.relaycorp.tech"
     private val parcelId = "the-parcel-id"
+
+    private val formatSignature = byteArrayOf(*"Relaynet".toByteArray(), 0x51, 0)
 
     @Nested
     inner class Serialize {
@@ -28,7 +30,7 @@ internal class ParcelCollectionAckTest {
             val serialization = pca.serialize()
 
             assertEquals(
-                byteArrayOf(*"Relaynet".toByteArray(), 0x51, 0).asList(),
+                formatSignature.asList(),
                 serialization.slice(0..9)
             )
         }
@@ -64,28 +66,89 @@ internal class ParcelCollectionAckTest {
     @Nested
     inner class Deserialize {
         @Test
-        @Disabled
+        fun `Serialization should be long enough to potentially contain format signature`() {
+            val exception = assertThrows<InvalidMessageException> {
+                ParcelCollectionAck.deserialize("RelaynetP".toByteArray())
+            }
+
+            assertEquals("Message is too short to contain format signature", exception.message)
+        }
+
+        @Test
         fun `Serialization should start with format signature`() {
+            val exception = assertThrows<InvalidMessageException> {
+                ParcelCollectionAck.deserialize("RelaynetP0".toByteArray())
+            }
+
+            assertEquals("Format signature is not that of a PCA", exception.message)
         }
 
         @Test
-        @Disabled
+        fun `Serialization should contain valid DER sequence`() {
+            val serialization = formatSignature + byteArrayOf(1)
+
+            val exception = assertThrows<InvalidMessageException> {
+                ParcelCollectionAck.deserialize(serialization)
+            }
+
+            assertEquals("PCA is not a valid DER sequence", exception.message)
+            assertTrue(exception.cause is ASN1Exception)
+        }
+
+        @Test
         fun `ACK should be refused if it has fewer than 3 items`() {
+            val serialization = formatSignature + ASN1Utils.serializeSequence(
+                arrayOf(
+                    DERVisibleString("one"),
+                    DERVisibleString("two")
+                ),
+                false
+            )
+
+            val exception = assertThrows<InvalidMessageException> {
+                ParcelCollectionAck.deserialize(serialization)
+            }
+
+            assertEquals("PCA should have 3 items (got 2)", exception.message)
         }
 
         @Test
-        @Disabled
-        fun `Sender endpoint private address should be a VisibleString`() {
+        fun `Sender endpoint private address should be decoded as a VisibleString`() {
+            val serialization = ParcelCollectionAck(
+                senderEndpointPrivateAddress,
+                recipientEndpointAddress,
+                parcelId
+            ).serialize()
+
+            val pca = ParcelCollectionAck.deserialize(serialization)
+
+            assertEquals(pca.senderEndpointPrivateAddress, senderEndpointPrivateAddress)
         }
 
         @Test
-        @Disabled
-        fun `Recipient endpoint address should be a VisibleString`() {
+        fun `Recipient endpoint address should be decoded as a VisibleString`() {
+            val serialization = ParcelCollectionAck(
+                senderEndpointPrivateAddress,
+                recipientEndpointAddress,
+                parcelId
+            ).serialize()
+
+            val pca = ParcelCollectionAck.deserialize(serialization)
+
+            assertEquals(pca.recipientEndpointAddress, recipientEndpointAddress)
         }
 
         @Test
-        @Disabled
-        fun `Parcel id should be a VisibleString`() {
+        fun `Parcel id should be decoded as a VisibleString`() {
+            val serialization = ParcelCollectionAck(
+                senderEndpointPrivateAddress,
+                recipientEndpointAddress,
+                parcelId
+            ).serialize()
+
+            val pca = ParcelCollectionAck.deserialize(serialization)
+
+            assertEquals(pca.parcelId, parcelId)
         }
     }
 }

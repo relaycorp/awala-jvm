@@ -101,7 +101,7 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `Inner value should be an ASN1 OCTET STRING`() {
-            val serialization = serializeSequence(DERVisibleString("item"))
+            val serialization = serializeSequence(arrayOf(DERVisibleString("item")))
             val exception = assertThrows<RAMFException> {
                 CargoMessageSet.deserialize(serialization)
             }
@@ -111,7 +111,7 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `An empty sequence should be accepted`() {
-            val serialization = serializeSequence()
+            val serialization = serializeSequence(emptyArray())
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 
@@ -121,7 +121,7 @@ internal class CargoMessageSetTest {
         @Test
         fun `A single-item sequence should be accepted`() {
             val message = "the message".toByteArray()
-            val serialization = serializeSequence(DEROctetString(message))
+            val serialization = serializeSequence(arrayOf(DEROctetString(message)))
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 
@@ -134,7 +134,7 @@ internal class CargoMessageSetTest {
             val message1 = "message 1".toByteArray()
             val message2 = "message 2".toByteArray()
             val serialization =
-                serializeSequence(DEROctetString(message1), DEROctetString(message2))
+                serializeSequence(arrayOf(DEROctetString(message1), DEROctetString(message2)))
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 

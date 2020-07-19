@@ -11,7 +11,7 @@ fun parseDer(derSerialization: ByteArray): ASN1Primitive {
     return asn1Stream.readObject()
 }
 
-fun serializeSequence(vararg elements: ASN1Encodable): ByteArray {
+fun serializeSequence(elements: Array<ASN1Encodable>): ByteArray {
     val vector = ASN1EncodableVector(elements.size)
     elements.forEach { vector.add(it) }
     val sequence = DERSequence(elements)
