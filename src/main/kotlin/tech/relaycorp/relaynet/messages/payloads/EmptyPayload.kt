@@ -5,7 +5,7 @@ import tech.relaycorp.relaynet.ramf.RAMFException
 /**
  * Empty payload plaintext.
  */
-class EmptyPayload : Payload {
+class EmptyPayload : UnencryptedPayload() {
     /**
      * Serialize empty payload plaintext.
      */
