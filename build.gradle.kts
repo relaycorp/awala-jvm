@@ -44,10 +44,7 @@ dependencies {
     implementation("com.beanit:jasn1:1.11.2")
     implementation("org.bouncycastle:bcprov-jdk15on:1.66")
 
-    // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-
-    // Use the Kotlin JUnit5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
