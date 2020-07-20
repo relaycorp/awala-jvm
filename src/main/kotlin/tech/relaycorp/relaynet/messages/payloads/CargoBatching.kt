@@ -12,6 +12,9 @@ private const val MAX_BATCH_LENGTH =
 
 /**
  * Serialization and expiry date of a message to be encapsulated in a cargo message set.
+ *
+ * @throws InvalidMessageException if `cargoMessageSerialized` is longer than
+ *   [CargoMessage.MAX_LENGTH]
  */
 @Suppress("ArrayInDataClass")
 data class CargoMessageWithExpiry(
