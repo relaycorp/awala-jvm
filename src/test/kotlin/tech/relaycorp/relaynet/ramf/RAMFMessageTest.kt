@@ -184,8 +184,7 @@ class RAMFMessageTest {
 
         @Test
         fun `Payload should not span more than 8 MiB`() {
-            val octetsIn8Mib = 8388608
-            val longPayloadLength = octetsIn8Mib + 1
+            val longPayloadLength = RAMFMessage.MAX_PAYLOAD_LENGTH + 1
             val longPayload = "a".repeat(longPayloadLength).toByteArray()
             val exception = assertThrows<RAMFException> {
                 StubEncryptedRAMFMessage(
@@ -196,7 +195,8 @@ class RAMFMessageTest {
             }
 
             assertEquals(
-                "Payload cannot span more than $octetsIn8Mib octets (got $longPayloadLength)",
+                "Payload cannot span more than ${RAMFMessage.MAX_PAYLOAD_LENGTH} octets " +
+                    "(got $longPayloadLength)",
                 exception.message
             )
         }

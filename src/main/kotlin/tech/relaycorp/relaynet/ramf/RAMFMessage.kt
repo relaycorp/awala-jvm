@@ -16,7 +16,6 @@ import java.util.UUID
 private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1024
 private const val MAX_MESSAGE_ID_LENGTH = 64
 private const val MAX_TTL = 15552000
-private const val MAX_PAYLOAD_LENGTH = 8388608
 
 private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
@@ -156,5 +155,9 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         if (!isPublic && !PRIVATE_ADDRESS_REGEX.matches(recipientAddress)) {
             throw RAMFException("Recipient address is invalid")
         }
+    }
+
+    companion object {
+        internal const val MAX_PAYLOAD_LENGTH = 8388608
     }
 }
