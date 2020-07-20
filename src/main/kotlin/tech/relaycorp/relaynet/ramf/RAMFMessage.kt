@@ -158,6 +158,6 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     }
 
     companion object {
-        internal const val MAX_PAYLOAD_LENGTH = 8388608
+        internal const val MAX_PAYLOAD_LENGTH = 8_388_608
     }
 }
