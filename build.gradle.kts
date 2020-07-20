@@ -48,6 +48,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.3.8")
 }
 
 java {

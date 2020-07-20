@@ -43,4 +43,9 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
 
     @Throws(RAMFException::class)
     internal abstract fun deserializePayload(payloadPlaintext: ByteArray): P
+
+    companion object {
+        // Per the RAMF spec
+        internal const val MAX_PAYLOAD_PLAINTEXT_LENGTH = 8_322_048
+    }
 }
