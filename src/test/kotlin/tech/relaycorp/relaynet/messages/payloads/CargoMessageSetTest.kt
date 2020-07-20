@@ -8,6 +8,10 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.CERTIFICATE
+import tech.relaycorp.relaynet.KEY_PAIR
+import tech.relaycorp.relaynet.messages.Parcel
+import tech.relaycorp.relaynet.messages.ParcelCollectionAck
 import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import kotlin.test.assertEquals
@@ -27,7 +31,7 @@ internal class CargoMessageSetTest {
     }
 
     @Nested
-    inner class Serialize {
+    inner class SerializePlaintext {
         @Test
         fun `An empty array should be serialized as such`() {
             val cargoMessageSet = CargoMessageSet(emptyArray())
@@ -145,6 +149,36 @@ internal class CargoMessageSetTest {
             assertEquals(2, cargoMessageSet.messages.size)
             assertEquals(message1.asList(), cargoMessageSet.messages[0].asList())
             assertEquals(message2.asList(), cargoMessageSet.messages[1].asList())
+        }
+    }
+
+    @Nested
+    inner class ClassifyMessages {
+        @Test
+        fun `Sequence should be empty if there are no messages`() {
+            val cargoMessageSet = CargoMessageSet(emptyArray())
+
+            assertEquals(0, cargoMessageSet.classifyMessages().count())
+        }
+
+        @Test
+        fun `Encapsulated messages should be wrapped in CargoMessage instances`() {
+            val recipientEndpointAddress = "https://foo.relaycorp.tech"
+            val parcelSerialized =
+                Parcel(recipientEndpointAddress, "".toByteArray(), CERTIFICATE)
+                    .serialize(KEY_PAIR.private)
+            val pcaSerialized =
+                ParcelCollectionAck("0deadbeef", recipientEndpointAddress, "parcel-id")
+                    .serialize()
+            val cargoMessageSet = CargoMessageSet(arrayOf(parcelSerialized, pcaSerialized))
+
+            val cargoMessages = cargoMessageSet.classifyMessages().asSequence().toList()
+
+            assertEquals(2, cargoMessages.size)
+            assertEquals(CargoMessage.Companion.Type.PARCEL, cargoMessages[0].type)
+            assertEquals(parcelSerialized.asList(), cargoMessages[0].message.asList())
+            assertEquals(CargoMessage.Companion.Type.PCA, cargoMessages[1].type)
+            assertEquals(pcaSerialized.asList(), cargoMessages[1].message.asList())
         }
     }
 }

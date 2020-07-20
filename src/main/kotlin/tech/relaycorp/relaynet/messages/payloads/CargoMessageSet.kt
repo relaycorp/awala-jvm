@@ -18,6 +18,11 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
         return ASN1Utils.serializeSequence(items)
     }
 
+    /**
+     * Return the encapsulated messages, classified by type.
+     */
+    fun classifyMessages(): Sequence<CargoMessage> = messages.asSequence().map { CargoMessage(it) }
+
     companion object {
         /**
          * Deserialize a cargo message set.

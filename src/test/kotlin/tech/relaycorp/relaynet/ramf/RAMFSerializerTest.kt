@@ -276,6 +276,26 @@ class RAMFSerializerTest {
             assertEquals("Message should not be larger than 9 MiB", exception.message)
         }
 
+        @Test
+        fun `Input can be a ByteArray`() {
+            @Suppress("USELESS_IS_CHECK")
+            assertTrue(stubSerialization is ByteArray)
+
+            val message = STUB_SERIALIZER.deserialize(stubSerialization, ::StubEncryptedRAMFMessage)
+
+            assertEquals(stubMessage.recipientAddress, message.recipientAddress)
+        }
+
+        @Test
+        fun `Input can be an InputStream`() {
+            val message = STUB_SERIALIZER.deserialize(
+                stubSerialization.inputStream(),
+                ::StubEncryptedRAMFMessage
+            )
+
+            assertEquals(stubMessage.recipientAddress, message.recipientAddress)
+        }
+
         @Nested
         inner class FormatSignature {
             @Test
@@ -617,22 +637,14 @@ class RAMFSerializerTest {
     }
 
     @Test
-    fun `Input can be a ByteArray`() {
-        @Suppress("USELESS_IS_CHECK")
-        assertTrue(stubSerialization is ByteArray)
-
-        val message = STUB_SERIALIZER.deserialize(stubSerialization, ::StubEncryptedRAMFMessage)
-
-        assertEquals(stubMessage.recipientAddress, message.recipientAddress)
-    }
-
-    @Test
-    fun `Input can be an InputStream`() {
-        val message = STUB_SERIALIZER.deserialize(
-            stubSerialization.inputStream(),
-            ::StubEncryptedRAMFMessage
+    fun `formatSignature should contain the type and version`() {
+        assertEquals(
+            byteArrayOf(
+                *"Relaynet".toByteArray(),
+                STUB_SERIALIZER.concreteMessageType,
+                STUB_SERIALIZER.concreteMessageVersion
+            ).asList(),
+            STUB_SERIALIZER.formatSignature.asList()
         )
-
-        assertEquals(stubMessage.recipientAddress, message.recipientAddress)
     }
 }

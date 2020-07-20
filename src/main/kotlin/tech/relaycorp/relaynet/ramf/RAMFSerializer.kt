@@ -46,6 +46,9 @@ private data class FieldSet(
 )
 
 internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
+    val formatSignature =
+        byteArrayOf(*"Relaynet".toByteArray(), concreteMessageType, concreteMessageVersion)
+
     fun serialize(
         message: RAMFMessage<*>,
         signerPrivateKey: PrivateKey,
@@ -53,9 +56,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
     ): ByteArray {
         val output = ByteArrayOutputStream()
 
-        output.write("Relaynet".toByteArray())
-        output.write(concreteMessageType.toInt())
-        output.write(concreteMessageVersion.toInt())
+        output.write(formatSignature)
 
         val fieldSetSerialized = serializeMessage(message)
         val signedData = sign(

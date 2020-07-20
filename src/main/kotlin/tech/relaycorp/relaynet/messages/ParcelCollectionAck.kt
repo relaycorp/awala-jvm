@@ -31,7 +31,7 @@ class ParcelCollectionAck(
     companion object {
         private const val concreteMessageType: Byte = 0x51
         private const val concreteMessageVersion: Byte = 0
-        private val FORMAT_SIGNATURE = byteArrayOf(
+        internal val FORMAT_SIGNATURE = byteArrayOf(
             *"Relaynet".toByteArray(),
             concreteMessageType,
             concreteMessageVersion
