@@ -22,10 +22,8 @@ class CargoMessage(val message: ByteArray) {
         }
     }
 
-    companion object {
-        enum class Type(internal val formatSignature: List<Byte>) {
-            PARCEL(PARCEL_SERIALIZER.formatSignature.asList()),
-            PCA(ParcelCollectionAck.FORMAT_SIGNATURE.asList())
-        }
+    enum class Type(internal val formatSignature: List<Byte>) {
+        PARCEL(PARCEL_SERIALIZER.formatSignature.asList()),
+        PCA(ParcelCollectionAck.FORMAT_SIGNATURE.asList())
     }
 }

@@ -175,9 +175,9 @@ internal class CargoMessageSetTest {
             val cargoMessages = cargoMessageSet.classifyMessages().asSequence().toList()
 
             assertEquals(2, cargoMessages.size)
-            assertEquals(CargoMessage.Companion.Type.PARCEL, cargoMessages[0].type)
+            assertEquals(CargoMessage.Type.PARCEL, cargoMessages[0].type)
             assertEquals(parcelSerialized.asList(), cargoMessages[0].message.asList())
-            assertEquals(CargoMessage.Companion.Type.PCA, cargoMessages[1].type)
+            assertEquals(CargoMessage.Type.PCA, cargoMessages[1].type)
             assertEquals(pcaSerialized.asList(), cargoMessages[1].message.asList())
         }
     }

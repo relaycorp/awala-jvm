@@ -21,7 +21,7 @@ class CargoMessageTest {
 
             val cargoMessage = CargoMessage(parcelSerialized)
 
-            assertEquals(CargoMessage.Companion.Type.PARCEL, cargoMessage.type)
+            assertEquals(CargoMessage.Type.PARCEL, cargoMessage.type)
         }
 
         @Test
@@ -31,7 +31,7 @@ class CargoMessageTest {
 
             val cargoMessage = CargoMessage(pcaSerialized)
 
-            assertEquals(CargoMessage.Companion.Type.PCA, cargoMessage.type)
+            assertEquals(CargoMessage.Type.PCA, cargoMessage.type)
         }
 
         @Test
