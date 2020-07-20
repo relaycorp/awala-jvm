@@ -150,25 +150,15 @@ internal class CargoMessageSetTest {
     }
 
     @Nested
-    inner class ForEachMessage {
+    inner class ClassifyMessages {
         @Test
         @Disabled
-        fun `Lambda should not be called if there are no messages`() {
+        fun `Sequence should be empty if there are no messages`() {
         }
 
         @Test
         @Disabled
-        fun `Parcels should be correctly identified as such`() {
-        }
-
-        @Test
-        @Disabled
-        fun `PCAs should be correctly identified as such`() {
-        }
-
-        @Test
-        @Disabled
-        fun `Invalid messages should not be assigned a type`() {
+        fun `Encapsulated messages should be wrapped in CargoMessage instances`() {
         }
     }
 }
