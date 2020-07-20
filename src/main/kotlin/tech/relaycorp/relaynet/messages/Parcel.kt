@@ -9,7 +9,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.InputStream
 import java.time.ZonedDateTime
 
-private val SERIALIZER = RAMFSerializer(0x50, 0x00)
+internal val PARCEL_SERIALIZER = RAMFSerializer(0x50, 0x00)
 
 /**
  * Parcel
@@ -23,7 +23,7 @@ class Parcel(
     ttl: Int? = null,
     senderCertificateChain: Set<Certificate>? = null
 ) : EncryptedRAMFMessage<ServiceMessage>(
-    SERIALIZER,
+    PARCEL_SERIALIZER,
     recipientAddress,
     payload,
     senderCertificate,
@@ -43,7 +43,7 @@ class Parcel(
         @JvmStatic
         @Throws(RAMFException::class)
         override fun deserialize(serialization: ByteArray) =
-            SERIALIZER.deserialize(serialization, ::Parcel)
+            PARCEL_SERIALIZER.deserialize(serialization, ::Parcel)
 
         /**
          * Deserialize parcel
@@ -51,6 +51,6 @@ class Parcel(
         @JvmStatic
         @Throws(RAMFException::class)
         override fun deserialize(serialization: InputStream) =
-            SERIALIZER.deserialize(serialization, ::Parcel)
+            PARCEL_SERIALIZER.deserialize(serialization, ::Parcel)
     }
 }
