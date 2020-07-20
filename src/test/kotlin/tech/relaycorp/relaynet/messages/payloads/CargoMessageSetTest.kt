@@ -176,9 +176,9 @@ internal class CargoMessageSetTest {
 
             assertEquals(2, cargoMessages.size)
             assertEquals(CargoMessage.Type.PARCEL, cargoMessages[0].type)
-            assertEquals(parcelSerialized.asList(), cargoMessages[0].message.asList())
+            assertEquals(parcelSerialized.asList(), cargoMessages[0].messageSerialized.asList())
             assertEquals(CargoMessage.Type.PCA, cargoMessages[1].type)
-            assertEquals(pcaSerialized.asList(), cargoMessages[1].message.asList())
+            assertEquals(pcaSerialized.asList(), cargoMessages[1].messageSerialized.asList())
         }
     }
 }

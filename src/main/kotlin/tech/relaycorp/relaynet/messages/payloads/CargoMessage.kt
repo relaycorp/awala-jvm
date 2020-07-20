@@ -6,13 +6,13 @@ import tech.relaycorp.relaynet.messages.ParcelCollectionAck
 /**
  * Message encapsulated in a cargo message set, classified with its type.
  */
-class CargoMessage(val message: ByteArray) {
+class CargoMessage(val messageSerialized: ByteArray) {
     var type: Type? = null
         private set
 
     init {
-        if (10 <= message.size) {
-            val formatSignature = message.slice(0..9)
+        if (10 <= messageSerialized.size) {
+            val formatSignature = messageSerialized.slice(0..9)
             for (typeEnum in Type.values()) {
                 if (typeEnum.formatSignature == formatSignature) {
                     type = typeEnum
