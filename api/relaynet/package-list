@@ -1,6 +1,6 @@
 $dokka.format:html
 $dokka.linkExtension:html
-
+$dokka.location:tech.relaycorp.relaynet.messages.payloads$batch(kotlin.sequences.Sequence((tech.relaycorp.relaynet.messages.payloads.CargoMessageWithExpiry)))tech.relaycorp.relaynet.messages.payloads/kotlin.sequences.-sequence/batch.html
 tech.relaycorp.relaynet
 tech.relaycorp.relaynet.messages
 tech.relaycorp.relaynet.messages.payloads

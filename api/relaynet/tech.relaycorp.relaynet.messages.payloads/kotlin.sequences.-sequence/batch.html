@@ -1,0 +1,19 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>batch - relaynet</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">relaynet</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.messages.payloads</a>&nbsp;/&nbsp;<a href="index.html">kotlin.sequences.Sequence</a>&nbsp;/&nbsp;<a href="./batch.html">batch</a><br/>
+<br/>
+<h1>batch</h1>
+<a name="tech.relaycorp.relaynet.messages.payloads$batch(kotlin.sequences.Sequence((tech.relaycorp.relaynet.messages.payloads.CargoMessageWithExpiry)))"></a>
+<code><span class="keyword">suspend</span> <span class="keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.sequences/-sequence/index.html"><span class="identifier">Sequence</span></a><span class="symbol">&lt;</span><a href="../-cargo-message-with-expiry/index.html"><span class="identifier">CargoMessageWithExpiry</span></a><span class="symbol">&gt;</span><span class="symbol">.</span><span class="identifier">batch</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.sequences/-sequence/index.html"><span class="identifier">Sequence</span></a><span class="symbol">&lt;</span><a href="../-cargo-message-set-with-expiry/index.html"><span class="identifier">CargoMessageSetWithExpiry</span></a><span class="symbol">&gt;</span></code>
+<p>Batch as many messages together as possible without exceeding the payload length limit on
+individual cargoes.</p>
+<p>If all messages can be encapsulated in the same cargo message set, they will be. Otherwise,
+multiple cargo message sets will be generated. The output will be empty if the input is
+empty too.</p>
+</BODY>
+</HTML>
