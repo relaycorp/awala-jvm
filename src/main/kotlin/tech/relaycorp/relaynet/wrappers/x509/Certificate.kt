@@ -201,7 +201,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
      * Get the certification path (aka certificate chain) between the current certificate and
      * one of the `trustedCAs`.
      *
-     * @throws CertificateException if
+     * @throws CertificateException if no path could be found
      */
     @Throws(CertificateException::class)
     fun getCertificationPath(
