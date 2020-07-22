@@ -20,6 +20,7 @@ import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.BC_PROVIDER
@@ -775,6 +776,39 @@ class CertificateTest {
 
                 certificate.validate()
             }
+        }
+    }
+
+    @Nested
+    inner class GetCertificationPath {
+        @Test
+        @Disabled
+        fun `Cert issued by trusted CA should be trusted`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Cert not issued by trusted cert should not be trusted`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Cert issued by trusted intermediate CA should be trusted`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Cert issued by trusted intermediate CA should be trusted without root`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Cert issued by untrusted intermediate CA should not be trusted`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Including trusted intermediate CA should not make certificate trusted`() {
         }
     }
 }

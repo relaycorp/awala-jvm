@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.ramf
 
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.dateToZonedDateTime
+import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.messages.payloads.Payload
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
@@ -113,6 +114,11 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
     }
 
+    @Throws(InvalidMessageException::class)
+    fun getSenderCertificationPath(trustedCAs: Set<Certificate>): Array<Certificate> {
+        TODO()
+    }
+
     /**
      * Validate the message.
      *
@@ -155,6 +161,11 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         if (!isPublic && !PRIVATE_ADDRESS_REGEX.matches(recipientAddress)) {
             throw RAMFException("Recipient address is invalid")
         }
+    }
+
+    @Throws(InvalidMessageException::class)
+    private fun validateAuthorization(trustedCAs: Set<Certificate>): Unit {
+        TODO()
     }
 
     companion object {

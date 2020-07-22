@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.ramf
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.HashingAlgorithm
@@ -304,6 +305,11 @@ class RAMFMessageTest {
         }
     }
 
+    @Test
+    @Disabled
+    fun `getSenderCertificationPath should return certification path`() {
+    }
+
     @Nested
     inner class Validate {
         @Test
@@ -460,6 +466,34 @@ class RAMFMessageTest {
                 val exception = assertThrows<RAMFException> { message.validate() }
 
                 assertEquals("Recipient address is invalid", exception.message)
+            }
+        }
+
+        @Nested
+        inner class Authorization {
+            @Test
+            @Disabled
+            fun `Message should be refused if sender is not trusted`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Message should be accepted if sender is trusted`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Message should be refused if recipient is private and did not authorize`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Message should be accepted if recipient address is public`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Authorization enforcement should be skipped if trusted certs are absent`() {
             }
         }
     }
