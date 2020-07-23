@@ -38,7 +38,9 @@ class PKITest {
         fun `Issuer private key should be honored`() {
             val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
 
-            val verifierProvider = JcaContentVerifierProviderBuilder().build(keyPair.public)
+            val verifierProvider = JcaContentVerifierProviderBuilder()
+                .setProvider(BC_PROVIDER)
+                .build(keyPair.public)
             assertTrue(certificate.certificateHolder.isSignatureValid(verifierProvider))
         }
 
@@ -148,7 +150,9 @@ class PKITest {
         fun `Issuer private key should be honored`() {
             val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
 
-            val verifierProvider = JcaContentVerifierProviderBuilder().build(keyPair.public)
+            val verifierProvider = JcaContentVerifierProviderBuilder()
+                .setProvider(BC_PROVIDER)
+                .build(keyPair.public)
             assertTrue(certificate.certificateHolder.isSignatureValid(verifierProvider))
         }
 

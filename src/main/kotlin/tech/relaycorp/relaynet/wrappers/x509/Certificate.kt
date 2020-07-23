@@ -11,12 +11,8 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter
-import org.bouncycastle.crypto.util.PrivateKeyFactory
-import org.bouncycastle.operator.ContentSigner
-import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
-import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
-import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
+import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.dateToZonedDateTime
 import tech.relaycorp.relaynet.getSHA256Digest
 import tech.relaycorp.relaynet.getSHA256DigestHex
@@ -34,8 +30,6 @@ import java.time.ZonedDateTime
  */
 class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     companion object {
-        private const val DEFAULT_ALGORITHM = "SHA256WithRSAEncryption"
-
         /**
          * Issue a new Relaynet PKI certificate.
          *
@@ -91,8 +85,10 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val aki = AuthorityKeyIdentifier(issuerSKI.keyIdentifier)
             builder.addExtension(Extension.authorityKeyIdentifier, false, aki)
 
-            val signerBuilder = makeSigner(issuerPrivateKey)
-            return Certificate(builder.build(signerBuilder))
+            val signer = JcaContentSignerBuilder("SHA256WITHRSAANDMGF1")
+                .setProvider(BC_PROVIDER)
+                .build(issuerPrivateKey)
+            return Certificate(builder.build(signer))
         }
 
         @Throws(CertificateException::class)
@@ -113,17 +109,6 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             if (!issuerBasicConstraints.isCA) {
                 throw CertificateException("Issuer certificate should be marked as CA")
             }
-        }
-
-        private fun makeSigner(issuerPrivateKey: PrivateKey): ContentSigner {
-            val signatureAlgorithm =
-                DefaultSignatureAlgorithmIdentifierFinder().find(DEFAULT_ALGORITHM)
-            val digestAlgorithm = DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-            val privateKeyParam: AsymmetricKeyParameter =
-                PrivateKeyFactory.createKey(issuerPrivateKey.encoded)
-            val contentSignerBuilder =
-                BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
-            return contentSignerBuilder.build(privateKeyParam)
         }
 
         /**

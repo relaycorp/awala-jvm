@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.wrappers.x509
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DERBMPString
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -81,12 +82,24 @@ class CertificateTest {
                 stubValidityEndDate
             )
 
-            assert(
-                certificate.certificateHolder.isSignatureValid(
-                    JcaContentVerifierProviderBuilder().build(
-                        stubSubjectKeyPair.public
-                    )
-                )
+            val verifierProvider = JcaContentVerifierProviderBuilder()
+                .setProvider(BC_PROVIDER)
+                .build(stubSubjectKeyPair.public)
+            assert(certificate.certificateHolder.isSignatureValid(verifierProvider))
+        }
+
+        @Test
+        fun `Certificate should be signed with RSA-PSS`() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate
+            )
+
+            assertEquals(
+                PKCSObjectIdentifiers.id_RSASSA_PSS,
+                certificate.certificateHolder.signatureAlgorithm.algorithm
             )
         }
 
