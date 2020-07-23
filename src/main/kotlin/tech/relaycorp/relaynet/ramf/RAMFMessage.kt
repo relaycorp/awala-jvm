@@ -164,7 +164,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     }
 
     @Throws(InvalidMessageException::class)
-    private fun validateAuthorization(trustedCAs: Set<Certificate>): Unit {
+    private fun validateAuthorization(trustedCAs: Set<Certificate>) {
         TODO()
     }
 

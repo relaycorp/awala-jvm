@@ -11,6 +11,7 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.dateToZonedDateTime
@@ -20,6 +21,15 @@ import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.io.IOException
 import java.security.PrivateKey
 import java.security.PublicKey
+import java.security.cert.CertPathBuilder
+import java.security.cert.CertPathBuilderException
+import java.security.cert.CertPathBuilderResult
+import java.security.cert.CertStore
+import java.security.cert.CollectionCertStoreParameters
+import java.security.cert.PKIXBuilderParameters
+import java.security.cert.PKIXParameters
+import java.security.cert.TrustAnchor
+import java.security.cert.X509CertSelector
 import java.sql.Date
 import java.time.ZonedDateTime
 
@@ -30,6 +40,9 @@ import java.time.ZonedDateTime
  */
 class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     companion object {
+        private val bcToJavaCertificateConverter: JcaX509CertificateConverter =
+            JcaX509CertificateConverter().setProvider(BC_PROVIDER)
+
         /**
          * Issue a new Relaynet PKI certificate.
          *
@@ -208,6 +221,60 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         intermediateCAs: Set<Certificate>,
         trustedCAs: Set<Certificate>
     ): Array<Certificate> {
-        TODO()
+        val pathBuilderResult = try {
+            buildPath(intermediateCAs, trustedCAs)
+        } catch (exc: CertPathBuilderException) {
+            throw CertificateException("No certification path could be found", exc)
+        }
+
+        val bcCertPath = pathBuilderResult.certPath.certificates.map {
+            // It's insane we have to serialize + deserialize, but I couldn't find any other way
+            // to convert a Java certificate to BouncyCastle
+            X509CertificateHolder(it.encoded)
+        }
+        val firstCertAfterRoot = bcCertPath.last()
+        val rootCA = trustedCAs.single {
+            it.certificateHolder.subject == firstCertAfterRoot.issuer
+        }
+        // Convert the Java certificates back to the original BouncyCastle certificates. See:
+        // https://stackoverflow.com/q/63051252/129437
+        val intermediatePathCAs = bcCertPath.slice(1..bcCertPath.lastIndex).map { copy ->
+            intermediateCAs.single { original -> copy == original.certificateHolder }
+        }
+        return arrayOf(this, *intermediatePathCAs.toTypedArray(), rootCA)
     }
+
+    @Throws(CertPathBuilderException::class)
+    private fun buildPath(
+        intermediateCAs: Set<Certificate>,
+        trustedCAs: Set<Certificate>
+    ): CertPathBuilderResult {
+        // We have to start by converting all BC certificates to Java certificates because we
+        // can't do this with BouncyCastle:
+        // https://stackoverflow.com/q/63020771/129437
+        val javaEndEntityCert = convertCertToJava(this)
+        val javaIntermediateCACerts = intermediateCAs.map(::convertCertToJava)
+        val javaTrustedCACerts = trustedCAs.map(::convertCertToJava)
+
+        val trustAnchors = javaTrustedCACerts.map { TrustAnchor(it, null) }.toSet()
+
+        val intermediateCertStore = CertStore.getInstance(
+            "Collection",
+            CollectionCertStoreParameters(javaIntermediateCACerts),
+            BC_PROVIDER
+        )
+
+        val endEntitySelector = X509CertSelector()
+        endEntitySelector.certificate = javaEndEntityCert
+
+        val parameters: PKIXParameters = PKIXBuilderParameters(trustAnchors, endEntitySelector)
+        parameters.isRevocationEnabled = false
+        parameters.addCertStore(intermediateCertStore)
+
+        val pathBuilder: CertPathBuilder = CertPathBuilder.getInstance("PKIX", BC_PROVIDER)
+        return pathBuilder.build(parameters)
+    }
+
+    private fun convertCertToJava(certificate: Certificate) =
+        bcToJavaCertificateConverter.getCertificate(certificate.certificateHolder)
 }
