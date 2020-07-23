@@ -1,6 +1,7 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.DERBMPString
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier
@@ -162,6 +163,7 @@ class CertificateTest {
             assertEquals(1, distinguishedNames.size)
             assertEquals(false, distinguishedNames[0].isMultiValued)
             assertEquals(BCStyle.CN, distinguishedNames[0].first.type)
+            assertTrue(distinguishedNames[0].first.value is DERBMPString)
             assertEquals(commonName, distinguishedNames[0].first.value.toString())
         }
 

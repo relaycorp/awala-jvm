@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
+import org.bouncycastle.asn1.DERBMPString
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -95,7 +96,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         @Throws(CertificateException::class)
         private fun buildDistinguishedName(commonName: String): X500Name {
             val builder = X500NameBuilder(BCStyle.INSTANCE)
-            builder.addRDN(BCStyle.CN, commonName)
+            builder.addRDN(BCStyle.CN, DERBMPString(commonName))
             return builder.build()
         }
 
