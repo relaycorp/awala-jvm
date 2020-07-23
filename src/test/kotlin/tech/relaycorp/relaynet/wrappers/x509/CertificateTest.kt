@@ -793,6 +793,13 @@ class CertificateTest {
         )
 
         @Test
+        fun `Certificate self-issued by trusted CA should be trusted`() {
+            val certPath = rootCACert.getCertificationPath(emptySet(), setOf(rootCACert))
+
+            assertEquals(listOf(rootCACert), certPath.asList())
+        }
+
+        @Test
         fun `Cert issued by trusted CA should be trusted`() {
             val endEntityKeyPair = generateRSAKeyPair()
             val endEntityCert = issueStubCertificate(

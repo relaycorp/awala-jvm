@@ -227,21 +227,31 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             throw CertificateException("No certification path could be found", exc)
         }
 
+        // Convert the Java certificates in the path back to Bouncy Castle instances
         val bcCertPath = pathBuilderResult.certPath.certificates.map {
             // It's insane we have to serialize + deserialize, but I couldn't find any other way
             // to convert a Java certificate to BouncyCastle
             X509CertificateHolder(it.encoded)
         }
+
+        // Compute the root CA, since it's not included in the path. See:
+        // https://stackoverflow.com/q/63051252/129437
         val firstCertAfterRoot = bcCertPath.last()
         val rootCA = trustedCAs.single {
             it.certificateHolder.subject == firstCertAfterRoot.issuer
         }
-        // Convert the Java certificates back to the original BouncyCastle certificates. See:
-        // https://stackoverflow.com/q/63051252/129437
-        val intermediatePathCAs = bcCertPath.slice(1..bcCertPath.lastIndex).map { copy ->
+
+        // Convert the Java certificates back to the original BouncyCastle instances.
+        val cAs = bcCertPath.slice(1..bcCertPath.lastIndex).map { copy ->
             intermediateCAs.single { original -> copy == original.certificateHolder }
+        }.toMutableList()
+
+        // Include the root certificate unless this is a self-signed certificate:
+        if (rootCA != this) {
+            cAs.add(rootCA)
         }
-        return arrayOf(this, *intermediatePathCAs.toTypedArray(), rootCA)
+
+        return arrayOf(this, *cAs.toTypedArray())
     }
 
     @Throws(CertPathBuilderException::class)
