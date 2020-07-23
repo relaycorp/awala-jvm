@@ -76,14 +76,19 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             builder.addExtension(Extension.basicConstraints, true, basicConstraints)
 
             val subjectPublicKeyDigest = getSHA256Digest(subjectPublicKeyInfo.encoded)
-            val ski = SubjectKeyIdentifier(subjectPublicKeyDigest)
-            builder.addExtension(Extension.subjectKeyIdentifier, false, ski)
+            val subjectSKI = SubjectKeyIdentifier(subjectPublicKeyDigest)
+            builder.addExtension(Extension.subjectKeyIdentifier, false, subjectSKI)
 
-            val issuerPublicKeyDigest = if (issuerCertificate != null)
-                getSHA256Digest(issuerCertificate.certificateHolder.subjectPublicKeyInfo.encoded)
-            else
-                subjectPublicKeyDigest
-            val aki = AuthorityKeyIdentifier(issuerPublicKeyDigest)
+            var issuerSKI = subjectSKI
+            if (issuerCertificate != null) {
+                issuerSKI =
+                    SubjectKeyIdentifier.fromExtensions(
+                        issuerCertificate.certificateHolder.extensions
+                    ) ?: throw CertificateException(
+                        "Issuer must have the SubjectKeyIdentifier extension"
+                    )
+            }
+            val aki = AuthorityKeyIdentifier(issuerSKI.keyIdentifier)
             builder.addExtension(Extension.authorityKeyIdentifier, false, aki)
 
             val signerBuilder = makeSigner(issuerPrivateKey)

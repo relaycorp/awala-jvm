@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.wrappers.x509
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DERBMPString
+import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier
@@ -16,13 +17,16 @@ import org.bouncycastle.crypto.util.PrivateKeyFactory
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.sha256Hex
 import tech.relaycorp.relaynet.wrappers.cms.stubKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.math.BigInteger
 import java.sql.Date
 import java.time.LocalDateTime
@@ -440,6 +444,15 @@ class CertificateTest {
 
         @Nested
         inner class AuthorityKeyIdentifierTest {
+            private val issuerKeyPair = generateRSAKeyPair()
+            private val issuerCertificate = Certificate.issue(
+                stubSubjectCommonName,
+                issuerKeyPair.public,
+                issuerKeyPair.private,
+                stubValidityEndDate,
+                isCA = true
+            )
+
             @Test
             fun `Value should correspond to subject when self-issued`() {
                 val certificate = Certificate.issue(
@@ -460,15 +473,43 @@ class CertificateTest {
             }
 
             @Test
-            fun `Value should correspond to issuer when issued by a CA`() {
-                val issuerKeyPair = generateRSAKeyPair()
-                val issuerCertificate = Certificate.issue(
-                    stubSubjectCommonName,
-                    issuerKeyPair.public,
-                    issuerKeyPair.private,
-                    stubValidityEndDate,
-                    isCA = true
+            fun `Issuer should be refused if it does not have an SKI`() {
+                val issuerDistinguishedName = X500Name("CN=issuer")
+                val subjectPublicKeyInfo =
+                    SubjectPublicKeyInfo.getInstance(issuerKeyPair.public.encoded)
+                val builder = X509v3CertificateBuilder(
+                    issuerDistinguishedName,
+                    generateRandomBigInteger(),
+                    Date.from(ZonedDateTime.now().toInstant()),
+                    Date.from(stubValidityEndDate.toInstant()),
+                    issuerDistinguishedName,
+                    subjectPublicKeyInfo
                 )
+                val basicConstraints = BasicConstraintsExtension(true, 0)
+                builder.addExtension(Extension.basicConstraints, true, basicConstraints)
+                val signer = JcaContentSignerBuilder("SHA256WITHRSAANDMGF1")
+                    .setProvider(BC_PROVIDER)
+                    .build(issuerKeyPair.private)
+                val issuerWithoutSKI = Certificate(builder.build(signer))
+
+                val exception = assertThrows<CertificateException> {
+                    Certificate.issue(
+                        stubSubjectCommonName,
+                        stubSubjectKeyPair.public,
+                        issuerKeyPair.private,
+                        stubValidityEndDate,
+                        issuerCertificate = issuerWithoutSKI
+                    )
+                }
+
+                assertEquals(
+                    "Issuer must have the SubjectKeyIdentifier extension",
+                    exception.message
+                )
+            }
+
+            @Test
+            fun `Value should correspond to issuer when issued by a CA`() {
                 val subjectCertificate = Certificate.issue(
                     stubSubjectCommonName,
                     stubSubjectKeyPair.public,
