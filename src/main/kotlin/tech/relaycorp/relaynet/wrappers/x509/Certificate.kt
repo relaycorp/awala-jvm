@@ -54,8 +54,10 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             }
 
             val subjectDistinguishedName = buildDistinguishedName(subjectCommonName)
-            val issuerDistinguishedName =
-                issuerCertificate?.certificateHolder?.subject ?: subjectDistinguishedName
+            val issuerDistinguishedName = if (issuerCertificate != null)
+                issuerCertificate.certificateHolder.subject
+            else
+                subjectDistinguishedName
             val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(subjectPublicKey.encoded)
             val builder = X509v3CertificateBuilder(
                 issuerDistinguishedName,
