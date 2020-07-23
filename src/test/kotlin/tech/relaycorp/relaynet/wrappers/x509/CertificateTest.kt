@@ -20,6 +20,7 @@ import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.BC_PROVIDER
@@ -30,6 +31,7 @@ import tech.relaycorp.relaynet.wrappers.cms.stubKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.math.BigInteger
+import java.security.cert.CertPathBuilderException
 import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset.UTC
@@ -815,6 +817,7 @@ class CertificateTest {
             }
 
             assertEquals("No certification path could be found", exception.message)
+            assertTrue(exception.cause is CertPathBuilderException)
         }
 
         @Test
@@ -907,5 +910,9 @@ class CertificateTest {
 
             assertEquals("No certification path could be found", exception.message)
         }
+
+        @Test
+        @Disabled
+        fun `The exact same instance of the certificates should be returned`() {}
     }
 }
