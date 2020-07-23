@@ -190,12 +190,25 @@ class CertificateTest {
 
             @Test
             fun `Issuer DN should be set to subject of issuer certificate`() {
+                // Use an intermediate CA as the issuer because its subject and issuer would be
+                // different. If we use a root/self-signed CA, its subject and issuer would be
+                // the same, which would make it hard to see why the test passed.
+                val rootCAKeyPair = generateRSAKeyPair()
+                val rootCACert = Certificate.issue(
+                    "root",
+                    rootCAKeyPair.public,
+                    rootCAKeyPair.private,
+                    stubValidityEndDate,
+                    isCA = true,
+                    pathLenConstraint = 1
+                )
                 val issuerCommonName = "The issuer"
                 val issuerCertificate = Certificate.issue(
                     issuerCommonName,
                     issuerKeyPair.public,
                     issuerKeyPair.private,
                     stubValidityEndDate,
+                    rootCACert,
                     isCA = true
                 )
                 val subjectCertificate = Certificate.issue(
