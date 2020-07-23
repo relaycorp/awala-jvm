@@ -55,5 +55,22 @@ fun issueEndpointCertificate(
     )
 }
 
+fun issueParcelDeliveryAuthorization(
+    subjectPublicKey: PublicKey,
+    issuerPrivateKey: PrivateKey,
+    validityEndDate: ZonedDateTime,
+    issuerCertificate: Certificate,
+    validityStartDate: ZonedDateTime = ZonedDateTime.now()
+): Certificate = Certificate.issue(
+    computePrivateAddress(subjectPublicKey),
+    subjectPublicKey,
+    issuerPrivateKey,
+    validityEndDate,
+    issuerCertificate,
+    false,
+    0,
+    validityStartDate
+)
+
 private fun computePrivateAddress(subjectPublicKey: PublicKey) =
     "0${getSHA256DigestHex(subjectPublicKey.encoded)}"

@@ -9,6 +9,7 @@ import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PKITest {
@@ -214,6 +215,115 @@ class PKITest {
         @Test
         fun `pathLenConstraint should be 0`() {
             val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
+
+            val basicConstraints =
+                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
+            assertEquals(0, basicConstraints.pathLenConstraint.toInt())
+        }
+    }
+
+    @Nested
+    inner class IssueParcelDeliveryAuthorization {
+        private val recipientKeyPair = generateRSAKeyPair()
+        private val recipientCertificate =
+            issueEndpointCertificate(recipientKeyPair.public, recipientKeyPair.private, tomorrow)
+
+        @Test
+        fun `Subject CommonName should be set to private address of subject`() {
+            val certificate = issueParcelDeliveryAuthorization(
+                keyPair.public,
+                recipientKeyPair.private,
+                tomorrow,
+                recipientCertificate
+            )
+
+            assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
+        }
+
+        @Test
+        fun `Subject public key should be honored`() {
+            val certificate = issueParcelDeliveryAuthorization(
+                keyPair.public,
+                recipientKeyPair.private,
+                tomorrow,
+                recipientCertificate
+            )
+
+            assertEquals(
+                keyPair.public.encoded.asList(),
+                certificate.certificateHolder.subjectPublicKeyInfo.encoded.asList()
+            )
+        }
+
+        @Test
+        fun `Issuer private key should be honored`() {
+            val certificate = issueParcelDeliveryAuthorization(
+                keyPair.public,
+                recipientKeyPair.private,
+                tomorrow,
+                recipientCertificate
+            )
+
+            val verifierProvider = JcaContentVerifierProviderBuilder()
+                .setProvider(BC_PROVIDER)
+                .build(recipientKeyPair.public)
+            assertTrue(certificate.certificateHolder.isSignatureValid(verifierProvider))
+        }
+
+        @Test
+        fun `Validity end date should be honored`() {
+            val certificate = issueParcelDeliveryAuthorization(
+                keyPair.public,
+                recipientKeyPair.private,
+                tomorrow,
+                recipientCertificate
+            )
+
+            assertEquals(
+                tomorrow.toEpochSecond(),
+                certificate.certificateHolder.notAfter.toInstant().epochSecond
+            )
+        }
+
+        @Test
+        fun `Validity start date should be honored if set`() {
+            val startDate = ZonedDateTime.now().minusSeconds(30)
+            val certificate = issueParcelDeliveryAuthorization(
+                keyPair.public,
+                recipientKeyPair.private,
+                tomorrow,
+                recipientCertificate,
+                startDate
+            )
+
+            assertEquals(
+                startDate.toEpochSecond(),
+                certificate.certificateHolder.notBefore.toInstant().epochSecond
+            )
+        }
+
+        @Test
+        fun `Subject should not be marked as CA`() {
+            val certificate = issueParcelDeliveryAuthorization(
+                keyPair.public,
+                recipientKeyPair.private,
+                tomorrow,
+                recipientCertificate
+            )
+
+            assertFalse(
+                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).isCA
+            )
+        }
+
+        @Test
+        fun `pathLenConstraint should be 0`() {
+            val certificate = issueParcelDeliveryAuthorization(
+                keyPair.public,
+                recipientKeyPair.private,
+                tomorrow,
+                recipientCertificate
+            )
 
             val basicConstraints =
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
