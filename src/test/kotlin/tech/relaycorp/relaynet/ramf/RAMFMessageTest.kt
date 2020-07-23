@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.issueEndpointCertificate
+import tech.relaycorp.relaynet.issueGatewayCertificate
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
@@ -306,8 +308,41 @@ class RAMFMessageTest {
     }
 
     @Test
-    @Disabled
     fun `getSenderCertificationPath should return certification path`() {
+        val tomorrow = ZonedDateTime.now().plusDays(1)
+        val publicGatewayKeyPair = generateRSAKeyPair()
+        val publicGatewayCert = issueGatewayCertificate(
+            publicGatewayKeyPair.public,
+            publicGatewayKeyPair.private,
+            tomorrow
+        )
+        val privateGatewayKeyPair = generateRSAKeyPair()
+        val privateGatewayCert = issueGatewayCertificate(
+            privateGatewayKeyPair.public,
+            publicGatewayKeyPair.private,
+            tomorrow,
+            publicGatewayCert
+        )
+        val endpointKeyPair = generateRSAKeyPair()
+        val endpointCert = issueEndpointCertificate(
+            endpointKeyPair.public,
+            privateGatewayKeyPair.private,
+            tomorrow,
+            privateGatewayCert
+        )
+        val message = StubEncryptedRAMFMessage(
+            recipientAddress,
+            payload,
+            endpointCert,
+            senderCertificateChain = setOf(privateGatewayCert)
+        )
+
+        val certificationPath = message.getSenderCertificationPath(setOf(publicGatewayCert))
+
+        assertEquals(
+            listOf(endpointCert, privateGatewayCert, publicGatewayCert),
+            certificationPath.asList()
+        )
     }
 
     @Nested

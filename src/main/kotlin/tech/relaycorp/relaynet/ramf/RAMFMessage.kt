@@ -115,9 +115,8 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     }
 
     @Throws(InvalidMessageException::class)
-    fun getSenderCertificationPath(trustedCAs: Set<Certificate>): Array<Certificate> {
-        TODO()
-    }
+    fun getSenderCertificationPath(trustedCAs: Set<Certificate>) =
+        senderCertificate.getCertificationPath(senderCertificateChain.toSet(), trustedCAs)
 
     /**
      * Validate the message.
