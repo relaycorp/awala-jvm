@@ -2,8 +2,10 @@ package tech.relaycorp.relaynet.ramf
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.DummyCertPath
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.issueStubCertificate
+import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
@@ -19,15 +21,14 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class RAMFMessageTest {
-    private val recipientAddress = "04334"
+    private val recipientAddress = DummyCertPath.endpointCert.subjectPrivateAddress
     private val messageId = "message-id"
     private val creationDateUtc: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
     private val ttl = 1
     private val payload = "payload".toByteArray()
 
-    private val senderKeyPair = generateRSAKeyPair()
-    private val senderCertificate =
-        issueStubCertificate(senderKeyPair.public, senderKeyPair.private)
+    private val senderKeyPair = DummyCertPath.pdaGranteeKeyPair
+    private val senderCertificate = DummyCertPath.pdaGranteeCert
 
     @Nested
     inner class Constructor {
@@ -304,162 +305,369 @@ class RAMFMessageTest {
         }
     }
 
+    @Test
+    fun `getSenderCertificationPath should return certification path`() {
+        val message = StubEncryptedRAMFMessage(
+            recipientAddress,
+            payload,
+            DummyCertPath.endpointCert,
+            senderCertificateChain = setOf(DummyCertPath.privateGatewayCert)
+        )
+
+        val certificationPath =
+            message.getSenderCertificationPath(setOf(DummyCertPath.publicGatewayCert))
+
+        assertEquals(
+            listOf(
+                DummyCertPath.endpointCert,
+                DummyCertPath.privateGatewayCert,
+                DummyCertPath.publicGatewayCert
+            ),
+            certificationPath.asList()
+        )
+    }
+
     @Nested
     inner class Validate {
-        @Test
-        fun `Creation date in the future should be refused`() {
-            val futureDate = ZonedDateTime.now().plusSeconds(2)
-            val message = StubEncryptedRAMFMessage(
-                recipientAddress,
-                payload,
-                senderCertificate,
-                creationDate = futureDate
-            )
+        @Nested
+        inner class ValidityPeriod {
+            @Test
+            fun `Creation date in the future should be refused`() {
+                val futureDate = ZonedDateTime.now().plusSeconds(2)
+                val message = StubEncryptedRAMFMessage(
+                    recipientAddress,
+                    payload,
+                    senderCertificate,
+                    creationDate = futureDate
+                )
 
-            val exception = assertThrows<RAMFException> { message.validate() }
+                val exception = assertThrows<RAMFException> { message.validate(null) }
 
-            assertEquals("Creation date is in the future", exception.message)
-        }
+                assertEquals("Creation date is in the future", exception.message)
+            }
 
-        @Test
-        fun `Creation date before start date of sender certificate should be refused`() {
-            val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
-                .atZone(ZoneId.systemDefault()).minusSeconds(1)
-            val message = StubEncryptedRAMFMessage(
-                recipientAddress,
-                payload,
-                senderCertificate,
-                creationDate = creationDate
-            )
+            @Test
+            fun `Creation date before start date of sender certificate should be refused`() {
+                val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
+                    .atZone(ZoneId.systemDefault()).minusSeconds(1)
+                val message = StubEncryptedRAMFMessage(
+                    recipientAddress,
+                    payload,
+                    senderCertificate,
+                    creationDate = creationDate
+                )
 
-            val exception = assertThrows<RAMFException> { message.validate() }
+                val exception = assertThrows<RAMFException> { message.validate(null) }
 
-            assertEquals(
-                "Message was created before sender certificate was valid",
-                exception.message
-            )
-        }
+                assertEquals(
+                    "Message was created before sender certificate was valid",
+                    exception.message
+                )
+            }
 
-        @Test
-        fun `Creation date matching start date of sender certificate should be accepted`() {
-            val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
-                .atZone(ZoneId.systemDefault())
-            val message = StubEncryptedRAMFMessage(
-                recipientAddress,
-                payload,
-                senderCertificate,
-                creationDate = creationDate
-            )
+            @Test
+            fun `Creation date matching start date of sender certificate should be accepted`() {
+                val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                val message = StubEncryptedRAMFMessage(
+                    recipientAddress,
+                    payload,
+                    senderCertificate,
+                    creationDate = creationDate
+                )
 
-            message.validate()
-        }
+                message.validate(null)
+            }
 
-        @Test
-        fun `Creation date equal to the current date should be accepted`() {
-            val message = StubEncryptedRAMFMessage(recipientAddress, payload, senderCertificate)
+            @Test
+            fun `Creation date equal to the current date should be accepted`() {
+                val message = StubEncryptedRAMFMessage(recipientAddress, payload, senderCertificate)
 
-            message.validate()
-        }
+                message.validate(null)
+            }
 
-        @Test
-        fun `Expiry date equal to the current date should be accepted`() {
-            val now = ZonedDateTime.now()
-            val certificate = Certificate.issue(
-                "the subject for the stub cert",
-                senderKeyPair.public,
-                senderKeyPair.private,
-                now.plusMinutes(1),
-                validityStartDate = now.minusMinutes(1)
-            )
-            val message = StubEncryptedRAMFMessage(
-                recipientAddress,
-                payload,
-                certificate,
-                creationDate = now.minusNanos(500_000),
-                ttl = 1
-            )
+            @Test
+            fun `Expiry date equal to the current date should be accepted`() {
+                val now = ZonedDateTime.now()
+                val certificate = Certificate.issue(
+                    "the subject for the stub cert",
+                    senderKeyPair.public,
+                    senderKeyPair.private,
+                    now.plusMinutes(1),
+                    validityStartDate = now.minusMinutes(1)
+                )
+                val message = StubEncryptedRAMFMessage(
+                    recipientAddress,
+                    payload,
+                    certificate,
+                    creationDate = now.minusNanos(500_000),
+                    ttl = 1
+                )
 
-            message.validate()
-        }
+                message.validate(null)
+            }
 
-        @Test
-        fun `Expiry date in the past should be refused`() {
-            val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
-                .atZone(ZoneId.systemDefault())
-            val message = StubEncryptedRAMFMessage(
-                recipientAddress,
-                payload,
-                senderCertificate,
-                creationDate = creationDate,
-                ttl = 0
-            )
+            @Test
+            fun `Expiry date in the past should be refused`() {
+                val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                val message = StubEncryptedRAMFMessage(
+                    recipientAddress,
+                    payload,
+                    senderCertificate,
+                    creationDate = creationDate,
+                    ttl = 0
+                )
 
-            val exception = assertThrows<RAMFException> { message.validate() }
+                val exception = assertThrows<RAMFException> { message.validate(null) }
 
-            assertEquals("Message already expired", exception.message)
-        }
+                assertEquals("Message already expired", exception.message)
+            }
 
-        @Test
-        fun `Invalid sender certificates should be refused`() {
-            val now = ZonedDateTime.now()
-            val expiredCertificate = Certificate.issue(
-                "foo",
-                senderKeyPair.public,
-                senderKeyPair.private,
-                now.minusSeconds(1),
-                validityStartDate = now.minusSeconds(2)
-            )
-            val message = StubEncryptedRAMFMessage(
-                recipientAddress,
-                payload,
-                expiredCertificate,
-                creationDate = now
-            )
+            @Test
+            fun `Invalid sender certificates should be refused`() {
+                val now = ZonedDateTime.now()
+                val expiredCertificate = Certificate.issue(
+                    "foo",
+                    senderKeyPair.public,
+                    senderKeyPair.private,
+                    now.minusSeconds(1),
+                    validityStartDate = now.minusSeconds(2)
+                )
+                val message = StubEncryptedRAMFMessage(
+                    recipientAddress,
+                    payload,
+                    expiredCertificate,
+                    creationDate = now
+                )
 
-            val exception = assertThrows<RAMFException> { message.validate() }
+                val exception = assertThrows<RAMFException> { message.validate(null) }
 
-            assertTrue(exception.cause is CertificateException)
-            assertEquals("Invalid sender certificate", exception.message)
+                assertTrue(exception.cause is CertificateException)
+                assertEquals("Invalid sender certificate", exception.message)
+            }
         }
 
         @Nested
         inner class RecipientAddress {
+            private val privateAddress = "0deadbeef"
+            private val publicAddress = "https://example.com"
+
             @Test
             fun `Public addresses should be accepted`() {
                 val message = StubEncryptedRAMFMessage(
-                    "https://example.com",
+                    publicAddress,
                     payload,
                     senderCertificate,
                     messageId
                 )
 
-                message.validate()
+                message.validate(null)
             }
 
             @Test
             fun `Private addresses should be accepted`() {
                 val message = StubEncryptedRAMFMessage(
-                    "0deadbeef",
+                    privateAddress,
                     payload,
                     senderCertificate,
                     messageId
                 )
 
-                message.validate()
+                message.validate(null)
             }
 
             @Test
             fun `Invalid addresses should be refused`() {
                 val message = StubEncryptedRAMFMessage(
-                    "this is private",
+                    "this is an invalid private address",
                     payload,
                     senderCertificate,
                     messageId
                 )
 
-                val exception = assertThrows<RAMFException> { message.validate() }
+                val exception = assertThrows<RAMFException> { message.validate(null) }
 
-                assertEquals("Recipient address is invalid", exception.message)
+                assertEquals("Recipient address is an invalid private address", exception.message)
+            }
+
+            @Test
+            fun `Private address should be refused if a public one is required`() {
+                val message = StubEncryptedRAMFMessage(
+                    privateAddress,
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                val exception = assertThrows<InvalidMessageException> {
+                    message.validate(RecipientAddressType.PUBLIC)
+                }
+
+                assertEquals("Invalid recipient address type", exception.message)
+            }
+
+            @Test
+            fun `Public address should be refused if a private one is required`() {
+                val message = StubEncryptedRAMFMessage(
+                    publicAddress,
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                val exception = assertThrows<InvalidMessageException> {
+                    message.validate(RecipientAddressType.PRIVATE)
+                }
+
+                assertEquals("Invalid recipient address type", exception.message)
+            }
+
+            @Test
+            fun `Private address should be allowed if a private one is required`() {
+                val message = StubEncryptedRAMFMessage(
+                    privateAddress,
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                message.validate(RecipientAddressType.PRIVATE)
+            }
+
+            @Test
+            fun `Public address should be allowed if a public one is required`() {
+                val message = StubEncryptedRAMFMessage(
+                    publicAddress,
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                message.validate(RecipientAddressType.PUBLIC)
+            }
+
+            @Test
+            fun `Private address should be allowed if no specific type is required`() {
+                val message = StubEncryptedRAMFMessage(
+                    privateAddress,
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                message.validate(null)
+            }
+
+            @Test
+            fun `Public address should be allowed if no specific type is required`() {
+                val message = StubEncryptedRAMFMessage(
+                    publicAddress,
+                    payload,
+                    senderCertificate,
+                    messageId
+                )
+
+                message.validate(null)
+            }
+        }
+
+        @Nested
+        inner class Authorization {
+            @Test
+            fun `Message should be refused if sender is authorized but not trusted`() {
+                val untrustedRecipientKeyPair = generateRSAKeyPair()
+                val untrustedRecipientCert = issueStubCertificate(
+                    untrustedRecipientKeyPair.public,
+                    untrustedRecipientKeyPair.private,
+                    isCA = true
+                )
+                val untrustedSenderKeyPair = generateRSAKeyPair()
+                val untrustedSenderCert = issueStubCertificate(
+                    untrustedSenderKeyPair.public,
+                    untrustedRecipientKeyPair.private,
+                    untrustedRecipientCert
+                )
+                val message = StubEncryptedRAMFMessage(
+                    untrustedRecipientCert.subjectPrivateAddress,
+                    payload,
+                    untrustedSenderCert
+                )
+
+                val exception = assertThrows<InvalidMessageException> {
+                    message.validate(null, setOf(DummyCertPath.publicGatewayCert))
+                }
+
+                assertEquals("Sender is not authorized", exception.message)
+                assertTrue(exception.cause is CertificateException)
+            }
+
+            @Test
+            fun `Message should be accepted if sender is trusted`() {
+                val message = StubEncryptedRAMFMessage(
+                    DummyCertPath.endpointCert.subjectPrivateAddress,
+                    payload,
+                    DummyCertPath.pdaGranteeCert,
+                    senderCertificateChain = setOf(
+                        DummyCertPath.privateGatewayCert,
+                        DummyCertPath.endpointCert
+                    )
+                )
+
+                message.validate(null, setOf(DummyCertPath.publicGatewayCert))
+            }
+
+            @Test
+            fun `Message should be refused if message recipient does not match sender issuer`() {
+                val anotherRecipientKeyPair = generateRSAKeyPair()
+                val anotherRecipientCert = issueStubCertificate(
+                    anotherRecipientKeyPair.public,
+                    anotherRecipientKeyPair.private
+                )
+                val message = StubEncryptedRAMFMessage(
+                    anotherRecipientCert.subjectPrivateAddress,
+                    payload,
+                    DummyCertPath.endpointCert,
+                    senderCertificateChain = setOf(DummyCertPath.privateGatewayCert)
+                )
+
+                val exception = assertThrows<InvalidMessageException> {
+                    message.validate(null, setOf(DummyCertPath.publicGatewayCert))
+                }
+
+                assertEquals("Sender is authorized by the wrong recipient", exception.message)
+            }
+
+            @Test
+            fun `Authorization enforcement should be skipped if recipient address is public`() {
+                val untrustedSenderKeyPair = generateRSAKeyPair()
+                val untrustedSenderCert = issueStubCertificate(
+                    untrustedSenderKeyPair.public,
+                    untrustedSenderKeyPair.private
+                )
+                val message = StubEncryptedRAMFMessage(
+                    "https://foo.relaycorp.tech",
+                    payload,
+                    untrustedSenderCert
+                )
+
+                message.validate(null, setOf(DummyCertPath.publicGatewayCert))
+            }
+
+            @Test
+            fun `Authorization enforcement should be skipped if trusted certs are absent`() {
+                val untrustedSenderKeyPair = generateRSAKeyPair()
+                val untrustedSenderCert = issueStubCertificate(
+                    untrustedSenderKeyPair.public,
+                    untrustedSenderKeyPair.private
+                )
+                val message = StubEncryptedRAMFMessage(
+                    DummyCertPath.endpointCert.subjectPrivateAddress,
+                    payload,
+                    untrustedSenderCert
+                )
+
+                message.validate(null)
             }
         }
     }

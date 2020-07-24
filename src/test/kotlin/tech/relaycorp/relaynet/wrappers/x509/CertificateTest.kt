@@ -23,12 +23,15 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.BC_PROVIDER
+import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.sha256Hex
 import tech.relaycorp.relaynet.wrappers.cms.stubKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.math.BigInteger
+import java.security.InvalidAlgorithmParameterException
+import java.security.cert.CertPathBuilderException
 import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset.UTC
@@ -37,6 +40,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class CertificateTest {
@@ -775,6 +779,263 @@ class CertificateTest {
 
                 certificate.validate()
             }
+        }
+    }
+
+    @Nested
+    inner class GetCertificationPath {
+        private val rootCACert = Certificate.issue(
+            stubSubjectCommonName,
+            stubSubjectKeyPair.public,
+            stubSubjectKeyPair.private,
+            stubValidityEndDate,
+            isCA = true,
+            pathLenConstraint = 2
+        )
+
+        @Test
+        fun `Certificate self-issued by trusted CA should be trusted`() {
+            val certPath = rootCACert.getCertificationPath(emptySet(), setOf(rootCACert))
+
+            assertEquals(listOf(rootCACert), certPath.asList())
+        }
+
+        @Test
+        fun `Cert issued by trusted CA should be trusted`() {
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                stubSubjectKeyPair.private,
+                rootCACert
+            )
+
+            val certPath = endEntityCert.getCertificationPath(emptySet(), setOf(rootCACert))
+
+            assertEquals(listOf(endEntityCert, rootCACert), certPath.asList())
+        }
+
+        @Test
+        fun `Cert not issued by trusted cert should not be trusted`() {
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert =
+                issueStubCertificate(endEntityKeyPair.public, endEntityKeyPair.private)
+
+            val exception = assertThrows<CertificateException> {
+                endEntityCert.getCertificationPath(emptySet(), setOf(rootCACert))
+            }
+
+            assertEquals("No certification path could be found", exception.message)
+            assertTrue(exception.cause is CertPathBuilderException)
+        }
+
+        @Test
+        fun `Cert issued by untrusted intermediate CA should be trusted if root is trusted`() {
+            val intermediateCAKeyPair = generateRSAKeyPair()
+            val intermediateCACert = issueStubCertificate(
+                intermediateCAKeyPair.public,
+                stubSubjectKeyPair.private,
+                rootCACert,
+                isCA = true
+            )
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                intermediateCAKeyPair.private,
+                intermediateCACert
+            )
+
+            val certPath =
+                endEntityCert.getCertificationPath(setOf(intermediateCACert), setOf(rootCACert))
+
+            assertEquals(listOf(endEntityCert, intermediateCACert, rootCACert), certPath.asList())
+        }
+
+        @Test
+        fun `Valid paths may have multiple untrusted intermediate CA`() {
+            val intermediateCA1KeyPair = generateRSAKeyPair()
+            val intermediateCA1Cert = Certificate.issue(
+                "intermediate1",
+                intermediateCA1KeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate,
+                rootCACert,
+                true,
+                1
+            )
+            val intermediateCA2KeyPair = generateRSAKeyPair()
+            val intermediateCA2Cert = Certificate.issue(
+                "intermediate2",
+                intermediateCA2KeyPair.public,
+                intermediateCA1KeyPair.private,
+                stubValidityEndDate,
+                intermediateCA1Cert,
+                true
+            )
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = Certificate.issue(
+                "end",
+                endEntityKeyPair.public,
+                intermediateCA2KeyPair.private,
+                stubValidityEndDate,
+                intermediateCA2Cert
+            )
+
+            val certPath = endEntityCert.getCertificationPath(
+                setOf(intermediateCA1Cert, intermediateCA2Cert),
+                setOf(rootCACert)
+            )
+
+            assertEquals(
+                listOf(endEntityCert, intermediateCA2Cert, intermediateCA1Cert, rootCACert),
+                certPath.asList()
+            )
+        }
+
+        @Test
+        fun `Cert issued by trusted intermediate CA should be trusted`() {
+            val intermediateCAKeyPair = generateRSAKeyPair()
+            val intermediateCACert = issueStubCertificate(
+                intermediateCAKeyPair.public,
+                stubSubjectKeyPair.private,
+                rootCACert,
+                isCA = true
+            )
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                intermediateCAKeyPair.private,
+                intermediateCACert
+            )
+
+            val certPath =
+                endEntityCert.getCertificationPath(emptySet(), setOf(intermediateCACert))
+
+            assertEquals(listOf(endEntityCert, intermediateCACert), certPath.asList())
+        }
+
+        @Test
+        fun `Cert issued by untrusted intermediate CA should not be trusted`() {
+            val intermediateCAKeyPair = generateRSAKeyPair()
+            val intermediateCACert = issueStubCertificate(
+                intermediateCAKeyPair.public,
+                intermediateCAKeyPair.private,
+                isCA = true
+            )
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                endEntityKeyPair.private,
+                intermediateCACert
+            )
+
+            val exception = assertThrows<CertificateException> {
+                endEntityCert.getCertificationPath(setOf(intermediateCACert), setOf(rootCACert))
+            }
+
+            assertEquals("No certification path could be found", exception.message)
+        }
+
+        @Test
+        fun `Including trusted intermediate CA should not make certificate trusted`() {
+            val intermediateCAKeyPair = generateRSAKeyPair()
+            val intermediateCACert = issueStubCertificate(
+                intermediateCAKeyPair.public,
+                intermediateCAKeyPair.private,
+                isCA = true
+            )
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                endEntityKeyPair.private,
+                intermediateCACert
+            )
+
+            val exception = assertThrows<CertificateException> {
+                endEntityCert.getCertificationPath(
+                    setOf(rootCACert, intermediateCACert),
+                    setOf(rootCACert)
+                )
+            }
+
+            assertEquals("No certification path could be found", exception.message)
+        }
+
+        @Test
+        fun `Root CA in path should be identified when there are multiple trusted CAs`() {
+            // Java doesn't include the trusted CA in the path, so we have to include it
+            // ourselves. Let's make sure we do it properly.
+            val trustedCA2KeyPair = generateRSAKeyPair()
+            val trustedCA2Cert = issueStubCertificate(
+                trustedCA2KeyPair.public,
+                trustedCA2KeyPair.private,
+                isCA = true
+            )
+
+            val intermediateCAKeyPair = generateRSAKeyPair()
+            val intermediateCACert = issueStubCertificate(
+                intermediateCAKeyPair.public,
+                stubSubjectKeyPair.private,
+                rootCACert,
+                isCA = true
+            )
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                intermediateCAKeyPair.private,
+                intermediateCACert
+            )
+
+            val certPath = endEntityCert.getCertificationPath(
+                setOf(intermediateCACert),
+                setOf(trustedCA2Cert, rootCACert)
+            )
+
+            assertEquals(listOf(endEntityCert, intermediateCACert, rootCACert), certPath.asList())
+        }
+
+        @Test
+        fun `The exact same instance of the certificates should be returned`() {
+            val intermediateCAKeyPair = generateRSAKeyPair()
+            val intermediateCACert = issueStubCertificate(
+                intermediateCAKeyPair.public,
+                stubSubjectKeyPair.private,
+                rootCACert,
+                isCA = true
+            )
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                intermediateCAKeyPair.private,
+                intermediateCACert
+            )
+
+            val certPath =
+                endEntityCert.getCertificationPath(setOf(intermediateCACert), setOf(rootCACert))
+
+            assertEquals(3, certPath.size)
+            assertSame(endEntityCert, certPath.first())
+            assertSame(intermediateCACert, certPath[1])
+            assertSame(rootCACert, certPath.last())
+        }
+
+        @Test
+        fun `An empty set of trusted CAs will fail validation`() {
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                stubSubjectKeyPair.private,
+                rootCACert
+            )
+
+            val exception = assertThrows<CertificateException> {
+                endEntityCert.getCertificationPath(emptySet(), emptySet())
+            }
+
+            assertEquals(
+                "Failed to initialize path builder; set of trusted CAs might be empty",
+                exception.message
+            )
+            assertTrue(exception.cause is InvalidAlgorithmParameterException)
         }
     }
 }
