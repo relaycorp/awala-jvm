@@ -165,6 +165,11 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         if (expiryDate < now) {
             throw RAMFException("Message already expired")
         }
+
+        // We're already validating the sender's certificate separately, so we don't need to check
+        // whether the expiry date of the message is after the expiry date of the sender's
+        // certificate: We don't care if that's the case, we just care that neither the message nor
+        // the sender's certificate has expired.
     }
 
     private fun validateRecipientAddress(requiredRecipientAddressType: RecipientAddressType?) {
