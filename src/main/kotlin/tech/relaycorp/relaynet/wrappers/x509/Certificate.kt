@@ -219,8 +219,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
      */
     @Throws(CertificateException::class)
     fun getCertificationPath(
-        intermediateCAs: Set<Certificate>,
-        trustedCAs: Set<Certificate>
+        intermediateCAs: Collection<Certificate>,
+        trustedCAs: Collection<Certificate>
     ): Array<Certificate> {
         val pathBuilderResult = try {
             buildPath(intermediateCAs, trustedCAs)
@@ -257,8 +257,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
     @Throws(CertPathBuilderException::class)
     private fun buildPath(
-        intermediateCAs: Set<Certificate>,
-        trustedCAs: Set<Certificate>
+        intermediateCAs: Collection<Certificate>,
+        trustedCAs: Collection<Certificate>
     ): CertPathBuilderResult {
         // We have to start by converting all BC certificates to Java certificates because we
         // can't do this with BouncyCastle:

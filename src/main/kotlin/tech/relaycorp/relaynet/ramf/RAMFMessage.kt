@@ -115,17 +115,32 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     }
 
     @Throws(InvalidMessageException::class)
-    fun getSenderCertificationPath(trustedCAs: Set<Certificate>) =
+    fun getSenderCertificationPath(trustedCAs: Collection<Certificate>) =
         senderCertificate.getCertificationPath(senderCertificateChain.toSet(), trustedCAs)
 
     /**
      * Validate the message.
      *
+     * If the recipient address is public, passing a collection of `trustedCAs` will also make
+     * sure that the sender is authorized to send this message to the recipient.
+     *
+     * If there are no trusted CAs, avoid setting `trustedCAs` to an empty collection as that will
+     * always cause validation to fail. This is intentional: We won't try to guess whether you made
+     * a mistake or really meant to skip authorization checks.
+     *
+     * @param requiredRecipientAddressType The type of recipient address this message must have, if you
+     *    need to enforce a specific type
+     * @param trustedCAs The trusted CAs (if any); an empty set will always fail validation
      * @throws RAMFException If the message was never (or is no longer) valid
      */
-    @Throws(RAMFException::class)
-    fun validate() {
+    @Throws(RAMFException::class, InvalidMessageException::class)
+    fun validate(
+        requiredRecipientAddressType: RecipientAddressType?,
+        trustedCAs: Collection<Certificate>? = null
+    ) {
         validateTiming()
+
+        validateRecipientAddress(requiredRecipientAddressType)
 
         try {
             senderCertificate.validate()
@@ -133,7 +148,9 @@ abstract class RAMFMessage<P : Payload> internal constructor(
             throw RAMFException("Invalid sender certificate", exc)
         }
 
-        validateRecipientAddress()
+        if (trustedCAs != null && isRecipientAddressPrivate) {
+            validateAuthorization(trustedCAs)
+        }
     }
 
     private fun validateTiming() {
@@ -150,7 +167,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         }
     }
 
-    private fun validateRecipientAddress() {
+    private fun validateRecipientAddress(requiredRecipientAddressType: RecipientAddressType?) {
         val isPublic = try {
             URL(recipientAddress)
             true
@@ -158,13 +175,31 @@ abstract class RAMFMessage<P : Payload> internal constructor(
             false
         }
         if (!isPublic && !PRIVATE_ADDRESS_REGEX.matches(recipientAddress)) {
-            throw RAMFException("Recipient address is invalid")
+            throw RAMFException("Recipient address is an invalid private address")
+        }
+
+        val addressType = if (isRecipientAddressPrivate)
+            RecipientAddressType.PRIVATE
+        else
+            RecipientAddressType.PUBLIC
+        if (requiredRecipientAddressType != null && requiredRecipientAddressType != addressType) {
+            throw InvalidMessageException("Invalid recipient address type")
         }
     }
 
     @Throws(InvalidMessageException::class)
-    private fun validateAuthorization(trustedCAs: Set<Certificate>) {
-        TODO()
+    private fun validateAuthorization(trustedCAs: Collection<Certificate>) {
+        val certificationPath = try {
+            getSenderCertificationPath(trustedCAs)
+        } catch (exc: CertificateException) {
+            throw InvalidMessageException("Sender is not authorized", exc)
+        }
+
+        val recipientCertificate = certificationPath[1]
+        val recipientPrivateAddress = recipientCertificate.subjectPrivateAddress
+        if (recipientPrivateAddress != recipientAddress) {
+            throw InvalidMessageException("Sender is authorized by the wrong recipient")
+        }
     }
 
     companion object {

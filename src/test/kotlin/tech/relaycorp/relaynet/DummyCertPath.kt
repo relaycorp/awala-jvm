@@ -26,4 +26,11 @@ object DummyCertPath {
         tomorrow,
         privateGatewayCert
     )
+    val pdaGranteeKeyPair = generateRSAKeyPair()
+    val pdaGranteeCert = issueParcelDeliveryAuthorization(
+        pdaGranteeKeyPair.public,
+        endpointKeyPair.private,
+        tomorrow,
+        endpointCert
+    )
 }
