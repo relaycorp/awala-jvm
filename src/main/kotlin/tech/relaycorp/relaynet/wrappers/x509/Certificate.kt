@@ -24,10 +24,10 @@ import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.cert.CertPathBuilder
 import java.security.cert.CertPathBuilderException
-import java.security.cert.CertPathBuilderResult
 import java.security.cert.CertStore
 import java.security.cert.CollectionCertStoreParameters
 import java.security.cert.PKIXBuilderParameters
+import java.security.cert.PKIXCertPathBuilderResult
 import java.security.cert.PKIXParameters
 import java.security.cert.TrustAnchor
 import java.security.cert.X509CertSelector
@@ -235,21 +235,16 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             X509CertificateHolder(it.encoded)
         }
 
-        // Compute the root CA, since it's not included in the path. See:
-        // https://stackoverflow.com/q/63051252/129437
-        val firstCertAfterRoot = bcCertPath.last()
-        val rootCA = trustedCAs.single {
-            it.certificateHolder.subject == firstCertAfterRoot.issuer
-        }
-
-        // Convert the Java certificates back to the original BouncyCastle instances.
+        // Convert the BC certificates back to the original Relaynet Certificate instances.
         val cAs = bcCertPath.slice(1..bcCertPath.lastIndex).map { copy ->
             intermediateCAs.single { original -> copy == original.certificateHolder }
         }.toMutableList()
 
         // Include the root certificate unless this is a self-signed certificate:
-        if (rootCA != this) {
-            cAs.add(rootCA)
+        val bcRootCACert = X509CertificateHolder(pathBuilderResult.trustAnchor.trustedCert.encoded)
+        if (bcRootCACert != this.certificateHolder) {
+            val rootCACert = trustedCAs.single { it.certificateHolder == bcRootCACert }
+            cAs.add(rootCACert)
         }
 
         return arrayOf(this, *cAs.toTypedArray())
@@ -259,7 +254,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     private fun buildPath(
         intermediateCAs: Collection<Certificate>,
         trustedCAs: Collection<Certificate>
-    ): CertPathBuilderResult {
+    ): PKIXCertPathBuilderResult {
         // We have to start by converting all BC certificates to Java certificates because we
         // can't do this with BouncyCastle:
         // https://stackoverflow.com/q/63020771/129437
@@ -293,7 +288,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             "PKIX",
             BC_PROVIDER // Use BC for performance reasons
         )
-        return pathBuilder.build(parameters)
+        return pathBuilder.build(parameters) as PKIXCertPathBuilderResult
     }
 
     private fun convertCertToJava(certificate: Certificate) =
