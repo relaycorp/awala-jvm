@@ -154,7 +154,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     /**
      * Report whether the subject is a CA.
      */
-    val isCA: Boolean by lazy { basicConstraints?.isCA == true }
+    internal val isCA: Boolean by lazy { basicConstraints?.isCA == true }
 
     /**
      * Report whether this certificate equals another.
