@@ -31,6 +31,8 @@ import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.math.BigInteger
 import java.security.InvalidAlgorithmParameterException
+import java.security.PrivateKey
+import java.security.PublicKey
 import java.security.cert.CertPathBuilderException
 import java.sql.Date
 import java.time.LocalDateTime
@@ -253,28 +255,10 @@ class CertificateTest {
 
             @Test
             fun `Issuer certificate should have basicConstraints extension`() {
-                val issuerCommonName = "The issuer"
-                val issuerDistinguishedNameBuilder = X500NameBuilder(BCStyle.INSTANCE)
-                issuerDistinguishedNameBuilder.addRDN(BCStyle.CN, issuerCommonName)
-
-                val builder = X509v3CertificateBuilder(
-                    issuerDistinguishedNameBuilder.build(),
-                    42.toBigInteger(),
-                    Date.valueOf(LocalDateTime.now().toLocalDate()),
-                    Date.valueOf(LocalDateTime.now().toLocalDate().plusMonths(1)),
-                    issuerDistinguishedNameBuilder.build(),
-                    SubjectPublicKeyInfo.getInstance(issuerKeyPair.public.encoded)
+                val issuerCertificate = issueCertWithoutBasicConstraints(
+                    issuerKeyPair.public,
+                    issuerKeyPair.private
                 )
-                val signatureAlgorithm =
-                    DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption")
-                val digestAlgorithm =
-                    DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-                val privateKeyParam: AsymmetricKeyParameter =
-                    PrivateKeyFactory.createKey(issuerKeyPair.private.encoded)
-                val contentSignerBuilder =
-                    BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
-                val signerBuilder = contentSignerBuilder.build(privateKeyParam)
-                val issuerCertificate = Certificate(builder.build(signerBuilder))
 
                 val exception = assertThrows<CertificateException> {
                     Certificate.issue(
@@ -287,7 +271,7 @@ class CertificateTest {
                 }
 
                 assertEquals(
-                    "Issuer certificate should have basic constraints extension",
+                    "Issuer certificate should be marked as CA",
                     exception.message
                 )
             }
@@ -1037,5 +1021,71 @@ class CertificateTest {
             )
             assertTrue(exception.cause is InvalidAlgorithmParameterException)
         }
+    }
+
+    @Nested
+    inner class IsCA {
+        @Test
+        fun `True should be returned if entity is CA`() {
+            val cert = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate,
+                isCA = true
+            )
+
+            assertTrue(cert.isCA)
+        }
+
+        @Test
+        fun `False should be returned if entity is not CA`() {
+            val cert = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate
+            )
+
+            assertFalse(cert.isCA)
+        }
+
+        @Test
+        fun `False should be returned if BasicConstrains extension is missing`() {
+            val cert = issueCertWithoutBasicConstraints(
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private
+            )
+
+            assertFalse(cert.isCA)
+        }
+    }
+
+    private fun issueCertWithoutBasicConstraints(
+        publicKey: PublicKey,
+        privateKey: PrivateKey
+    ): Certificate {
+        val issuerCommonName = "The issuer"
+        val issuerDistinguishedNameBuilder = X500NameBuilder(BCStyle.INSTANCE)
+        issuerDistinguishedNameBuilder.addRDN(BCStyle.CN, issuerCommonName)
+
+        val builder = X509v3CertificateBuilder(
+            issuerDistinguishedNameBuilder.build(),
+            42.toBigInteger(),
+            Date.valueOf(LocalDateTime.now().toLocalDate()),
+            Date.valueOf(LocalDateTime.now().toLocalDate().plusMonths(1)),
+            issuerDistinguishedNameBuilder.build(),
+            SubjectPublicKeyInfo.getInstance(publicKey.encoded)
+        )
+        val signatureAlgorithm =
+            DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption")
+        val digestAlgorithm =
+            DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
+        val privateKeyParam: AsymmetricKeyParameter =
+            PrivateKeyFactory.createKey(privateKey.encoded)
+        val contentSignerBuilder =
+            BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
+        val signerBuilder = contentSignerBuilder.build(privateKeyParam)
+        return Certificate(builder.build(signerBuilder))
     }
 }

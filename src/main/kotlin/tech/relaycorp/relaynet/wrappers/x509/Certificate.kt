@@ -63,8 +63,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             if (validityStartDate >= validityEndDate) {
                 throw CertificateException("The end date must be later than the start date")
             }
-            if (issuerCertificate != null) {
-                requireCertificateToBeCA(issuerCertificate)
+            if (issuerCertificate != null && !issuerCertificate.isCA) {
+                throw CertificateException("Issuer certificate should be marked as CA")
             }
 
             val subjectDistinguishedName = buildDistinguishedName(subjectCommonName)
@@ -114,19 +114,6 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             return builder.build()
         }
 
-        private fun requireCertificateToBeCA(issuerCertificate: Certificate) {
-            val issuerBasicConstraintsExtension =
-                issuerCertificate.certificateHolder.getExtension(Extension.basicConstraints)
-                    ?: throw CertificateException(
-                        "Issuer certificate should have basic constraints extension"
-                    )
-            val issuerBasicConstraints =
-                BasicConstraints.getInstance(issuerBasicConstraintsExtension.parsedValue)
-            if (!issuerBasicConstraints.isCA) {
-                throw CertificateException("Issuer certificate should be marked as CA")
-            }
-        }
-
         /**
          * Deserialize certificate,
          *
@@ -159,6 +146,15 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
      */
     val subjectPrivateAddress
         get() = "0" + getSHA256DigestHex(certificateHolder.subjectPublicKeyInfo.encoded)
+
+    private val basicConstraints: BasicConstraints? by lazy {
+        BasicConstraints.fromExtensions(certificateHolder.extensions)
+    }
+
+    /**
+     * Report whether the subject is a CA.
+     */
+    val isCA: Boolean by lazy { basicConstraints?.isCA == true }
 
     /**
      * Report whether this certificate equals another.
