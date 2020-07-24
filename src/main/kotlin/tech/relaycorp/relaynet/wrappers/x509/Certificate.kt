@@ -19,6 +19,7 @@ import tech.relaycorp.relaynet.getSHA256Digest
 import tech.relaycorp.relaynet.getSHA256DigestHex
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.io.IOException
+import java.security.InvalidAlgorithmParameterException
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.cert.CertPathBuilder
@@ -271,17 +272,27 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         val intermediateCertStore = CertStore.getInstance(
             "Collection",
             CollectionCertStoreParameters(javaIntermediateCACerts),
-            BC_PROVIDER
+            BC_PROVIDER // Use BC for performance reasons
         )
 
         val endEntitySelector = X509CertSelector()
         endEntitySelector.certificate = javaEndEntityCert
 
-        val parameters: PKIXParameters = PKIXBuilderParameters(trustAnchors, endEntitySelector)
+        val parameters: PKIXParameters = try {
+            PKIXBuilderParameters(trustAnchors, endEntitySelector)
+        } catch (exc: InvalidAlgorithmParameterException) {
+            throw CertificateException(
+                "Failed to initialize path builder; set of trusted CAs might be empty",
+                exc
+            )
+        }
         parameters.isRevocationEnabled = false
         parameters.addCertStore(intermediateCertStore)
 
-        val pathBuilder: CertPathBuilder = CertPathBuilder.getInstance("PKIX", BC_PROVIDER)
+        val pathBuilder: CertPathBuilder = CertPathBuilder.getInstance(
+            "PKIX",
+            BC_PROVIDER // Use BC for performance reasons
+        )
         return pathBuilder.build(parameters)
     }
 

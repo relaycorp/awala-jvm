@@ -30,6 +30,7 @@ import tech.relaycorp.relaynet.wrappers.cms.stubKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.math.BigInteger
+import java.security.InvalidAlgorithmParameterException
 import java.security.cert.CertPathBuilderException
 import java.sql.Date
 import java.time.LocalDateTime
@@ -1015,6 +1016,26 @@ class CertificateTest {
             assertSame(endEntityCert, certPath.first())
             assertSame(intermediateCACert, certPath[1])
             assertSame(rootCACert, certPath.last())
+        }
+
+        @Test
+        fun `An empty set of trusted CAs will fail validation`() {
+            val endEntityKeyPair = generateRSAKeyPair()
+            val endEntityCert = issueStubCertificate(
+                endEntityKeyPair.public,
+                stubSubjectKeyPair.private,
+                rootCACert
+            )
+
+            val exception = assertThrows<CertificateException> {
+                endEntityCert.getCertificationPath(emptySet(), emptySet())
+            }
+
+            assertEquals(
+                "Failed to initialize path builder; set of trusted CAs might be empty",
+                exception.message
+            )
+            assertTrue(exception.cause is InvalidAlgorithmParameterException)
         }
     }
 }
