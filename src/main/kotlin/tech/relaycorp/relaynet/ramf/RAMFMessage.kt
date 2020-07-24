@@ -121,7 +121,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     /**
      * Validate the message.
      *
-     * If the recipient address is public, passing a collection of `trustedCAs` will also make
+     * If the recipient address is private, passing a collection of `trustedCAs` will also make
      * sure that the sender is authorized to send this message to the recipient.
      *
      * If there are no trusted CAs, avoid setting `trustedCAs` to an empty collection as that will
