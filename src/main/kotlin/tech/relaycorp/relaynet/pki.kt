@@ -13,7 +13,7 @@ import java.time.ZonedDateTime
  * @param subjectPublicKey The public key of the subject
  * @param issuerPrivateKey The private key of the issuer
  * @param validityEndDate The end date of the certificate to be issued
- * @param issuerCertificate The certificate of the issuer, unless issuing a self-signed certificate
+ * @param issuerCertificate The certificate of the issuer, if the subject is a private gateway
  * @param validityStartDate The start date of the certificate to be issued
  */
 fun issueGatewayCertificate(
@@ -36,6 +36,15 @@ fun issueGatewayCertificate(
     )
 }
 
+/**
+ * Issue Relaynet PKI certificate to a private or public endpoint.
+ *
+ * @param subjectPublicKey The public key of the subject
+ * @param issuerPrivateKey The private key of the issuer
+ * @param validityEndDate The end date of the certificate to be issued
+ * @param issuerCertificate The certificate of the issuer, if the subject is a private endpoint
+ * @param validityStartDate The start date of the certificate to be issued
+ */
 fun issueEndpointCertificate(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
@@ -55,6 +64,15 @@ fun issueEndpointCertificate(
     )
 }
 
+/**
+ * Issue a Parcel Delivery Authorization (PDA) to an endpoint.
+ *
+ * @param subjectPublicKey The public key of the grantee endpoint
+ * @param issuerPrivateKey The private key of the granter endpoint
+ * @param validityEndDate The end date of the certificate to be issued
+ * @param issuerCertificate The certificate of the grantor
+ * @param validityStartDate The start date of the certificate to be issued
+ */
 fun issueParcelDeliveryAuthorization(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
