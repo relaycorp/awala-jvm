@@ -259,7 +259,7 @@ class RAMFMessageTest {
             assertEquals(message.payload.asList(), messageDeserialized.payload.asList())
             assertEquals(message.senderCertificate, messageDeserialized.senderCertificate)
             assertEquals(
-                setOf(message.senderCertificate, stubCaCertificate),
+                message.senderCertificateChain,
                 messageDeserialized.senderCertificateChain
             )
         }

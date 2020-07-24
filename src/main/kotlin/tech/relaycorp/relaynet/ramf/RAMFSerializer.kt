@@ -159,6 +159,9 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             throw RAMFException("Invalid CMS SignedData value", exc)
         }
         val fields = deserializeFields(cmsSignedDataResult.plaintext)
+        val intermediateCACerts = cmsSignedDataResult.attachedCertificates.filter {
+            it != cmsSignedDataResult.signerCertificate
+        }.toSet()
         return messageClazz(
             fields.recipientAddress,
             fields.payload,
@@ -166,7 +169,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             fields.messageId,
             fields.creationDate,
             fields.ttl,
-            cmsSignedDataResult.attachedCertificates
+            intermediateCACerts
         )
     }
 

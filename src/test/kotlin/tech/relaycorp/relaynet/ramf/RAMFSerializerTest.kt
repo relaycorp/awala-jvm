@@ -415,7 +415,7 @@ class RAMFSerializerTest {
                     STUB_SERIALIZER.deserialize(stubSerialization, ::StubEncryptedRAMFMessage)
 
                 assertEquals(
-                    stubSenderCertificateChain.union(setOf(stubSenderCertificate)),
+                    stubSenderCertificateChain,
                     messageDeserialized.senderCertificateChain
                 )
             }
