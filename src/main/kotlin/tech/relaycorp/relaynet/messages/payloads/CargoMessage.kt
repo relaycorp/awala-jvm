@@ -7,7 +7,7 @@ import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
 /**
  * Message encapsulated in a cargo message set, classified with its type.
  */
-class CargoMessage internal constructor(val messageSerialized: ByteArray) {
+class CargoMessage(val messageSerialized: ByteArray) {
     var type: Type? = null
         private set
 
