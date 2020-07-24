@@ -13,11 +13,6 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.cert.X509CertificateHolder
 import org.bouncycastle.cert.X509v3CertificateBuilder
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter
-import org.bouncycastle.crypto.util.PrivateKeyFactory
-import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder
-import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder
-import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Nested
@@ -736,16 +731,10 @@ class CertificateTest {
                     issuerDistinguishedNameBuilder.build(),
                     SubjectPublicKeyInfo.getInstance(stubSubjectKeyPair.public.encoded)
                 )
-                val signatureAlgorithm =
-                    DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption")
-                val digestAlgorithm =
-                    DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-                val privateKeyParam: AsymmetricKeyParameter =
-                    PrivateKeyFactory.createKey(stubSubjectKeyPair.private.encoded)
-                val contentSignerBuilder =
-                    BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
-                val signerBuilder = contentSignerBuilder.build(privateKeyParam)
-                val invalidCertificate = Certificate(builder.build(signerBuilder))
+                val signer = JcaContentSignerBuilder("SHA256WITHRSAANDMGF1")
+                    .setProvider(BC_PROVIDER)
+                    .build(stubSubjectKeyPair.private)
+                val invalidCertificate = Certificate(builder.build(signer))
 
                 val exception = assertThrows<CertificateException> { invalidCertificate.validate() }
 
@@ -1077,15 +1066,9 @@ class CertificateTest {
             issuerDistinguishedNameBuilder.build(),
             SubjectPublicKeyInfo.getInstance(publicKey.encoded)
         )
-        val signatureAlgorithm =
-            DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption")
-        val digestAlgorithm =
-            DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm)
-        val privateKeyParam: AsymmetricKeyParameter =
-            PrivateKeyFactory.createKey(privateKey.encoded)
-        val contentSignerBuilder =
-            BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm)
-        val signerBuilder = contentSignerBuilder.build(privateKeyParam)
-        return Certificate(builder.build(signerBuilder))
+        val signer = JcaContentSignerBuilder("SHA256WITHRSAANDMGF1")
+            .setProvider(BC_PROVIDER)
+            .build(privateKey)
+        return Certificate(builder.build(signer))
     }
 }
