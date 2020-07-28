@@ -1,7 +1,7 @@
 package tech.relaycorp.relaynet.wrappers.cms
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.cms.ContentInfo
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
 import org.bouncycastle.cms.CMSSignedData
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.SymmetricEncryption
@@ -15,9 +15,9 @@ fun parseCmsSignedData(serialization: ByteArray): CMSSignedData {
 }
 
 val HASHING_ALGORITHM_OIDS = mapOf(
-    HashingAlgorithm.SHA256 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.1"),
-    HashingAlgorithm.SHA384 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.2"),
-    HashingAlgorithm.SHA512 to ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.3")
+    HashingAlgorithm.SHA256 to NISTObjectIdentifiers.id_sha256,
+    HashingAlgorithm.SHA384 to NISTObjectIdentifiers.id_sha384,
+    HashingAlgorithm.SHA512 to NISTObjectIdentifiers.id_sha512
 )
 
 val PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS = mapOf(

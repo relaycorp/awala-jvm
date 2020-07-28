@@ -4,7 +4,10 @@ import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.cms.Attribute
+import org.bouncycastle.asn1.cms.CMSAttributes
+import org.bouncycastle.asn1.cms.CMSObjectIdentifiers
 import org.bouncycastle.asn1.cms.ContentInfo
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.cert.jcajce.JcaCertStore
 import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.CMSSignedData
@@ -20,6 +23,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
@@ -115,6 +119,16 @@ class Sign {
             )
         }
 
+        @Test
+        fun `Signature algorithm should be RSA-PSS`() {
+            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+
+            val cmsSignedData = parseCmsSignedData(serialization)
+
+            val signerInfo = cmsSignedData.signerInfos.first()
+            assertEquals(PKCSObjectIdentifiers.id_RSASSA_PSS.id, signerInfo.encryptionAlgOID)
+        }
+
         @Nested
         inner class SignedAttributes {
             @Test
@@ -136,14 +150,12 @@ class Sign {
 
                 val signerInfo = cmsSignedData.signerInfos.first()
 
-                val cmsContentTypeAttrOid = "1.2.840.113549.1.9.3"
                 val contentTypeAttrs =
-                    signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsContentTypeAttrOid))
+                    signerInfo.signedAttributes.getAll(CMSAttributes.contentType)
                 assertEquals(1, contentTypeAttrs.size())
                 val contentTypeAttr = contentTypeAttrs.get(0) as Attribute
                 assertEquals(1, contentTypeAttr.attributeValues.size)
-                val cmsDataOid = "1.2.840.113549.1.7.1"
-                assertEquals(cmsDataOid, contentTypeAttr.attributeValues[0].toString())
+                assertEquals(CMSObjectIdentifiers.data, contentTypeAttr.attributeValues[0])
             }
 
             @Test
@@ -330,7 +342,8 @@ class VerifySignatureTest {
     fun `A SignerInfo collection with more than one item should be refused`() {
         val signedDataGenerator = CMSSignedDataGenerator()
 
-        val signerBuilder = JcaContentSignerBuilder("SHA256withRSA")
+        val signerBuilder =
+            JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
         val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
         val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
             JcaDigestCalculatorProviderBuilder()
@@ -360,7 +373,8 @@ class VerifySignatureTest {
     fun `Certificate of signer should be required`() {
         val signedDataGenerator = CMSSignedDataGenerator()
 
-        val signerBuilder = JcaContentSignerBuilder("SHA256withRSA")
+        val signerBuilder =
+            JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
         val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
         val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
             JcaDigestCalculatorProviderBuilder()
@@ -386,7 +400,8 @@ class VerifySignatureTest {
     fun `Signed content should be encapsulated`() {
         val signedDataGenerator = CMSSignedDataGenerator()
 
-        val signerBuilder = JcaContentSignerBuilder("SHA256withRSA")
+        val signerBuilder =
+            JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
         val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
         val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
             JcaDigestCalculatorProviderBuilder()

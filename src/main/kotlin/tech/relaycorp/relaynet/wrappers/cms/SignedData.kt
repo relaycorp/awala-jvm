@@ -18,15 +18,16 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import org.bouncycastle.util.CollectionStore
 import org.bouncycastle.util.Selector
+import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.IOException
 import java.security.PrivateKey
 
 private val signatureAlgorithmMap = mapOf(
-    HashingAlgorithm.SHA256 to "SHA256withRSA",
-    HashingAlgorithm.SHA384 to "SHA384withRSA",
-    HashingAlgorithm.SHA512 to "SHA512withRSA"
+    HashingAlgorithm.SHA256 to "SHA256WITHRSAANDMGF1",
+    HashingAlgorithm.SHA384 to "SHA384WITHRSAANDMGF1",
+    HashingAlgorithm.SHA512 to "SHA512WITHRSAANDMGF1"
 )
 
 @Throws(SignedDataException::class)
@@ -40,7 +41,8 @@ internal fun sign(
     val signedDataGenerator = CMSSignedDataGenerator()
 
     val algorithm = hashingAlgorithm ?: HashingAlgorithm.SHA256
-    val signerBuilder = JcaContentSignerBuilder(signatureAlgorithmMap[algorithm])
+    val signerBuilder =
+        JcaContentSignerBuilder(signatureAlgorithmMap[algorithm]).setProvider(BC_PROVIDER)
     val contentSigner: ContentSigner = signerBuilder.build(signerPrivateKey)
     val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
         JcaDigestCalculatorProviderBuilder()
@@ -92,7 +94,9 @@ internal fun verifySignature(cmsSignedData: ByteArray): SignatureVerification {
             "Certificate of signer should be attached"
         )
     }
-    val verifier = JcaSimpleSignerInfoVerifierBuilder().build(signerCertificateHolder)
+    val verifier = JcaSimpleSignerInfoVerifierBuilder()
+        .setProvider(BC_PROVIDER)
+        .build(signerCertificateHolder)
     try {
         signerInfo.verify(verifier)
     } catch (_: CMSException) {
