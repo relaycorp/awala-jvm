@@ -71,6 +71,65 @@ class SignedDataTest {
         }
     }
 
+    class Deserialize {
+        @Test
+        fun `Invalid DER values should be refused`() {
+            val invalidCMSSignedData = "Not really DER-encoded".toByteArray()
+
+            val exception = assertThrows<SignedDataException> {
+                SignedData.deserialize(invalidCMSSignedData)
+            }
+
+            assertEquals("Value is not DER-encoded", exception.message)
+        }
+
+        @Test
+        fun `ContentInfo wrapper should be required`() {
+            val invalidCMSSignedData = ASN1Integer(10).encoded
+
+            val exception = assertThrows<SignedDataException> {
+                SignedData.deserialize(invalidCMSSignedData)
+            }
+
+            assertEquals(
+                "SignedData value is not wrapped in ContentInfo",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `ContentInfo wrapper should contain a valid SignedData value`() {
+            val signedDataOid = ASN1ObjectIdentifier("1.2.840.113549.1.7.2")
+            val invalidCMSSignedData = ContentInfo(signedDataOid, ASN1Integer(10))
+
+            val exception = assertThrows<SignedDataException> {
+                SignedData.deserialize(invalidCMSSignedData.encoded)
+            }
+
+            assertEquals(
+                "ContentInfo wraps invalid SignedData value",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Valid SignedData values should be deserialized`() {
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
+            val signedDataSerialized = signedData.serialize()
+
+            val signedDataDeserialized = SignedData.deserialize(signedDataSerialized)
+
+            assertEquals(
+                signedData.bcSignedData.encoded.asList(),
+                signedDataDeserialized.bcSignedData.encoded.asList()
+            )
+        }
+    }
+
     class Sign {
         @Test
         fun `SignedData version should be set to 1`() {
@@ -291,53 +350,7 @@ class SignedDataTest {
         }
     }
 
-    class VerifySignatureTest {
-        @Test
-        fun `Invalid DER values should be refused`() {
-            val invalidCMSSignedData = "Not really DER-encoded".toByteArray()
-
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(
-                    invalidCMSSignedData
-                )
-            }
-
-            assertEquals("Value is not DER-encoded", exception.message)
-        }
-
-        @Test
-        fun `ContentInfo wrapper should be required`() {
-            val invalidCMSSignedData = ASN1Integer(10).encoded
-
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(
-                    invalidCMSSignedData
-                )
-            }
-
-            assertEquals(
-                "SignedData value is not wrapped in ContentInfo",
-                exception.message
-            )
-        }
-
-        @Test
-        fun `ContentInfo wrapper should contain a valid SignedData value`() {
-            val signedDataOid = ASN1ObjectIdentifier("1.2.840.113549.1.7.2")
-            val invalidCMSSignedData = ContentInfo(signedDataOid, ASN1Integer(10))
-
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(
-                    invalidCMSSignedData.encoded
-                )
-            }
-
-            assertEquals(
-                "ContentInfo wraps invalid SignedData value",
-                exception.message
-            )
-        }
-
+    class VerifySignature {
         @Test
         fun `Well formed but invalid signatures should be rejected`() {
             // Swap the SignerInfo collection from two different CMS SignedData values
