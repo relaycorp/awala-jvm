@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet.wrappers.cms
+package tech.relaycorp.relaynet.crypto
 
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
@@ -26,6 +26,9 @@ import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.parseDer
+import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
+import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
+import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest
@@ -40,46 +43,52 @@ val stubCertificate = Certificate.issue(
     stubKeyPair.private,
     ZonedDateTime.now().plusDays(1)
 )
+val bcCertificate = stubCertificate.certificateHolder
 val anotherStubCertificate = Certificate.issue(
     "Another",
     stubKeyPair.public,
     stubKeyPair.private,
     ZonedDateTime.now().plusDays(1)
 )
+val anotherBCCertificate = anotherStubCertificate.certificateHolder
 
 const val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"
 
-class Sign {
+class Serialize {
+    private val signedData = SignedData.sign(stubPlaintext, stubKeyPair.private, bcCertificate)
+
     @Test
     fun `Serialization should be DER-encoded`() {
-        val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
-
-        parseDer(serialization)
+        parseDer(signedData.serialize())
     }
 
     @Test
     fun `SignedData value should be wrapped in a ContentInfo value`() {
-        val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
-
-        ContentInfo.getInstance(parseDer(serialization))
+        ContentInfo.getInstance(parseDer(signedData.serialize()))
     }
+}
 
+class Sign {
     @Test
     fun `SignedData version should be set to 1`() {
-        val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+        val signedData = SignedData.sign(
+            stubPlaintext,
+            stubKeyPair.private,
+            bcCertificate
+        )
 
-        val cmsSignedData = parseCmsSignedData(serialization)
-
-        assertEquals(1, cmsSignedData.version)
+        assertEquals(1, signedData.bcSignedData.version)
     }
 
     @Test
     fun `Plaintext should be embedded`() {
-        val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+        val signedData = SignedData.sign(
+            stubPlaintext,
+            stubKeyPair.private,
+            bcCertificate
+        )
 
-        val cmsSignedData = parseCmsSignedData(serialization)
-
-        val signedContent = cmsSignedData.signedContent.content
+        val signedContent = signedData.bcSignedData.signedContent.content
         assert(signedContent is ByteArray)
         assertEquals(stubPlaintext.asList(), (signedContent as ByteArray).asList())
     }
@@ -88,30 +97,36 @@ class Sign {
     inner class SignerInfo {
         @Test
         fun `There should only be one SignerInfo`() {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
 
-            val cmsSignedData = parseCmsSignedData(serialization)
-
-            assertEquals(1, cmsSignedData.signerInfos.size())
+            assertEquals(1, signedData.bcSignedData.signerInfos.size())
         }
 
         @Test
         fun `SignerInfo version should be set to 1`() {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
 
-            val cmsSignedData = parseCmsSignedData(serialization)
-
-            val signerInfo = cmsSignedData.signerInfos.first()
+            val signerInfo = signedData.bcSignedData.signerInfos.first()
             assertEquals(1, signerInfo.version)
         }
 
         @Test
         fun `SignerIdentifier should be IssuerAndSerialNumber`() {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
 
-            val cmsSignedData = parseCmsSignedData(serialization)
-
-            val signerInfo = cmsSignedData.signerInfos.first()
+            val signerInfo = signedData.bcSignedData.signerInfos.first()
             assertEquals(stubCertificate.certificateHolder.issuer, signerInfo.sid.issuer)
             assertEquals(
                 stubCertificate.certificateHolder.serialNumber,
@@ -121,11 +136,13 @@ class Sign {
 
         @Test
         fun `Signature algorithm should be RSA-PSS`() {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
 
-            val cmsSignedData = parseCmsSignedData(serialization)
-
-            val signerInfo = cmsSignedData.signerInfos.first()
+            val signerInfo = signedData.bcSignedData.signerInfos.first()
             assertEquals(PKCSObjectIdentifiers.id_RSASSA_PSS.id, signerInfo.encryptionAlgOID)
         }
 
@@ -133,22 +150,26 @@ class Sign {
         inner class SignedAttributes {
             @Test
             fun `Signed attributes should be present`() {
-                val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    bcCertificate
+                )
 
-                val cmsSignedData = parseCmsSignedData(serialization)
-
-                val signerInfo = cmsSignedData.signerInfos.first()
+                val signerInfo = signedData.bcSignedData.signerInfos.first()
 
                 assert(0 < signerInfo.signedAttributes.size())
             }
 
             @Test
             fun `Content type attribute should be set to CMS Data`() {
-                val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    bcCertificate
+                )
 
-                val cmsSignedData = parseCmsSignedData(serialization)
-
-                val signerInfo = cmsSignedData.signerInfos.first()
+                val signerInfo = signedData.bcSignedData.signerInfos.first()
 
                 val contentTypeAttrs =
                     signerInfo.signedAttributes.getAll(CMSAttributes.contentType)
@@ -160,11 +181,13 @@ class Sign {
 
             @Test
             fun `Plaintext digest should be present`() {
-                val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    bcCertificate
+                )
 
-                val cmsSignedData = parseCmsSignedData(serialization)
-
-                val signerInfo = cmsSignedData.signerInfos.first()
+                val signerInfo = signedData.bcSignedData.signerInfos.first()
 
                 val digestAttrs =
                     signerInfo.signedAttributes.getAll(ASN1ObjectIdentifier(cmsDigestAttributeOid))
@@ -184,30 +207,31 @@ class Sign {
     inner class AttachedCertificates {
         @Test
         fun `Signer certificate should be attached`() {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
-
-            val cmsSignedData = parseCmsSignedData(serialization)
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
 
             val attachedCerts =
-                (cmsSignedData.certificates as CollectionStore).asSequence().toList()
+                (signedData.bcSignedData.certificates as CollectionStore).asSequence().toList()
             assertEquals(1, attachedCerts.size)
-            assertEquals(stubCertificate.certificateHolder, attachedCerts[0])
+            assertEquals(bcCertificate, attachedCerts[0])
         }
 
         @Test
         fun `CA certificate chain should optionally be attached`() {
-            val serialization = sign(
+            val signedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                stubCertificate,
-                setOf(anotherStubCertificate)
+                bcCertificate,
+                setOf(anotherBCCertificate)
             )
 
-            val cmsSignedData = parseCmsSignedData(serialization)
-
-            val attachedCerts = (cmsSignedData.certificates as CollectionStore).asSequence().toSet()
+            val attachedCerts =
+                (signedData.bcSignedData.certificates as CollectionStore).asSequence().toSet()
             assertEquals(2, attachedCerts.size)
-            assert(attachedCerts.contains(anotherStubCertificate.certificateHolder))
+            assert(attachedCerts.contains(anotherBCCertificate))
         }
     }
 
@@ -215,17 +239,19 @@ class Sign {
     inner class Hashing {
         @Test
         fun `SHA-256 should be used by default`() {
-            val serialization = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
-
-            val cmsSignedData = parseCmsSignedData(serialization)
-
-            assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
-            assertEquals(
-                HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
-                cmsSignedData.digestAlgorithmIDs.first().algorithm
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
             )
 
-            val signerInfo = cmsSignedData.signerInfos.first()
+            assertEquals(1, signedData.bcSignedData.digestAlgorithmIDs.size)
+            assertEquals(
+                HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
+                signedData.bcSignedData.digestAlgorithmIDs.first().algorithm
+            )
+
+            val signerInfo = signedData.bcSignedData.signerInfos.first()
 
             assertEquals(
                 HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
@@ -236,21 +262,22 @@ class Sign {
         @ParameterizedTest(name = "{0} should be honored if explicitly set")
         @EnumSource
         fun `Hashing algorithm should be customizable`(algorithm: HashingAlgorithm) {
-            val serialization = sign(
+            val signedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                stubCertificate,
+                bcCertificate,
                 hashingAlgorithm = algorithm
             )
 
-            val cmsSignedData = parseCmsSignedData(serialization)
-
             val hashingAlgorithmOid = HASHING_ALGORITHM_OIDS[algorithm]
 
-            assertEquals(1, cmsSignedData.digestAlgorithmIDs.size)
-            assertEquals(hashingAlgorithmOid, cmsSignedData.digestAlgorithmIDs.first().algorithm)
+            assertEquals(1, signedData.bcSignedData.digestAlgorithmIDs.size)
+            assertEquals(
+                hashingAlgorithmOid,
+                signedData.bcSignedData.digestAlgorithmIDs.first().algorithm
+            )
 
-            val signerInfo = cmsSignedData.signerInfos.first()
+            val signerInfo = signedData.bcSignedData.signerInfos.first()
 
             assertEquals(hashingAlgorithmOid, signerInfo.digestAlgorithmID.algorithm)
         }
@@ -263,7 +290,9 @@ class VerifySignatureTest {
         val invalidCMSSignedData = "Not really DER-encoded".toByteArray()
 
         val exception = assertThrows<SignedDataException> {
-            verifySignature(invalidCMSSignedData)
+            verifySignature(
+                invalidCMSSignedData
+            )
         }
 
         assertEquals("Value is not DER-encoded", exception.message)
@@ -274,7 +303,9 @@ class VerifySignatureTest {
         val invalidCMSSignedData = ASN1Integer(10).encoded
 
         val exception = assertThrows<SignedDataException> {
-            verifySignature(invalidCMSSignedData)
+            verifySignature(
+                invalidCMSSignedData
+            )
         }
 
         assertEquals(
@@ -289,7 +320,9 @@ class VerifySignatureTest {
         val invalidCMSSignedData = ContentInfo(signedDataOid, ASN1Integer(10))
 
         val exception = assertThrows<SignedDataException> {
-            verifySignature(invalidCMSSignedData.encoded)
+            verifySignature(
+                invalidCMSSignedData.encoded
+            )
         }
 
         assertEquals(
@@ -302,24 +335,28 @@ class VerifySignatureTest {
     fun `Well formed but invalid signatures should be rejected`() {
         // Swap the SignerInfo collection from two different CMS SignedData values
 
-        val cmsSignedDataSerialized1 = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
-        val cmsSignedData1 = parseCmsSignedData(cmsSignedDataSerialized1)
+        val signedData1 = SignedData.sign(
+            stubPlaintext,
+            stubKeyPair.private,
+            bcCertificate
+        )
 
-        val cmsSignedDataSerialized2 = sign(
+        val signedData2 = SignedData.sign(
             byteArrayOf(0xde.toByte(), *stubPlaintext),
             stubKeyPair.private,
-            stubCertificate
+            bcCertificate
         )
-        val cmsSignedData2 = parseCmsSignedData(cmsSignedDataSerialized2)
 
         val invalidCmsSignedData = CMSSignedData.replaceSigners(
-            cmsSignedData1,
-            cmsSignedData2.signerInfos
+            signedData1.bcSignedData,
+            signedData2.bcSignedData.signerInfos
         )
         val invalidCmsSignedDataSerialized = invalidCmsSignedData.toASN1Structure().encoded
 
         val exception = assertThrows<SignedDataException> {
-            verifySignature(invalidCmsSignedDataSerialized)
+            verifySignature(
+                invalidCmsSignedDataSerialized
+            )
         }
 
         assertEquals("Invalid signature", exception.message)
@@ -429,7 +466,11 @@ class VerifySignatureTest {
 
     @Test
     fun `Valid signatures should be accepted`() {
-        val cmsSignedDataSerialized = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+        val cmsSignedDataSerialized = SignedData.sign(
+            stubPlaintext,
+            stubKeyPair.private,
+            bcCertificate
+        ).serialize()
 
         // No exceptions thrown
         verifySignature(cmsSignedDataSerialized)
@@ -437,7 +478,11 @@ class VerifySignatureTest {
 
     @Test
     fun `Encapsulated content should be output when verification passes`() {
-        val cmsSignedDataSerialized = sign(stubPlaintext, stubKeyPair.private, stubCertificate)
+        val cmsSignedDataSerialized = SignedData.sign(
+            stubPlaintext,
+            stubKeyPair.private,
+            bcCertificate
+        ).serialize()
 
         val verificationResult = verifySignature(cmsSignedDataSerialized)
 
@@ -446,12 +491,12 @@ class VerifySignatureTest {
 
     @Test
     fun `Signer certificate should be output when verification passes`() {
-        val cmsSignedDataSerialized = sign(
+        val cmsSignedDataSerialized = SignedData.sign(
             stubPlaintext,
             stubKeyPair.private,
-            stubCertificate,
-            caCertificates = setOf(anotherStubCertificate)
-        )
+            bcCertificate,
+            caCertificates = setOf(anotherBCCertificate)
+        ).serialize()
 
         val verificationResult = verifySignature(cmsSignedDataSerialized)
 
@@ -463,14 +508,17 @@ class VerifySignatureTest {
 
     @Test
     fun `Attached CA certificates should be output when verification passes`() {
-        val cmsSignedDataSerialized = sign(
+        val cmsSignedDataSerialized = SignedData.sign(
             stubPlaintext,
             stubKeyPair.private,
-            stubCertificate,
-            caCertificates = setOf(anotherStubCertificate)
-        )
+            bcCertificate,
+            caCertificates = setOf(anotherBCCertificate)
+        ).serialize()
 
-        val verificationResult = verifySignature(cmsSignedDataSerialized)
+        val verificationResult =
+            verifySignature(
+                cmsSignedDataSerialized
+            )
 
         assertEquals(2, verificationResult.attachedCertificates.size)
         val attachedCertificateHolders = verificationResult.attachedCertificates.map {

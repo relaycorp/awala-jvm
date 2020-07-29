@@ -21,7 +21,7 @@ import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.sha256Hex
-import tech.relaycorp.relaynet.wrappers.cms.stubKeyPair
+import tech.relaycorp.relaynet.crypto.stubKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.math.BigInteger

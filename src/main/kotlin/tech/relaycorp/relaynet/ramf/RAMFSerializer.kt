@@ -12,10 +12,10 @@ import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
-import tech.relaycorp.relaynet.wrappers.cms.sign
 import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -59,14 +59,14 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         output.write(formatSignature)
 
         val fieldSetSerialized = serializeMessage(message)
-        val signedData = sign(
+        val signedData = SignedData.sign(
             fieldSetSerialized,
             signerPrivateKey,
-            message.senderCertificate,
-            message.senderCertificateChain,
+            message.senderCertificate.certificateHolder,
+            message.senderCertificateChain.map { it.certificateHolder }.toSet(),
             hashingAlgorithm
         )
-        output.write(signedData)
+        output.write(signedData.serialize())
 
         return output.toByteArray()
     }
