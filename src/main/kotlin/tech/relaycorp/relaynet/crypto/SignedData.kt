@@ -83,6 +83,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             HashingAlgorithm.SHA512 to "SHA512WITHRSAANDMGF1"
         )
 
+        @JvmStatic
         fun sign(
             plaintext: ByteArray,
             signerPrivateKey: PrivateKey,
@@ -114,6 +115,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             return SignedData(bcSignedData)
         }
 
+        @JvmStatic
         fun deserialize(serialization: ByteArray): SignedData {
             val asn1Stream = ASN1InputStream(serialization)
             val asn1Sequence = try {
