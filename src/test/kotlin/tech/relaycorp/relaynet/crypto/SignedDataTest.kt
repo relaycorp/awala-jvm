@@ -27,7 +27,6 @@ import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
-import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest

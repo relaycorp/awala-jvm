@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
+import tech.relaycorp.relaynet.crypto.SignedDataException
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
-import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.io.ByteArrayOutputStream

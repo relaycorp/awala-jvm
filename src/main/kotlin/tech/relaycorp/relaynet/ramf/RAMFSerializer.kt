@@ -13,9 +13,9 @@ import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
+import tech.relaycorp.relaynet.crypto.SignedDataException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.ByteArrayOutputStream
 import java.io.IOException

@@ -20,7 +20,6 @@ import org.bouncycastle.util.CollectionStore
 import org.bouncycastle.util.Selector
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import java.io.IOException
 import java.security.PrivateKey
 
