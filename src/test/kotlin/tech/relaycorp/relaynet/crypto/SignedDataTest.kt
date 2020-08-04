@@ -9,6 +9,7 @@ import org.bouncycastle.asn1.cms.CMSObjectIdentifiers
 import org.bouncycastle.asn1.cms.ContentInfo
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.cert.jcajce.JcaCertStore
+import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.CMSSignedData
 import org.bouncycastle.cms.CMSSignedDataGenerator
@@ -32,6 +33,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -145,17 +147,31 @@ class SignedDataTest {
             assertEquals(1, signedData.bcSignedData.version)
         }
 
-        @Test
-        fun `Plaintext should be embedded`() {
-            val signedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                bcCertificate
-            )
+        @Nested
+        inner class Plaintext {
+            @Test
+            fun `Plaintext should be encapsulated by default`() {
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    bcCertificate
+                )
 
-            val signedContent = signedData.bcSignedData.signedContent.content
-            assert(signedContent is ByteArray)
-            assertEquals(stubPlaintext.asList(), (signedContent as ByteArray).asList())
+                assertNotNull(signedData.plaintext)
+                assertEquals(stubPlaintext.asList(), signedData.plaintext!!.asList())
+            }
+
+            @Test
+            fun `Plaintext should not be encapsulated if requested`() {
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    bcCertificate,
+                    encapsulatePlaintext = false
+                )
+
+                assertNull(signedData.plaintext)
+            }
         }
 
         @Nested
@@ -356,7 +372,7 @@ class SignedDataTest {
     @Nested
     inner class Verify {
         @Test
-        fun `Well formed but invalid signatures should be refused`() {
+        fun `Invalid signature with encapsulated plaintext should be refused`() {
             // Swap the SignerInfo collection from two different CMS SignedData values
 
             val signedData1 = SignedData.sign(
@@ -380,10 +396,42 @@ class SignedDataTest {
             val exception = assertThrows<SignedDataException> { invalidSignedData.verify() }
 
             assertEquals("Invalid signature", exception.message)
+            assertTrue(exception.cause is CMSException)
         }
 
         @Test
-        fun `Signed content should be encapsulated`() {
+        fun `Invalid signature without encapsulated plaintext should be refused`() {
+            // Swap the SignerInfo collection from two different CMS SignedData values
+
+            val signedData1 = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate,
+                encapsulatePlaintext = false
+            )
+
+            val signedData2 = SignedData.sign(
+                byteArrayOf(0xde.toByte(), *stubPlaintext),
+                stubKeyPair.private,
+                bcCertificate,
+                encapsulatePlaintext = false
+            )
+
+            val invalidBCSignedData = CMSSignedData.replaceSigners(
+                signedData1.bcSignedData,
+                signedData2.bcSignedData.signerInfos
+            )
+            val invalidSignedData = SignedData.deserialize(invalidBCSignedData.encoded)
+
+            val exception =
+                assertThrows<SignedDataException> { invalidSignedData.verify(stubPlaintext) }
+
+            assertEquals("Invalid signature", exception.message)
+            assertTrue(exception.cause is CMSException)
+        }
+
+        @Test
+        fun `Signed content should be encapsulated if no specific plaintext is expected`() {
             val signedDataGenerator = CMSSignedDataGenerator()
 
             val signerBuilder =
@@ -407,13 +455,29 @@ class SignedDataTest {
             val exception = assertThrows<SignedDataException> { signedData.verify() }
 
             assertEquals(
-                "Signed plaintext should be encapsulated",
+                "Signed plaintext should be encapsulated or explicitly set",
                 exception.message
             )
         }
 
         @Test
-        fun `Valid signatures should be accepted`() {
+        fun `Expected plaintext should be refused if one is already encapsulated`() {
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
+
+            val exception = assertThrows<SignedDataException> { signedData.verify(stubPlaintext) }
+
+            assertEquals(
+                "No specific plaintext should be expected because one is already encapsulated",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Valid signature with encapsulated plaintext should be accepted`() {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
@@ -422,6 +486,19 @@ class SignedDataTest {
 
             // No exceptions thrown
             cmsSignedData.verify()
+        }
+
+        @Test
+        fun `Valid signature without encapsulated plaintext should be accepted`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate,
+                encapsulatePlaintext = false
+            )
+
+            // No exceptions thrown
+            cmsSignedData.verify(stubPlaintext)
         }
     }
 
