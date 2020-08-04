@@ -47,21 +47,20 @@ class SignedDataTest {
             stubKeyPair.private,
             ZonedDateTime.now().plusDays(1)
         )
-        val bcCertificate = stubCertificate.certificateHolder
         val anotherStubCertificate = Certificate.issue(
             "Another",
             stubKeyPair.public,
             stubKeyPair.private,
             ZonedDateTime.now().plusDays(1)
         )
-        val anotherBCCertificate = anotherStubCertificate.certificateHolder
 
         const val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"
     }
 
     @Nested
     inner class Serialize {
-        private val signedData = SignedData.sign(stubPlaintext, stubKeyPair.private, bcCertificate)
+        private val signedData =
+            SignedData.sign(stubPlaintext, stubKeyPair.private, stubCertificate)
 
         @Test
         fun `Serialization should be DER-encoded`() {
@@ -121,7 +120,7 @@ class SignedDataTest {
             val signedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
             val signedDataSerialized = signedData.serialize()
 
@@ -141,7 +140,7 @@ class SignedDataTest {
             val signedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
 
             assertEquals(1, signedData.bcSignedData.version)
@@ -154,7 +153,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate
+                    stubCertificate
                 )
 
                 assertNotNull(signedData.plaintext)
@@ -166,7 +165,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate,
+                    stubCertificate,
                     encapsulatePlaintext = false
                 )
 
@@ -181,7 +180,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate
+                    stubCertificate
                 )
 
                 assertEquals(1, signedData.bcSignedData.signerInfos.size())
@@ -192,7 +191,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate
+                    stubCertificate
                 )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
@@ -204,7 +203,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate
+                    stubCertificate
                 )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
@@ -220,7 +219,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate
+                    stubCertificate
                 )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
@@ -234,7 +233,7 @@ class SignedDataTest {
                     val signedData = SignedData.sign(
                         stubPlaintext,
                         stubKeyPair.private,
-                        bcCertificate
+                        stubCertificate
                     )
 
                     val signerInfo = signedData.bcSignedData.signerInfos.first()
@@ -247,7 +246,7 @@ class SignedDataTest {
                     val signedData = SignedData.sign(
                         stubPlaintext,
                         stubKeyPair.private,
-                        bcCertificate
+                        stubCertificate
                     )
 
                     val signerInfo = signedData.bcSignedData.signerInfos.first()
@@ -265,7 +264,7 @@ class SignedDataTest {
                     val signedData = SignedData.sign(
                         stubPlaintext,
                         stubKeyPair.private,
-                        bcCertificate
+                        stubCertificate
                     )
 
                     val signerInfo = signedData.bcSignedData.signerInfos.first()
@@ -295,13 +294,13 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate
+                    stubCertificate
                 )
 
                 val attachedCerts =
                     (signedData.bcSignedData.certificates as CollectionStore).asSequence().toList()
                 assertEquals(1, attachedCerts.size)
-                assertEquals(bcCertificate, attachedCerts[0])
+                assertEquals(stubCertificate.certificateHolder, attachedCerts[0])
             }
 
             @Test
@@ -309,14 +308,12 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate,
-                    setOf(anotherBCCertificate)
+                    stubCertificate,
+                    setOf(anotherStubCertificate)
                 )
 
-                val attachedCerts =
-                    (signedData.bcSignedData.certificates as CollectionStore).asSequence().toSet()
-                assertEquals(2, attachedCerts.size)
-                assert(attachedCerts.contains(anotherBCCertificate))
+                assertEquals(2, signedData.attachedCertificates.size)
+                assertTrue(signedData.attachedCertificates.contains(anotherStubCertificate))
             }
         }
 
@@ -327,7 +324,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate
+                    stubCertificate
                 )
 
                 assertEquals(1, signedData.bcSignedData.digestAlgorithmIDs.size)
@@ -350,7 +347,7 @@ class SignedDataTest {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
-                    bcCertificate,
+                    stubCertificate,
                     hashingAlgorithm = algorithm
                 )
 
@@ -378,13 +375,13 @@ class SignedDataTest {
             val signedData1 = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
 
             val signedData2 = SignedData.sign(
                 byteArrayOf(0xde.toByte(), *stubPlaintext),
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
 
             val invalidBCSignedData = CMSSignedData.replaceSigners(
@@ -406,14 +403,14 @@ class SignedDataTest {
             val signedData1 = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate,
+                stubCertificate,
                 encapsulatePlaintext = false
             )
 
             val signedData2 = SignedData.sign(
                 byteArrayOf(0xde.toByte(), *stubPlaintext),
                 stubKeyPair.private,
-                bcCertificate,
+                stubCertificate,
                 encapsulatePlaintext = false
             )
 
@@ -465,7 +462,7 @@ class SignedDataTest {
             val signedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
 
             val exception = assertThrows<SignedDataException> { signedData.verify(stubPlaintext) }
@@ -481,7 +478,7 @@ class SignedDataTest {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
 
             // No exceptions thrown
@@ -493,7 +490,7 @@ class SignedDataTest {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate,
+                stubCertificate,
                 encapsulatePlaintext = false
             )
 
@@ -534,7 +531,7 @@ class SignedDataTest {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
 
             assertTrue(cmsSignedData.plaintext is ByteArray)
@@ -623,10 +620,10 @@ class SignedDataTest {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate
+                stubCertificate
             )
 
-            assertEquals(bcCertificate, cmsSignedData.signerCertificate)
+            assertEquals(stubCertificate, cmsSignedData.signerCertificate)
         }
     }
 
@@ -637,13 +634,13 @@ class SignedDataTest {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                bcCertificate,
-                caCertificates = setOf(anotherBCCertificate)
+                stubCertificate,
+                caCertificates = setOf(anotherStubCertificate)
             )
 
             assertEquals(2, cmsSignedData.attachedCertificates.size)
-            assert(cmsSignedData.attachedCertificates.contains(bcCertificate))
-            assert(cmsSignedData.attachedCertificates.contains(anotherBCCertificate))
+            assert(cmsSignedData.attachedCertificates.contains(stubCertificate))
+            assert(cmsSignedData.attachedCertificates.contains(anotherStubCertificate))
         }
     }
 }

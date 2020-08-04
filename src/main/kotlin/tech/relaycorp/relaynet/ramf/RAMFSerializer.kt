@@ -16,7 +16,6 @@ import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -62,8 +61,8 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         val signedData = SignedData.sign(
             fieldSetSerialized,
             signerPrivateKey,
-            message.senderCertificate.certificateHolder,
-            message.senderCertificateChain.map { it.certificateHolder }.toSet(),
+            message.senderCertificate,
+            message.senderCertificateChain,
             hashingAlgorithm
         )
         output.write(signedData.serialize())
@@ -165,11 +164,11 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         return messageClazz(
             fields.recipientAddress,
             fields.payload,
-            Certificate(cmsSignedData.signerCertificate),
+            cmsSignedData.signerCertificate,
             fields.messageId,
             fields.creationDate,
             fields.ttl,
-            intermediateCACerts.map { Certificate(it) }.toSet()
+            intermediateCACerts
         )
     }
 

@@ -38,7 +38,7 @@ import kotlin.test.assertTrue
 
 private val BER_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
-// Pick timezone that's never equivalent to UTC (unlike "Europe/London")
+// Pick a timezone that's never equivalent to UTC (unlike "Europe/London")
 val NON_UTC_ZONE_ID: ZoneId = ZoneId.of("America/Caracas")
 
 class RAMFSerializerTest {
@@ -106,7 +106,7 @@ class RAMFSerializerTest {
 
                 val cmsSignedData = SignedData.deserialize(cmsSignedDataSerialized)
                 assertEquals(
-                    stubSenderCertificate.certificateHolder,
+                    stubSenderCertificate,
                     cmsSignedData.signerCertificate
                 )
             }
@@ -117,8 +117,7 @@ class RAMFSerializerTest {
 
                 val cmsSignedData = SignedData.deserialize(cmsSignedDataSerialized)
                 assertEquals(
-                    stubSenderCertificateChain.union(setOf(stubSenderCertificate))
-                        .map { it.certificateHolder }.toSet(),
+                    stubSenderCertificateChain.union(setOf(stubSenderCertificate)),
                     cmsSignedData.attachedCertificates
                 )
             }
@@ -440,7 +439,7 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         "not DER".toByteArray(),
                         stubSenderKeyPair.private,
-                        stubSenderCertificate.certificateHolder
+                        stubSenderCertificate
                     ).serialize()
                 )
 
@@ -467,7 +466,7 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         fieldSetSerialization.array,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate.certificateHolder
+                        stubSenderCertificate
                     ).serialize()
                 )
 
@@ -500,7 +499,7 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         fieldSetSerialization,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate.certificateHolder
+                        stubSenderCertificate
                     ).serialize()
                 )
 
@@ -553,7 +552,7 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         fieldSetSerialization,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate.certificateHolder
+                        stubSenderCertificate
                     ).serialize()
                 )
 

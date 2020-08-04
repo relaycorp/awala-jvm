@@ -20,6 +20,7 @@ import org.bouncycastle.util.CollectionStore
 import org.bouncycastle.util.Selector
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.IOException
 import java.security.PrivateKey
 
@@ -29,7 +30,7 @@ import java.security.PrivateKey
 class SignedData(internal val bcSignedData: CMSSignedData) {
     val plaintext: ByteArray? by lazy { bcSignedData.signedContent?.content as ByteArray? }
 
-    val signerCertificate: X509CertificateHolder by lazy {
+    val signerCertificate: Certificate by lazy {
         val signerInfo = getSignerInfo(bcSignedData)
         // We shouldn't have to force this type cast but this is the only way I could get the code to work and, based on
         // what I found online, that's what others have had to do as well
@@ -40,14 +41,14 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
 
         val signerCertMatches = bcSignedData.certificates.getMatches(signerCertSelector)
         try {
-            signerCertMatches.first()
+            Certificate(signerCertMatches.first())
         } catch (_: NoSuchElementException) {
             throw SignedDataException("Certificate of signer should be attached")
         }
     }
 
-    val attachedCertificates: Set<X509CertificateHolder> by lazy {
-        (bcSignedData.certificates as CollectionStore).toSet()
+    val attachedCertificates: Set<Certificate> by lazy {
+        (bcSignedData.certificates as CollectionStore).map { Certificate(it) }.toSet()
     }
 
     fun serialize(): ByteArray = bcSignedData.encoded
@@ -69,7 +70,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
         val signerInfo = getSignerInfo(signedData)
         val verifier = JcaSimpleSignerInfoVerifierBuilder()
             .setProvider(BC_PROVIDER)
-            .build(signerCertificate)
+            .build(signerCertificate.certificateHolder)
         try {
             signerInfo.verify(verifier)
         } catch (exc: CMSException) {
@@ -88,8 +89,8 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
         fun sign(
             plaintext: ByteArray,
             signerPrivateKey: PrivateKey,
-            signerCertificate: X509CertificateHolder,
-            caCertificates: Set<X509CertificateHolder> = setOf(),
+            signerCertificate: Certificate,
+            caCertificates: Set<Certificate> = setOf(),
             hashingAlgorithm: HashingAlgorithm? = null,
             encapsulatePlaintext: Boolean = true
         ): SignedData {
@@ -102,13 +103,16 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
                 JcaDigestCalculatorProviderBuilder()
                     .build()
-            ).build(contentSigner, signerCertificate)
+            ).build(contentSigner, signerCertificate.certificateHolder)
             signedDataGenerator.addSignerInfoGenerator(
                 signerInfoGenerator
             )
 
             val certs = JcaCertStore(
-                listOf(signerCertificate, *caCertificates.toTypedArray())
+                listOf(
+                    signerCertificate.certificateHolder,
+                    *caCertificates.map { it.certificateHolder }.toTypedArray()
+                )
             )
             signedDataGenerator.addCertificates(certs)
 
