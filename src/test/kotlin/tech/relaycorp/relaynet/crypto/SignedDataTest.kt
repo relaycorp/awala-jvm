@@ -28,12 +28,13 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
-import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SignedDataTest {
     companion object {
@@ -57,7 +58,8 @@ class SignedDataTest {
         const val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"
     }
 
-    class Serialize {
+    @Nested
+    inner class Serialize {
         private val signedData = SignedData.sign(stubPlaintext, stubKeyPair.private, bcCertificate)
 
         @Test
@@ -71,7 +73,8 @@ class SignedDataTest {
         }
     }
 
-    class Deserialize {
+    @Nested
+    inner class Deserialize {
         @Test
         fun `Invalid DER values should be refused`() {
             val invalidCMSSignedData = "Not really DER-encoded".toByteArray()
@@ -130,7 +133,8 @@ class SignedDataTest {
         }
     }
 
-    class Sign {
+    @Nested
+    inner class Sign {
         @Test
         fun `SignedData version should be set to 1`() {
             val signedData = SignedData.sign(
@@ -350,9 +354,10 @@ class SignedDataTest {
         }
     }
 
-    class VerifySignature {
+    @Nested
+    inner class Verify {
         @Test
-        fun `Well formed but invalid signatures should be rejected`() {
+        fun `Well formed but invalid signatures should be refused`() {
             // Swap the SignerInfo collection from two different CMS SignedData values
 
             val signedData1 = SignedData.sign(
@@ -367,30 +372,110 @@ class SignedDataTest {
                 bcCertificate
             )
 
-            val invalidCmsSignedData = CMSSignedData.replaceSigners(
+            val invalidBCSignedData = CMSSignedData.replaceSigners(
                 signedData1.bcSignedData,
                 signedData2.bcSignedData.signerInfos
             )
-            val invalidCmsSignedDataSerialized = invalidCmsSignedData.toASN1Structure().encoded
+            val invalidSignedData = SignedData.deserialize(invalidBCSignedData.encoded)
 
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(
-                    invalidCmsSignedDataSerialized
-                )
-            }
+            val exception = assertThrows<SignedDataException> { invalidSignedData.verify() }
 
             assertEquals("Invalid signature", exception.message)
         }
 
         @Test
+        fun `Signed content should be encapsulated`() {
+            val signedDataGenerator = CMSSignedDataGenerator()
+
+            val signerBuilder =
+                JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
+            val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
+            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
+                JcaDigestCalculatorProviderBuilder()
+                    .build()
+            ).build(contentSigner, stubCertificate.certificateHolder)
+            signedDataGenerator.addSignerInfoGenerator(
+                signerInfoGenerator
+            )
+
+            val certs = JcaCertStore(listOf(stubCertificate.certificateHolder))
+            signedDataGenerator.addCertificates(certs)
+
+            val plaintextCms: CMSTypedData = CMSProcessableByteArray(stubPlaintext)
+            val bcSignedData = signedDataGenerator.generate(plaintextCms)
+            val signedData = SignedData.deserialize(bcSignedData.encoded)
+
+            val exception = assertThrows<SignedDataException> { signedData.verify() }
+
+            assertEquals(
+                "Signed plaintext should be encapsulated",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Valid signatures should be accepted`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
+
+            // No exceptions thrown
+            cmsSignedData.verify()
+        }
+    }
+
+    @Nested
+    inner class Plaintext {
+        @Test
+        fun `Plaintext should be null if not encapsulated`() {
+            val signedDataGenerator = CMSSignedDataGenerator()
+
+            val signerBuilder =
+                JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
+            val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
+            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
+                JcaDigestCalculatorProviderBuilder()
+                    .build()
+            ).build(contentSigner, stubCertificate.certificateHolder)
+            signedDataGenerator.addSignerInfoGenerator(
+                signerInfoGenerator
+            )
+
+            val certs = JcaCertStore(listOf(stubCertificate.certificateHolder))
+            signedDataGenerator.addCertificates(certs)
+
+            val plaintextCms: CMSTypedData = CMSProcessableByteArray(stubPlaintext)
+            val bcSignedData = signedDataGenerator.generate(plaintextCms, false)
+            val signedData = SignedData.deserialize(bcSignedData.encoded)
+
+            assertNull(signedData.plaintext)
+        }
+
+        @Test
+        fun `Plaintext should be output if encapsulated`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                bcCertificate
+            )
+
+            assertTrue(cmsSignedData.plaintext is ByteArray)
+            assertEquals(stubPlaintext.asList(), cmsSignedData.plaintext!!.asList())
+        }
+    }
+
+    @Nested
+    inner class SignerCertificate {
+        @Test
         fun `An empty SignerInfo collection should be refused`() {
             val signedDataGenerator = CMSSignedDataGenerator()
             val plaintextCms: CMSTypedData = CMSProcessableByteArray(stubPlaintext)
-            val cmsSignedData = signedDataGenerator.generate(plaintextCms, true)
+            val bcSignedData = signedDataGenerator.generate(plaintextCms, true)
+            val signedData = SignedData(bcSignedData)
 
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(cmsSignedData.encoded)
-            }
+            val exception = assertThrows<SignedDataException> { signedData.signerCertificate }
 
             assertEquals(
                 "SignedData should contain exactly one SignerInfo (got 0)",
@@ -417,14 +502,13 @@ class SignedDataTest {
                 signerInfoGenerator
             )
 
-            val cmsSignedData = signedDataGenerator.generate(
+            val bcSignedData = signedDataGenerator.generate(
                 CMSProcessableByteArray(stubPlaintext),
                 true
             )
+            val signedData = SignedData(bcSignedData)
 
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(cmsSignedData.encoded)
-            }
+            val exception = assertThrows<SignedDataException> { signedData.signerCertificate }
 
             assertEquals(
                 "SignedData should contain exactly one SignerInfo (got 2)",
@@ -447,111 +531,43 @@ class SignedDataTest {
                 signerInfoGenerator
             )
 
-            val cmsSignedData = signedDataGenerator.generate(
+            val bcSignedData = signedDataGenerator.generate(
                 CMSProcessableByteArray(stubPlaintext),
                 true
             )
+            val signedData = SignedData(bcSignedData)
 
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(cmsSignedData.encoded)
-            }
+            val exception = assertThrows<SignedDataException> { signedData.signerCertificate }
 
             assertEquals("Certificate of signer should be attached", exception.message)
         }
 
         @Test
-        fun `Signed content should be encapsulated`() {
-            val signedDataGenerator = CMSSignedDataGenerator()
-
-            val signerBuilder =
-                JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
-            val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
-            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
-                JcaDigestCalculatorProviderBuilder()
-                    .build()
-            ).build(contentSigner, stubCertificate.certificateHolder)
-            signedDataGenerator.addSignerInfoGenerator(
-                signerInfoGenerator
-            )
-
-            val certs = JcaCertStore(listOf(stubCertificate.certificateHolder))
-            signedDataGenerator.addCertificates(certs)
-
-            val plaintextCms: CMSTypedData = CMSProcessableByteArray(stubPlaintext)
-            val cmsSignedData = signedDataGenerator.generate(plaintextCms)
-
-            val exception = assertThrows<SignedDataException> {
-                verifySignature(cmsSignedData.encoded)
-            }
-
-            assertEquals(
-                "Signed plaintext should be encapsulated",
-                exception.message
-            )
-        }
-
-        @Test
-        fun `Valid signatures should be accepted`() {
-            val cmsSignedDataSerialized = SignedData.sign(
+        fun `Signer certificate should be output if present`() {
+            val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
                 bcCertificate
-            ).serialize()
+            )
 
-            // No exceptions thrown
-            verifySignature(cmsSignedDataSerialized)
+            assertEquals(bcCertificate, cmsSignedData.signerCertificate)
         }
+    }
 
+    @Nested
+    inner class AttachedCertificates {
         @Test
-        fun `Encapsulated content should be output when verification passes`() {
-            val cmsSignedDataSerialized = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                bcCertificate
-            ).serialize()
-
-            val verificationResult = verifySignature(cmsSignedDataSerialized)
-
-            assertEquals(stubPlaintext.asList(), verificationResult.plaintext.asList())
-        }
-
-        @Test
-        fun `Signer certificate should be output when verification passes`() {
-            val cmsSignedDataSerialized = SignedData.sign(
+        fun `Attached CA certificates should be output`() {
+            val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
                 bcCertificate,
                 caCertificates = setOf(anotherBCCertificate)
-            ).serialize()
-
-            val verificationResult = verifySignature(cmsSignedDataSerialized)
-
-            assertEquals(
-                stubCertificate.certificateHolder,
-                verificationResult.signerCertificate.certificateHolder
             )
-        }
 
-        @Test
-        fun `Attached CA certificates should be output when verification passes`() {
-            val cmsSignedDataSerialized = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                bcCertificate,
-                caCertificates = setOf(anotherBCCertificate)
-            ).serialize()
-
-            val verificationResult =
-                verifySignature(
-                    cmsSignedDataSerialized
-                )
-
-            assertEquals(2, verificationResult.attachedCertificates.size)
-            val attachedCertificateHolders = verificationResult.attachedCertificates.map {
-                it.certificateHolder
-            }
-            assert(attachedCertificateHolders.contains(stubCertificate.certificateHolder))
-            assert(attachedCertificateHolders.contains(anotherStubCertificate.certificateHolder))
+            assertEquals(2, cmsSignedData.attachedCertificates.size)
+            assert(cmsSignedData.attachedCertificates.contains(bcCertificate))
+            assert(cmsSignedData.attachedCertificates.contains(anotherBCCertificate))
         }
     }
 }
