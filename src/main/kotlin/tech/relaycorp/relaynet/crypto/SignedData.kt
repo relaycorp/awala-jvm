@@ -30,6 +30,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
     val plaintext: ByteArray? by lazy { bcSignedData.signedContent?.content as ByteArray? }
 
     val signerCertificate: X509CertificateHolder by lazy {
+        val signerInfo = getSignerInfo(bcSignedData)
         // We shouldn't have to force this type cast but this is the only way I could get the code to work and, based on
         // what I found online, that's what others have had to do as well
         @Suppress("UNCHECKED_CAST") val signerCertSelector = X509CertificateHolderSelector(
@@ -51,10 +52,21 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
 
     fun serialize(): ByteArray = bcSignedData.encoded
 
-    fun verify() {
-        if (plaintext == null) {
-            throw SignedDataException("Signed plaintext should be encapsulated")
+    fun verify(expectedPlaintext: ByteArray? = null) {
+        if (plaintext != null && expectedPlaintext != null) {
+            throw SignedDataException(
+                "No specific plaintext should be expected because one is already encapsulated"
+            )
+        } else if (plaintext == null && expectedPlaintext == null) {
+            throw SignedDataException("Signed plaintext should be encapsulated or explicitly set")
         }
+
+        val signedPlaintext = plaintext ?: expectedPlaintext
+        val signedData = CMSSignedData(
+            CMSProcessableByteArray(signedPlaintext),
+            bcSignedData.toASN1Structure()
+        )
+        val signerInfo = getSignerInfo(signedData)
         val verifier = JcaSimpleSignerInfoVerifierBuilder()
             .setProvider(BC_PROVIDER)
             .build(signerCertificate)
@@ -63,16 +75,6 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
         } catch (_: CMSException) {
             throw SignedDataException("Invalid signature")
         }
-    }
-
-    private val signerInfo: SignerInformation by lazy {
-        val signersCount = bcSignedData.signerInfos.size()
-        if (signersCount != 1) {
-            throw SignedDataException(
-                "SignedData should contain exactly one SignerInfo (got $signersCount)"
-            )
-        }
-        bcSignedData.signerInfos.first()
     }
 
     companion object {
@@ -88,7 +90,8 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             signerPrivateKey: PrivateKey,
             signerCertificate: X509CertificateHolder,
             caCertificates: Set<X509CertificateHolder> = setOf(),
-            hashingAlgorithm: HashingAlgorithm? = null
+            hashingAlgorithm: HashingAlgorithm? = null,
+            encapsulatePlaintext: Boolean = true
         ): SignedData {
             val signedDataGenerator = CMSSignedDataGenerator()
 
@@ -110,8 +113,13 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             signedDataGenerator.addCertificates(certs)
 
             val plaintextCms: CMSTypedData = CMSProcessableByteArray(plaintext)
-            val bcSignedData = signedDataGenerator.generate(plaintextCms, true)
-            return SignedData(bcSignedData)
+            val bcSignedData = signedDataGenerator.generate(plaintextCms, encapsulatePlaintext)
+            return SignedData(
+                // Work around BC bug that keeps the plaintext encapsulated in the CMSSignedData
+                // instance even if it's not encapsulated
+                if (encapsulatePlaintext) bcSignedData
+                else CMSSignedData(bcSignedData.toASN1Structure())
+            )
         }
 
         @JvmStatic
@@ -133,6 +141,16 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
                 throw SignedDataException("ContentInfo wraps invalid SignedData value")
             }
             return SignedData(bcSignedData)
+        }
+
+        private fun getSignerInfo(bcSignedData: CMSSignedData): SignerInformation {
+            val signersCount = bcSignedData.signerInfos.size()
+            if (signersCount != 1) {
+                throw SignedDataException(
+                    "SignedData should contain exactly one SignerInfo (got $signersCount)"
+                )
+            }
+            return bcSignedData.signerInfos.first()
         }
     }
 }
