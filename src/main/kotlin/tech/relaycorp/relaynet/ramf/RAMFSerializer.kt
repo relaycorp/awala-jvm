@@ -12,11 +12,11 @@ import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.crypto.SignedData
+import tech.relaycorp.relaynet.crypto.SignedDataException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
-import tech.relaycorp.relaynet.wrappers.cms.sign
-import tech.relaycorp.relaynet.wrappers.cms.verifySignature
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -59,14 +59,14 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         output.write(formatSignature)
 
         val fieldSetSerialized = serializeMessage(message)
-        val signedData = sign(
+        val signedData = SignedData.sign(
             fieldSetSerialized,
             signerPrivateKey,
-            message.senderCertificate,
-            message.senderCertificateChain,
+            message.senderCertificate.certificateHolder,
+            message.senderCertificateChain.map { it.certificateHolder }.toSet(),
             hashingAlgorithm
         )
-        output.write(signedData)
+        output.write(signedData.serialize())
 
         return output.toByteArray()
     }
@@ -153,23 +153,23 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             )
         }
 
-        val cmsSignedDataResult = try {
-            verifySignature(serializationStream.readBytes())
+        val cmsSignedData = try {
+            SignedData.deserialize(serializationStream.readBytes()).also { it.verify() }
         } catch (exc: SignedDataException) {
             throw RAMFException("Invalid CMS SignedData value", exc)
         }
-        val fields = deserializeFields(cmsSignedDataResult.plaintext)
-        val intermediateCACerts = cmsSignedDataResult.attachedCertificates.filter {
-            it != cmsSignedDataResult.signerCertificate
+        val fields = deserializeFields(cmsSignedData.plaintext!!)
+        val intermediateCACerts = cmsSignedData.attachedCertificates.filter {
+            it != cmsSignedData.signerCertificate
         }.toSet()
         return messageClazz(
             fields.recipientAddress,
             fields.payload,
-            cmsSignedDataResult.signerCertificate,
+            Certificate(cmsSignedData.signerCertificate),
             fields.messageId,
             fields.creationDate,
             fields.ttl,
-            intermediateCACerts
+            intermediateCACerts.map { Certificate(it) }.toSet()
         )
     }
 

@@ -19,13 +19,12 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.crypto.SignedData
+import tech.relaycorp.relaynet.crypto.SignedDataException
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.parseDer
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
-import tech.relaycorp.relaynet.wrappers.cms.SignedDataException
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
-import tech.relaycorp.relaynet.wrappers.cms.sign
-import tech.relaycorp.relaynet.wrappers.cms.verifySignature
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
@@ -92,31 +91,35 @@ class RAMFSerializerTest {
         }
 
         @Nested
-        inner class SignedData {
+        inner class SignedDataValue {
             @Test
             fun `Message fields should be wrapped in a CMS SignedData value`() {
                 val cmsSignedDataSerialized = skipFormatSignature(stubSerialization)
 
-                verifySignature(cmsSignedDataSerialized)
+                val cmsSignedData = SignedData.deserialize(cmsSignedDataSerialized)
+                cmsSignedData.verify()
             }
 
             @Test
             fun `Sender certificate should be attached`() {
                 val cmsSignedDataSerialized = skipFormatSignature(stubSerialization)
 
-                val signerCertificate = verifySignature(cmsSignedDataSerialized).signerCertificate
-                assertEquals(stubSenderCertificate, signerCertificate)
+                val cmsSignedData = SignedData.deserialize(cmsSignedDataSerialized)
+                assertEquals(
+                    stubSenderCertificate.certificateHolder,
+                    cmsSignedData.signerCertificate
+                )
             }
 
             @Test
             fun `Sender certificate chain should be attached`() {
                 val cmsSignedDataSerialized = skipFormatSignature(stubSerialization)
 
-                val attachedCertificates =
-                    verifySignature(cmsSignedDataSerialized).attachedCertificates
+                val cmsSignedData = SignedData.deserialize(cmsSignedDataSerialized)
                 assertEquals(
-                    stubSenderCertificateChain.union(setOf(stubSenderCertificate)),
-                    attachedCertificates
+                    stubSenderCertificateChain.union(setOf(stubSenderCertificate))
+                        .map { it.certificateHolder }.toSet(),
+                    cmsSignedData.attachedCertificates
                 )
             }
 
@@ -236,9 +239,10 @@ class RAMFSerializerTest {
             }
 
             private fun getFieldSequence(serialization: ByteArray): ASN1Sequence {
-                val signedData = skipFormatSignature(serialization)
-                val asn1Serialization = verifySignature(signedData).plaintext
-                return ASN1Sequence.getInstance(parseDer(asn1Serialization))
+                val signedDataSerialized = skipFormatSignature(serialization)
+                val signedData = SignedData.deserialize(signedDataSerialized)
+                assertNotNull(signedData.plaintext)
+                return ASN1Sequence.getInstance(parseDer(signedData.plaintext!!))
             }
         }
     }
@@ -380,7 +384,7 @@ class RAMFSerializerTest {
         }
 
         @Nested
-        inner class SignedData {
+        inner class Signature {
             @Test
             fun `Invalid signature should be refused`() {
                 val invalidSerialization = ByteArrayOutputStream()
@@ -433,11 +437,11 @@ class RAMFSerializerTest {
                 val invalidSerialization = ByteArrayOutputStream(11)
                 invalidSerialization.write(formatSignature)
                 invalidSerialization.write(
-                    sign(
+                    SignedData.sign(
                         "not DER".toByteArray(),
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
-                    )
+                        stubSenderCertificate.certificateHolder
+                    ).serialize()
                 )
 
                 val exception = assertThrows<RAMFException> {
@@ -460,11 +464,11 @@ class RAMFSerializerTest {
                 val fieldSetSerialization = ReverseByteArrayOutputStream(100)
                 BerOctetString("Not a sequence".toByteArray()).encode(fieldSetSerialization)
                 invalidSerialization.write(
-                    sign(
+                    SignedData.sign(
                         fieldSetSerialization.array,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
-                    )
+                        stubSenderCertificate.certificateHolder
+                    ).serialize()
                 )
 
                 val exception = assertThrows<RAMFException> {
@@ -493,11 +497,11 @@ class RAMFSerializerTest {
                     BerVisibleString("6")
                 )
                 invalidSerialization.write(
-                    sign(
+                    SignedData.sign(
                         fieldSetSerialization,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
-                    )
+                        stubSenderCertificate.certificateHolder
+                    ).serialize()
                 )
 
                 val exception = assertThrows<RAMFException> {
@@ -546,11 +550,11 @@ class RAMFSerializerTest {
                 val fieldSetSerialization =
                     serializeFieldSet(creationTime = BerGeneralizedTime("20200307173323-03"))
                 invalidSerialization.write(
-                    sign(
+                    SignedData.sign(
                         fieldSetSerialization,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
-                    )
+                        stubSenderCertificate.certificateHolder
+                    ).serialize()
                 )
 
                 val exception = assertThrows<RAMFException> {
