@@ -72,8 +72,8 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             .build(signerCertificate)
         try {
             signerInfo.verify(verifier)
-        } catch (_: CMSException) {
-            throw SignedDataException("Invalid signature")
+        } catch (exc: CMSException) {
+            throw SignedDataException("Invalid signature", exc)
         }
     }
 

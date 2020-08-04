@@ -9,6 +9,7 @@ import org.bouncycastle.asn1.cms.CMSObjectIdentifiers
 import org.bouncycastle.asn1.cms.ContentInfo
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.cert.jcajce.JcaCertStore
+import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.CMSSignedData
 import org.bouncycastle.cms.CMSSignedDataGenerator
@@ -395,6 +396,7 @@ class SignedDataTest {
             val exception = assertThrows<SignedDataException> { invalidSignedData.verify() }
 
             assertEquals("Invalid signature", exception.message)
+            assertTrue(exception.cause is CMSException)
         }
 
         @Test
@@ -425,6 +427,7 @@ class SignedDataTest {
                 assertThrows<SignedDataException> { invalidSignedData.verify(stubPlaintext) }
 
             assertEquals("Invalid signature", exception.message)
+            assertTrue(exception.cause is CMSException)
         }
 
         @Test
