@@ -176,9 +176,9 @@ class RAMFSerializerTest {
             }
 
             @Nested
-            inner class CreationTime {
+            inner class CreationDate {
                 @Test
-                fun `Creation time should be stored as an ASN1 DateTime`() {
+                fun `Creation date should be stored as an ASN1 DateTime`() {
                     val sequence = getFieldSequence(stubSerialization)
                     val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
                     // We should technically be using a DateTime type instead of GeneralizedTime, but BC
@@ -191,7 +191,7 @@ class RAMFSerializerTest {
                 }
 
                 @Test
-                fun `Creation time should be converted to UTC when provided in different TZ`() {
+                fun `Creation date should be converted to UTC when provided in different TZ`() {
                     val nowTimezoneUnaware = LocalDateTime.now()
                     val message = StubEncryptedRAMFMessage(
                         stubMessage.recipientAddress,
