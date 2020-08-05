@@ -8,7 +8,13 @@
 <a href="../../index.html">relaynet</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.crypto</a>&nbsp;/&nbsp;<a href="index.html">SignedData</a>&nbsp;/&nbsp;<a href="./verify.html">verify</a><br/>
 <br/>
 <h1>verify</h1>
-<a name="tech.relaycorp.relaynet.crypto.SignedData$verify(kotlin.ByteArray)"></a>
-<code><span class="keyword">fun </span><span class="identifier">verify</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.crypto.SignedData$verify(kotlin.ByteArray)/expectedPlaintext">expectedPlaintext</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<a name="tech.relaycorp.relaynet.crypto.SignedData$verify(kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate)"></a>
+<code><span class="keyword">fun </span><span class="identifier">verify</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.crypto.SignedData$verify(kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate)/expectedPlaintext">expectedPlaintext</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.crypto.SignedData$verify(kotlin.ByteArray, tech.relaycorp.relaynet.wrappers.x509.Certificate)/signerCertificate">signerCertificate</span><span class="symbol">:</span>&nbsp;<a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Verify signature.</p>
+<h3>Parameters</h3>
+<p><a name="expectedPlaintext"></a>
+<code>expectedPlaintext</code> - The plaintext to be verified, if none is encapsulated</p>
+<p><a name="signerCertificate"></a>
+<code>signerCertificate</code> - The signer's certificate if it isn't encapsulated</p>
 </BODY>
 </HTML>
