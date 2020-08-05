@@ -24,14 +24,11 @@ import java.security.PrivateKey
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 private const val OCTETS_IN_9_MIB = 9437184
 
 private val DER_SEQUENCE_TAG = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
-private val BER_DATETIME_FORMATTER: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
 private val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
 
@@ -86,7 +83,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         codeLength += 1
 
         val creationTimeUtc = message.creationDate.withZoneSameInstant(UTC_ZONE_ID)
-        codeLength += BerDateTime(creationTimeUtc.format(BER_DATETIME_FORMATTER)).encode(
+        codeLength += BerDateTime(creationTimeUtc.format(ASN1Utils.BER_DATETIME_FORMATTER)).encode(
             reverseOS,
             false
         )
@@ -194,7 +191,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         // contain a timezone.
         val creationTimeDer = DERVisibleString.getInstance(fields[2] as ASN1TaggedObject, false)
         val creationTime = try {
-            LocalDateTime.parse(creationTimeDer.string, BER_DATETIME_FORMATTER)
+            LocalDateTime.parse(creationTimeDer.string, ASN1Utils.BER_DATETIME_FORMATTER)
         } catch (_: DateTimeParseException) {
             throw RAMFException(
                 "Creation time should be an ASN.1 DATE-TIME value"

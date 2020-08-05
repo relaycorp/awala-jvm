@@ -497,6 +497,24 @@ class SignedDataTest {
         }
 
         @Test
+        fun `Invalid signature with explicit signer key should be refused`() {
+            // Do the verification with a different key pair
+
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private
+            )
+            val anotherKeyPair = generateRSAKeyPair()
+
+            val exception = assertThrows<SignedDataException> {
+                signedData.verify(signerPublicKey = anotherKeyPair.public)
+            }
+
+            assertEquals("Invalid signature", exception.message)
+            assertNull(exception.cause)
+        }
+
+        @Test
         fun `Signed content should be encapsulated if no specific plaintext is expected`() {
             val signedData = SignedData.sign(
                 stubPlaintext,

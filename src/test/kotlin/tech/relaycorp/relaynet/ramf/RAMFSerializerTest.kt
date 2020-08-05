@@ -18,6 +18,7 @@ import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.BER_DATETIME_FORMATTER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
@@ -31,12 +32,9 @@ import java.nio.charset.Charset
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-
-private val BER_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
 // Pick a timezone that's never equivalent to UTC (unlike "Europe/London")
 val NON_UTC_ZONE_ID: ZoneId = ZoneId.of("America/Caracas")
