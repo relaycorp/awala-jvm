@@ -1,11 +1,14 @@
 package tech.relaycorp.relaynet.wrappers
 
-import java.security.interfaces.RSAPrivateKey
-import java.security.interfaces.RSAPublicKey
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.io.File
+import java.security.interfaces.RSAPrivateKey
+import java.security.interfaces.RSAPublicKey
+import java.security.spec.InvalidKeySpecException
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class KeysTest {
     @Nested
@@ -39,6 +42,28 @@ class KeysTest {
                 "Modulus should be at least 2048 (got 2047)",
                 exception.message
             )
+        }
+    }
+
+    @Nested
+    inner class DeserializeRSAPublicKey {
+        @Test
+        fun `Deserialize invalid key`() {
+            val exception = assertThrows<KeyException> { "s".toByteArray().deserializeRSAKey() }
+
+            assertEquals("Value is not a valid RSA public key", exception.message)
+            assertTrue(exception.cause is InvalidKeySpecException)
+        }
+
+        @Test
+        fun `Deserialize valid key`() {
+            val keyPair = generateRSAKeyPair()
+            val publicKeySerialized = keyPair.public.encoded
+            File("/home/gus/tmp/key.der").writeBytes(publicKeySerialized)
+
+            val publicKeyDeserialized = publicKeySerialized.deserializeRSAKey()
+
+            assertEquals(publicKeySerialized.asList(), publicKeyDeserialized.encoded.asList())
         }
     }
 }
