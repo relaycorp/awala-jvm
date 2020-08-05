@@ -148,7 +148,7 @@ class SignedDataTest {
         @Nested
         inner class Plaintext {
             @Test
-            fun `Plaintext should be encapsulated by default`() {
+            fun `Plaintext should be encapsulated by default when using certificates`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
@@ -160,11 +160,30 @@ class SignedDataTest {
             }
 
             @Test
-            fun `Plaintext should not be encapsulated if requested`() {
+            fun `Plaintext should not be encapsulated if requested when using certificates`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
                     stubCertificate,
+                    encapsulatePlaintext = false
+                )
+
+                assertNull(signedData.plaintext)
+            }
+
+            @Test
+            fun `Plaintext should be encapsulated by default when not using certificates`() {
+                val signedData = SignedData.sign(stubPlaintext, stubKeyPair.private)
+
+                assertNotNull(signedData.plaintext)
+                assertEquals(stubPlaintext.asList(), signedData.plaintext!!.asList())
+            }
+
+            @Test
+            fun `Plaintext should not be encapsulated if requested when not using certificates`() {
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
                     encapsulatePlaintext = false
                 )
 
@@ -186,7 +205,7 @@ class SignedDataTest {
             }
 
             @Test
-            fun `SignerInfo version should be set to 1`() {
+            fun `SignerInfo version should be set to 1 when signed with a certificate`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
@@ -198,7 +217,7 @@ class SignedDataTest {
             }
 
             @Test
-            fun `SignerIdentifier should be IssuerAndSerialNumber`() {
+            fun `SignerIdentifier should be IssuerAndSerialNumber when using a certificate`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
@@ -211,6 +230,27 @@ class SignedDataTest {
                     stubCertificate.certificateHolder.serialNumber,
                     signerInfo.sid.serialNumber
                 )
+            }
+
+            @Test
+            fun `SignerInfo version should be set to 3 when signed without a certificate`() {
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate
+                )
+
+                val signerInfo = signedData.bcSignedData.signerInfos.first()
+                assertEquals(1, signerInfo.version)
+            }
+
+            @Test
+            fun `SignerIdentifier should be SubjectKeyIdentifier when not using a certificate`() {
+                val signedData = SignedData.sign(stubPlaintext, stubKeyPair.private)
+
+                val signerInfo = signedData.bcSignedData.signerInfos.first()
+                assertNull(signerInfo.sid.issuer)
+                assertEquals(byteArrayOf().asList(), signerInfo.sid.subjectKeyIdentifier.asList())
             }
 
             @Test
@@ -301,6 +341,13 @@ class SignedDataTest {
             }
 
             @Test
+            fun `Signer certificate should not be encapsulated when not using certificates`() {
+                val signedData = SignedData.sign(stubPlaintext, stubKeyPair.private)
+
+                assertEquals(0, signedData.certificates.size)
+            }
+
+            @Test
             fun `CA certificate chain should optionally be encapsulated`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
@@ -317,30 +364,21 @@ class SignedDataTest {
         @Nested
         inner class Hashing {
             @Test
-            fun `SHA-256 should be used by default`() {
+            fun `SHA-256 should be used by default when using certificates`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
                     stubCertificate
                 )
 
-                assertEquals(1, signedData.bcSignedData.digestAlgorithmIDs.size)
-                assertEquals(
-                    HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
-                    signedData.bcSignedData.digestAlgorithmIDs.first().algorithm
-                )
-
-                val signerInfo = signedData.bcSignedData.signerInfos.first()
-
-                assertEquals(
-                    HASHING_ALGORITHM_OIDS[HashingAlgorithm.SHA256],
-                    signerInfo.digestAlgorithmID.algorithm
-                )
+                assertHashingAlgoEquals(signedData, HashingAlgorithm.SHA256)
             }
 
             @ParameterizedTest(name = "{0} should be honored if explicitly set")
             @EnumSource
-            fun `Hashing algorithm should be customizable`(algorithm: HashingAlgorithm) {
+            fun `Hashing algorithm should be customizable when using certificates`(
+                algorithm: HashingAlgorithm
+            ) {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
@@ -348,17 +386,47 @@ class SignedDataTest {
                     hashingAlgorithm = algorithm
                 )
 
-                val hashingAlgorithmOid = HASHING_ALGORITHM_OIDS[algorithm]
+                assertHashingAlgoEquals(signedData, algorithm)
+            }
+
+            @Test
+            fun `SHA-256 should be used by default when not using certificates`() {
+                val signedData = SignedData.sign(stubPlaintext, stubKeyPair.private)
+
+                assertHashingAlgoEquals(signedData, HashingAlgorithm.SHA256)
+            }
+
+            @ParameterizedTest(name = "{0} should be honored if explicitly set")
+            @EnumSource
+            fun `Hashing algorithm should be customizable when not using certificates`(
+                algorithm: HashingAlgorithm
+            ) {
+                val signedData = SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    hashingAlgorithm = algorithm
+                )
+
+                assertHashingAlgoEquals(signedData, algorithm)
+            }
+
+            private fun assertHashingAlgoEquals(
+                signedData: SignedData,
+                expectedHashingAlgorithm: HashingAlgorithm
+            ) {
+                val expectedHashingAlgoOID = HASHING_ALGORITHM_OIDS[expectedHashingAlgorithm]
 
                 assertEquals(1, signedData.bcSignedData.digestAlgorithmIDs.size)
                 assertEquals(
-                    hashingAlgorithmOid,
+                    expectedHashingAlgoOID,
                     signedData.bcSignedData.digestAlgorithmIDs.first().algorithm
                 )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
-
-                assertEquals(hashingAlgorithmOid, signerInfo.digestAlgorithmID.algorithm)
+                assertEquals(
+                    expectedHashingAlgoOID,
+                    signerInfo.digestAlgorithmID.algorithm
+                )
             }
         }
     }
@@ -522,7 +590,7 @@ class SignedDataTest {
         }
 
         @Test
-        fun `Valid signature with encapsulated signer certificate should be accepted`() {
+        fun `Valid signature with encapsulated signer certificate should succeed`() {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
@@ -534,12 +602,19 @@ class SignedDataTest {
         }
 
         @Test
-        fun `Valid signature with explicit signer key should be accepted`() {
+        fun `Valid signature with explicit signer key should succeed when using certs`() {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
                 stubCertificate
             )
+
+            cmsSignedData.verify(signerPublicKey = stubKeyPair.public)
+        }
+
+        @Test
+        fun `Valid signature with explicit signer key should succeed when not using certs`() {
+            val cmsSignedData = SignedData.sign(stubPlaintext, stubKeyPair.private)
 
             cmsSignedData.verify(signerPublicKey = stubKeyPair.public)
         }

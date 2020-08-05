@@ -10,6 +10,7 @@ import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.CMSSignedData
 import org.bouncycastle.cms.CMSSignedDataGenerator
 import org.bouncycastle.cms.CMSTypedData
+import org.bouncycastle.cms.SignerInfoGenerator
 import org.bouncycastle.cms.SignerInformation
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder
@@ -39,6 +40,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
      */
     val signerCertificate: Certificate? by lazy {
         val signerInfo = getSignerInfo(bcSignedData)
+
         // We shouldn't have to force this type cast but this is the only way I could get the code to work and, based on
         // what I found online, that's what others have had to do as well
         @Suppress("UNCHECKED_CAST") val signerCertSelector = X509CertificateHolderSelector(
@@ -81,12 +83,12 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             ?: expectedPlaintext
             ?: throw SignedDataException("Plaintext should be encapsulated or explicitly set")
 
-        if (this.signerCertificate != null && signerPublicKey != null) {
+        if (signerCertificate != null && signerPublicKey != null) {
             throw SignedDataException(
                 "No specific signer certificate should be expected because one is already " +
                     "encapsulated"
             )
-        } else if (this.signerCertificate == null && signerPublicKey == null) {
+        } else if (signerCertificate == null && signerPublicKey == null) {
             throw SignedDataException(
                 "Signer certificate should be encapsulated or explicitly set"
             )
@@ -97,8 +99,8 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
         )
         val signerInfo = getSignerInfo(signedData)
         val verifierBuilder = JcaSimpleSignerInfoVerifierBuilder().setProvider(BC_PROVIDER)
-        val verifier = if (this.signerCertificate != null)
-            verifierBuilder.build(this.signerCertificate!!.certificateHolder)
+        val verifier = if (signerCertificate != null)
+            verifierBuilder.build(signerCertificate!!.certificateHolder)
         else
             verifierBuilder.build(signerPublicKey)
         try {
@@ -115,6 +117,9 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             HashingAlgorithm.SHA512 to "SHA512WITHRSAANDMGF1"
         )
 
+        /**
+         * Generate SignedData value with a SignerInfo using an IssuerAndSerialNumber id.
+         */
         @JvmStatic
         fun sign(
             plaintext: ByteArray,
@@ -124,16 +129,50 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             hashingAlgorithm: HashingAlgorithm? = null,
             encapsulatePlaintext: Boolean = true
         ): SignedData {
+            val contentSigner = makeContentSigner(signerPrivateKey, hashingAlgorithm)
+            val signerInfoGenerator = makeSignerInfoGeneratorBuilder().build(
+                contentSigner,
+                signerCertificate.certificateHolder
+            )
+            return sign(
+                plaintext,
+                signerInfoGenerator,
+                encapsulatedCertificates,
+                encapsulatePlaintext
+            )
+        }
+
+        /**
+         * Generate SignedData value with a SignerInfo using a SubjectKeyIdentifier.
+         */
+        @JvmStatic
+        fun sign(
+            plaintext: ByteArray,
+            signerPrivateKey: PrivateKey,
+            hashingAlgorithm: HashingAlgorithm? = null,
+            encapsulatePlaintext: Boolean = true
+        ): SignedData {
+            val contentSigner = makeContentSigner(signerPrivateKey, hashingAlgorithm)
+            val signerInfoGenerator = makeSignerInfoGeneratorBuilder().build(
+                contentSigner,
+                byteArrayOf()
+            )
+            return sign(
+                plaintext,
+                signerInfoGenerator,
+                emptySet(),
+                encapsulatePlaintext
+            )
+        }
+
+        private fun sign(
+            plaintext: ByteArray,
+            signerInfoGenerator: SignerInfoGenerator,
+            encapsulatedCertificates: Set<Certificate>,
+            encapsulatePlaintext: Boolean
+        ): SignedData {
             val signedDataGenerator = CMSSignedDataGenerator()
 
-            val algorithm = hashingAlgorithm ?: HashingAlgorithm.SHA256
-            val signerBuilder =
-                JcaContentSignerBuilder(signatureAlgorithmMap[algorithm]).setProvider(BC_PROVIDER)
-            val contentSigner: ContentSigner = signerBuilder.build(signerPrivateKey)
-            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
-                JcaDigestCalculatorProviderBuilder()
-                    .build()
-            ).build(contentSigner, signerCertificate.certificateHolder)
             signedDataGenerator.addSignerInfoGenerator(signerInfoGenerator)
 
             val certs = JcaCertStore(encapsulatedCertificates.map { it.certificateHolder })
@@ -147,6 +186,20 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
                 if (encapsulatePlaintext) bcSignedData
                 else CMSSignedData(bcSignedData.toASN1Structure())
             )
+        }
+
+        private fun makeSignerInfoGeneratorBuilder() = JcaSignerInfoGeneratorBuilder(
+            JcaDigestCalculatorProviderBuilder().build()
+        )
+
+        private fun makeContentSigner(
+            signerPrivateKey: PrivateKey,
+            hashingAlgorithm: HashingAlgorithm?
+        ): ContentSigner {
+            val algorithm = hashingAlgorithm ?: HashingAlgorithm.SHA256
+            val signerBuilder =
+                JcaContentSignerBuilder(signatureAlgorithmMap[algorithm]).setProvider(BC_PROVIDER)
+            return signerBuilder.build(signerPrivateKey)
         }
 
         @JvmStatic
