@@ -62,7 +62,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             fieldSetSerialized,
             signerPrivateKey,
             message.senderCertificate,
-            message.senderCertificateChain,
+            setOf(message.senderCertificate) + message.senderCertificateChain,
             hashingAlgorithm
         )
         output.write(signedData.serialize())
@@ -158,13 +158,13 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             throw RAMFException("Invalid CMS SignedData value", exc)
         }
         val fields = deserializeFields(cmsSignedData.plaintext!!)
-        val intermediateCACerts = cmsSignedData.attachedCertificates.filter {
+        val intermediateCACerts = cmsSignedData.certificates.filter {
             it != cmsSignedData.signerCertificate
         }.toSet()
         return messageClazz(
             fields.recipientAddress,
             fields.payload,
-            cmsSignedData.signerCertificate,
+            cmsSignedData.signerCertificate!!, // Verification passed, so the cert is present
             fields.messageId,
             fields.creationDate,
             fields.ttl,

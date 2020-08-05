@@ -18,7 +18,6 @@ import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder
 import org.bouncycastle.operator.ContentSigner
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
-import org.bouncycastle.util.CollectionStore
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -288,32 +287,30 @@ class SignedDataTest {
         }
 
         @Nested
-        inner class AttachedCertificates {
+        inner class Certificates {
             @Test
-            fun `Signer certificate should be attached`() {
+            fun `Signer certificate should not be encapsulated by default`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
                     stubCertificate
                 )
 
-                val attachedCerts =
-                    (signedData.bcSignedData.certificates as CollectionStore).asSequence().toList()
-                assertEquals(1, attachedCerts.size)
-                assertEquals(stubCertificate.certificateHolder, attachedCerts[0])
+                assertNull(signedData.signerCertificate)
+                assertEquals(0, signedData.certificates.size)
             }
 
             @Test
-            fun `CA certificate chain should optionally be attached`() {
+            fun `CA certificate chain should optionally be encapsulated`() {
                 val signedData = SignedData.sign(
                     stubPlaintext,
                     stubKeyPair.private,
                     stubCertificate,
-                    setOf(anotherStubCertificate)
+                    setOf(stubCertificate, anotherStubCertificate)
                 )
 
-                assertEquals(2, signedData.attachedCertificates.size)
-                assertTrue(signedData.attachedCertificates.contains(anotherStubCertificate))
+                assertEquals(2, signedData.certificates.size)
+                assertTrue(signedData.certificates.contains(anotherStubCertificate))
             }
         }
 
@@ -375,13 +372,15 @@ class SignedDataTest {
             val signedData1 = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                stubCertificate
+                stubCertificate,
+                setOf(stubCertificate)
             )
 
             val signedData2 = SignedData.sign(
                 byteArrayOf(0xde.toByte(), *stubPlaintext),
                 stubKeyPair.private,
-                stubCertificate
+                stubCertificate,
+                setOf(stubCertificate)
             )
 
             val invalidBCSignedData = CMSSignedData.replaceSigners(
@@ -404,6 +403,7 @@ class SignedDataTest {
                 stubPlaintext,
                 stubKeyPair.private,
                 stubCertificate,
+                setOf(stubCertificate),
                 encapsulatePlaintext = false
             )
 
@@ -411,6 +411,7 @@ class SignedDataTest {
                 byteArrayOf(0xde.toByte(), *stubPlaintext),
                 stubKeyPair.private,
                 stubCertificate,
+                setOf(stubCertificate),
                 encapsulatePlaintext = false
             )
 
@@ -429,32 +430,17 @@ class SignedDataTest {
 
         @Test
         fun `Signed content should be encapsulated if no specific plaintext is expected`() {
-            val signedDataGenerator = CMSSignedDataGenerator()
-
-            val signerBuilder =
-                JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
-            val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
-            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
-                JcaDigestCalculatorProviderBuilder()
-                    .build()
-            ).build(contentSigner, stubCertificate.certificateHolder)
-            signedDataGenerator.addSignerInfoGenerator(
-                signerInfoGenerator
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate,
+                setOf(stubCertificate),
+                encapsulatePlaintext = false
             )
-
-            val certs = JcaCertStore(listOf(stubCertificate.certificateHolder))
-            signedDataGenerator.addCertificates(certs)
-
-            val plaintextCms: CMSTypedData = CMSProcessableByteArray(stubPlaintext)
-            val bcSignedData = signedDataGenerator.generate(plaintextCms)
-            val signedData = SignedData.deserialize(bcSignedData.encoded)
 
             val exception = assertThrows<SignedDataException> { signedData.verify() }
 
-            assertEquals(
-                "Signed plaintext should be encapsulated or explicitly set",
-                exception.message
-            )
+            assertEquals("Plaintext should be encapsulated or explicitly set", exception.message)
         }
 
         @Test
@@ -462,7 +448,8 @@ class SignedDataTest {
             val signedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                stubCertificate
+                stubCertificate,
+                setOf(stubCertificate)
             )
 
             val exception = assertThrows<SignedDataException> { signedData.verify(stubPlaintext) }
@@ -478,10 +465,10 @@ class SignedDataTest {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                stubCertificate
+                stubCertificate,
+                setOf(stubCertificate)
             )
 
-            // No exceptions thrown
             cmsSignedData.verify()
         }
 
@@ -491,11 +478,70 @@ class SignedDataTest {
                 stubPlaintext,
                 stubKeyPair.private,
                 stubCertificate,
+                setOf(stubCertificate),
                 encapsulatePlaintext = false
             )
 
-            // No exceptions thrown
             cmsSignedData.verify(stubPlaintext)
+        }
+
+        @Test
+        fun `Signer certificate should be encapsulated if none is explicitly set`() {
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate
+            )
+
+            val exception = assertThrows<SignedDataException> { signedData.verify() }
+
+            assertEquals(
+                "Signer certificate should be encapsulated or explicitly set",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Explicit signer certificate should be refused if one is already encapsulated`() {
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate,
+                encapsulatedCertificates = setOf(stubCertificate)
+            )
+
+            val exception = assertThrows<SignedDataException> {
+                signedData.verify(signerCertificate = stubCertificate)
+            }
+
+            assertEquals(
+                "No specific signer certificate should be expected because one is already " +
+                    "encapsulated",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Valid signature with encapsulated signer certificate should be accepted`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate,
+                encapsulatedCertificates = setOf(stubCertificate)
+            )
+
+            cmsSignedData.verify()
+        }
+
+        @Test
+        fun `Valid signature with explicit signer certificate should be accepted`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate
+            )
+
+            cmsSignedData.verify(signerCertificate = stubCertificate)
         }
     }
 
@@ -590,29 +636,14 @@ class SignedDataTest {
         }
 
         @Test
-        fun `Certificate of signer should be required`() {
-            val signedDataGenerator = CMSSignedDataGenerator()
-
-            val signerBuilder =
-                JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
-            val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
-            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
-                JcaDigestCalculatorProviderBuilder()
-                    .build()
-            ).build(contentSigner, stubCertificate.certificateHolder)
-            signedDataGenerator.addSignerInfoGenerator(
-                signerInfoGenerator
+        fun `Certificate of signer may not be encapsulated`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate
             )
 
-            val bcSignedData = signedDataGenerator.generate(
-                CMSProcessableByteArray(stubPlaintext),
-                true
-            )
-            val signedData = SignedData(bcSignedData)
-
-            val exception = assertThrows<SignedDataException> { signedData.signerCertificate }
-
-            assertEquals("Certificate of signer should be attached", exception.message)
+            assertNull(cmsSignedData.signerCertificate)
         }
 
         @Test
@@ -620,7 +651,8 @@ class SignedDataTest {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
-                stubCertificate
+                stubCertificate,
+                setOf(stubCertificate)
             )
 
             assertEquals(stubCertificate, cmsSignedData.signerCertificate)
@@ -628,19 +660,43 @@ class SignedDataTest {
     }
 
     @Nested
-    inner class AttachedCertificates {
+    inner class Certificates {
         @Test
-        fun `Attached CA certificates should be output`() {
+        fun `No certificates may be encapsulated`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate
+            )
+
+            assertEquals(0, cmsSignedData.certificates.size)
+        }
+
+        @Test
+        fun `One certificate may be encapsulated`() {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
                 stubCertificate,
-                caCertificates = setOf(anotherStubCertificate)
+                encapsulatedCertificates = setOf(stubCertificate)
             )
 
-            assertEquals(2, cmsSignedData.attachedCertificates.size)
-            assert(cmsSignedData.attachedCertificates.contains(stubCertificate))
-            assert(cmsSignedData.attachedCertificates.contains(anotherStubCertificate))
+            assertEquals(1, cmsSignedData.certificates.size)
+            assert(cmsSignedData.certificates.contains(stubCertificate))
+        }
+
+        @Test
+        fun `Multiple certificates may be encapsulated`() {
+            val cmsSignedData = SignedData.sign(
+                stubPlaintext,
+                stubKeyPair.private,
+                stubCertificate,
+                encapsulatedCertificates = setOf(stubCertificate, anotherStubCertificate)
+            )
+
+            assertEquals(2, cmsSignedData.certificates.size)
+            assert(cmsSignedData.certificates.contains(stubCertificate))
+            assert(cmsSignedData.certificates.contains(anotherStubCertificate))
         }
     }
 }

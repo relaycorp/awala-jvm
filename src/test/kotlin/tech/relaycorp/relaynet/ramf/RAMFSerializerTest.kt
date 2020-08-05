@@ -101,7 +101,7 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Sender certificate should be attached`() {
+            fun `Sender certificate should be encapsulated`() {
                 val cmsSignedDataSerialized = skipFormatSignature(stubSerialization)
 
                 val cmsSignedData = SignedData.deserialize(cmsSignedDataSerialized)
@@ -112,13 +112,13 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Sender certificate chain should be attached`() {
+            fun `Sender certificate chain should be encapsulated`() {
                 val cmsSignedDataSerialized = skipFormatSignature(stubSerialization)
 
                 val cmsSignedData = SignedData.deserialize(cmsSignedDataSerialized)
                 assertEquals(
                     stubSenderCertificateChain.union(setOf(stubSenderCertificate)),
-                    cmsSignedData.attachedCertificates
+                    cmsSignedData.certificates
                 )
             }
 
@@ -439,7 +439,8 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         "not DER".toByteArray(),
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
+                        stubSenderCertificate,
+                        setOf(stubSenderCertificate)
                     ).serialize()
                 )
 
@@ -466,7 +467,8 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         fieldSetSerialization.array,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
+                        stubSenderCertificate,
+                        setOf(stubSenderCertificate)
                     ).serialize()
                 )
 
@@ -499,7 +501,8 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         fieldSetSerialization,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
+                        stubSenderCertificate,
+                        setOf(stubSenderCertificate)
                     ).serialize()
                 )
 
@@ -552,7 +555,8 @@ class RAMFSerializerTest {
                     SignedData.sign(
                         fieldSetSerialization,
                         stubSenderKeyPair.private,
-                        stubSenderCertificate
+                        stubSenderCertificate,
+                        setOf(stubSenderCertificate)
                     ).serialize()
                 )
 

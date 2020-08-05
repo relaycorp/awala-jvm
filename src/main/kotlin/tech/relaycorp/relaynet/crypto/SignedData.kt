@@ -28,9 +28,15 @@ import java.security.PrivateKey
  * Relaynet-specific, CMS SignedData representation.
  */
 class SignedData(internal val bcSignedData: CMSSignedData) {
+    /**
+     * The signed plaintext, if it was encapsulated.
+     */
     val plaintext: ByteArray? by lazy { bcSignedData.signedContent?.content as ByteArray? }
 
-    val signerCertificate: Certificate by lazy {
+    /**
+     * The signer's certificate, if it was encapsulated.
+     */
+    val signerCertificate: Certificate? by lazy {
         val signerInfo = getSignerInfo(bcSignedData)
         // We shouldn't have to force this type cast but this is the only way I could get the code to work and, based on
         // what I found online, that's what others have had to do as well
@@ -43,26 +49,48 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
         try {
             Certificate(signerCertMatches.first())
         } catch (_: NoSuchElementException) {
-            throw SignedDataException("Certificate of signer should be attached")
+            null
         }
     }
 
-    val attachedCertificates: Set<Certificate> by lazy {
+    /**
+     * Set of encapsulated certificates.
+     */
+    val certificates: Set<Certificate> by lazy {
         (bcSignedData.certificates as CollectionStore).map { Certificate(it) }.toSet()
     }
 
     fun serialize(): ByteArray = bcSignedData.encoded
 
-    fun verify(expectedPlaintext: ByteArray? = null) {
+    /**
+     * Verify signature.
+     *
+     * @param expectedPlaintext The plaintext to be verified, if none is encapsulated
+     * @param signerCertificate The signer's certificate if it isn't encapsulated
+     */
+    @Throws(SignedDataException::class)
+    fun verify(expectedPlaintext: ByteArray? = null, signerCertificate: Certificate? = null) {
         if (plaintext != null && expectedPlaintext != null) {
             throw SignedDataException(
                 "No specific plaintext should be expected because one is already encapsulated"
             )
-        } else if (plaintext == null && expectedPlaintext == null) {
-            throw SignedDataException("Signed plaintext should be encapsulated or explicitly set")
         }
+        val signedPlaintext = plaintext
+            ?: expectedPlaintext
+            ?: throw SignedDataException("Plaintext should be encapsulated or explicitly set")
 
-        val signedPlaintext = plaintext ?: expectedPlaintext
+        if (this.signerCertificate != null && signerCertificate != null) {
+            throw SignedDataException(
+                "No specific signer certificate should be expected because one is already " +
+                    "encapsulated"
+            )
+        }
+        val finalSignerCert = this.signerCertificate
+            ?: signerCertificate
+            ?: throw SignedDataException(
+                "Signer certificate should be encapsulated or explicitly set"
+            )
+
         val signedData = CMSSignedData(
             CMSProcessableByteArray(signedPlaintext),
             bcSignedData.toASN1Structure()
@@ -70,7 +98,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
         val signerInfo = getSignerInfo(signedData)
         val verifier = JcaSimpleSignerInfoVerifierBuilder()
             .setProvider(BC_PROVIDER)
-            .build(signerCertificate.certificateHolder)
+            .build(finalSignerCert.certificateHolder)
         try {
             signerInfo.verify(verifier)
         } catch (exc: CMSException) {
@@ -90,7 +118,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             plaintext: ByteArray,
             signerPrivateKey: PrivateKey,
             signerCertificate: Certificate,
-            caCertificates: Set<Certificate> = setOf(),
+            encapsulatedCertificates: Set<Certificate> = setOf(),
             hashingAlgorithm: HashingAlgorithm? = null,
             encapsulatePlaintext: Boolean = true
         ): SignedData {
@@ -108,12 +136,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
                 signerInfoGenerator
             )
 
-            val certs = JcaCertStore(
-                listOf(
-                    signerCertificate.certificateHolder,
-                    *caCertificates.map { it.certificateHolder }.toTypedArray()
-                )
-            )
+            val certs = JcaCertStore(encapsulatedCertificates.map { it.certificateHolder })
             signedDataGenerator.addCertificates(certs)
 
             val plaintextCms: CMSTypedData = CMSProcessableByteArray(plaintext)
