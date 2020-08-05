@@ -23,6 +23,7 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.IOException
 import java.security.PrivateKey
+import java.security.PublicKey
 
 /**
  * Relaynet-specific, CMS SignedData representation.
@@ -65,11 +66,12 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
     /**
      * Verify signature.
      *
-     * @param expectedPlaintext The plaintext to be verified, if none is encapsulated
-     * @param signerCertificate The signer's certificate if it isn't encapsulated
+     * @param expectedPlaintext The plaintext to be verified if none is encapsulated
+     * @param signerPublicKey The signer's public key if a corresponding certificate isn't
+     *     encapsulated
      */
     @Throws(SignedDataException::class)
-    fun verify(expectedPlaintext: ByteArray? = null, signerCertificate: Certificate? = null) {
+    fun verify(expectedPlaintext: ByteArray? = null, signerPublicKey: PublicKey? = null) {
         if (plaintext != null && expectedPlaintext != null) {
             throw SignedDataException(
                 "No specific plaintext should be expected because one is already encapsulated"
@@ -79,26 +81,26 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             ?: expectedPlaintext
             ?: throw SignedDataException("Plaintext should be encapsulated or explicitly set")
 
-        if (this.signerCertificate != null && signerCertificate != null) {
+        if (this.signerCertificate != null && signerPublicKey != null) {
             throw SignedDataException(
                 "No specific signer certificate should be expected because one is already " +
                     "encapsulated"
             )
-        }
-        val finalSignerCert = this.signerCertificate
-            ?: signerCertificate
-            ?: throw SignedDataException(
+        } else if (this.signerCertificate == null && signerPublicKey == null) {
+            throw SignedDataException(
                 "Signer certificate should be encapsulated or explicitly set"
             )
-
+        }
         val signedData = CMSSignedData(
             CMSProcessableByteArray(signedPlaintext),
             bcSignedData.toASN1Structure()
         )
         val signerInfo = getSignerInfo(signedData)
-        val verifier = JcaSimpleSignerInfoVerifierBuilder()
-            .setProvider(BC_PROVIDER)
-            .build(finalSignerCert.certificateHolder)
+        val verifierBuilder = JcaSimpleSignerInfoVerifierBuilder().setProvider(BC_PROVIDER)
+        val verifier = if (this.signerCertificate != null)
+            verifierBuilder.build(this.signerCertificate!!.certificateHolder)
+        else
+            verifierBuilder.build(signerPublicKey)
         try {
             signerInfo.verify(verifier)
         } catch (exc: CMSException) {
@@ -132,9 +134,7 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
                 JcaDigestCalculatorProviderBuilder()
                     .build()
             ).build(contentSigner, signerCertificate.certificateHolder)
-            signedDataGenerator.addSignerInfoGenerator(
-                signerInfoGenerator
-            )
+            signedDataGenerator.addSignerInfoGenerator(signerInfoGenerator)
 
             val certs = JcaCertStore(encapsulatedCertificates.map { it.certificateHolder })
             signedDataGenerator.addCertificates(certs)

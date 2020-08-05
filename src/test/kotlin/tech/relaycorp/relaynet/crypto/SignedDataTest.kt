@@ -502,7 +502,7 @@ class SignedDataTest {
         }
 
         @Test
-        fun `Explicit signer certificate should be refused if one is already encapsulated`() {
+        fun `Explicit signer key should be refused if a certificate is already encapsulated`() {
             val signedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
@@ -511,7 +511,7 @@ class SignedDataTest {
             )
 
             val exception = assertThrows<SignedDataException> {
-                signedData.verify(signerCertificate = stubCertificate)
+                signedData.verify(signerPublicKey = stubKeyPair.public)
             }
 
             assertEquals(
@@ -534,14 +534,14 @@ class SignedDataTest {
         }
 
         @Test
-        fun `Valid signature with explicit signer certificate should be accepted`() {
+        fun `Valid signature with explicit signer key should be accepted`() {
             val cmsSignedData = SignedData.sign(
                 stubPlaintext,
                 stubKeyPair.private,
                 stubCertificate
             )
 
-            cmsSignedData.verify(signerCertificate = stubCertificate)
+            cmsSignedData.verify(signerPublicKey = stubKeyPair.public)
         }
     }
 
