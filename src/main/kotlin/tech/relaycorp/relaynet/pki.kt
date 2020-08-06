@@ -2,6 +2,7 @@
 
 package tech.relaycorp.relaynet
 
+import tech.relaycorp.relaynet.wrappers.privateAddress
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -25,7 +26,7 @@ fun issueGatewayCertificate(
 ): Certificate {
     val isSelfIssued = issuerCertificate == null
     return Certificate.issue(
-        computePrivateAddress(subjectPublicKey),
+        subjectPublicKey.privateAddress,
         subjectPublicKey,
         issuerPrivateKey,
         validityEndDate,
@@ -53,7 +54,7 @@ fun issueEndpointCertificate(
     validityStartDate: ZonedDateTime = ZonedDateTime.now()
 ): Certificate {
     return Certificate.issue(
-        computePrivateAddress(subjectPublicKey),
+        subjectPublicKey.privateAddress,
         subjectPublicKey,
         issuerPrivateKey,
         validityEndDate,
@@ -80,7 +81,7 @@ fun issueParcelDeliveryAuthorization(
     issuerCertificate: Certificate,
     validityStartDate: ZonedDateTime = ZonedDateTime.now()
 ): Certificate = Certificate.issue(
-    computePrivateAddress(subjectPublicKey),
+    subjectPublicKey.privateAddress,
     subjectPublicKey,
     issuerPrivateKey,
     validityEndDate,
@@ -89,6 +90,3 @@ fun issueParcelDeliveryAuthorization(
     0,
     validityStartDate
 )
-
-private fun computePrivateAddress(subjectPublicKey: PublicKey) =
-    "0${getSHA256DigestHex(subjectPublicKey.encoded)}"

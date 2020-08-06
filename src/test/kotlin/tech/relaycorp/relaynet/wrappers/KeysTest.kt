@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.wrappers
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.sha256Hex
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.InvalidKeySpecException
@@ -63,6 +64,18 @@ class KeysTest {
             val publicKeyDeserialized = publicKeySerialized.deserializeRSAPublicKey()
 
             assertEquals(publicKeySerialized.asList(), publicKeyDeserialized.encoded.asList())
+        }
+    }
+
+    @Nested
+    inner class PrivateAddress {
+        @Test
+        fun `Private node address should be calculated`() {
+            val keyPair = generateRSAKeyPair()
+
+            val privateAddress = keyPair.public.privateAddress
+
+            assertEquals("0${sha256Hex(keyPair.public.encoded)}", privateAddress)
         }
     }
 }

@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.wrappers
 
+import tech.relaycorp.relaynet.getSHA256DigestHex
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -35,3 +36,9 @@ fun ByteArray.deserializeRSAPublicKey(): PublicKey {
         throw KeyException("Value is not a valid RSA public key", exc)
     }
 }
+
+/**
+ * Derive private address for Relaynet node from its public key.
+ */
+val PublicKey.privateAddress: String
+    get() = "0${getSHA256DigestHex(this.encoded)}"
