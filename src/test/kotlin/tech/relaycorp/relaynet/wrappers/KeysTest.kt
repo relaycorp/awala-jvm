@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.wrappers
 
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -43,6 +45,14 @@ class KeysTest {
                 exception.message
             )
         }
+
+        @Test
+        fun `BouncyCastle provider should be used`() {
+            val keyPair = generateRSAKeyPair()
+
+            assertTrue(keyPair.public is BCRSAPublicKey)
+            assertTrue(keyPair.private is BCRSAPrivateKey)
+        }
     }
 
     @Nested
@@ -64,6 +74,16 @@ class KeysTest {
             val publicKeyDeserialized = publicKeySerialized.deserializeRSAPublicKey()
 
             assertEquals(publicKeySerialized.asList(), publicKeyDeserialized.encoded.asList())
+        }
+
+        @Test
+        fun `BouncyCastle provider should be used`() {
+            val keyPair = generateRSAKeyPair()
+            val publicKeySerialized = keyPair.public.encoded
+
+            val publicKeyDeserialized = publicKeySerialized.deserializeRSAPublicKey()
+
+            assertTrue(publicKeyDeserialized is BCRSAPublicKey)
         }
     }
 

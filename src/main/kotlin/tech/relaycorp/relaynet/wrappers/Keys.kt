@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.wrappers
 
+import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.getSHA256DigestHex
 import java.security.KeyFactory
 import java.security.KeyPair
@@ -22,14 +23,14 @@ fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
     if (modulus < MIN_RSA_KEY_MODULUS) {
         throw KeyException("Modulus should be at least $MIN_RSA_KEY_MODULUS (got $modulus)")
     }
-    val keyGen = KeyPairGenerator.getInstance("RSA")
+    val keyGen = KeyPairGenerator.getInstance("RSA", BC_PROVIDER)
     keyGen.initialize(modulus)
     return keyGen.generateKeyPair()
 }
 
 fun ByteArray.deserializeRSAPublicKey(): PublicKey {
     val spec = X509EncodedKeySpec(this)
-    val factory = KeyFactory.getInstance("RSA")
+    val factory = KeyFactory.getInstance("RSA", BC_PROVIDER)
     return try {
         factory.generatePublic(spec)
     } catch (exc: InvalidKeySpecException) {
