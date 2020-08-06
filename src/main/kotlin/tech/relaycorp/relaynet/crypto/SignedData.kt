@@ -207,6 +207,9 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
 
         @JvmStatic
         fun deserialize(serialization: ByteArray): SignedData {
+            if (serialization.isEmpty()) {
+                throw SignedDataException("Value cannot be empty")
+            }
             val asn1Stream = ASN1InputStream(serialization)
             val asn1Sequence = try {
                 asn1Stream.readObject()

@@ -75,6 +75,17 @@ class SignedDataTest {
     @Nested
     inner class Deserialize {
         @Test
+        fun `Empty serialization should be refused`() {
+            val invalidCMSSignedData = byteArrayOf()
+
+            val exception = assertThrows<SignedDataException> {
+                SignedData.deserialize(invalidCMSSignedData)
+            }
+
+            assertEquals("Value cannot be empty", exception.message)
+        }
+
+        @Test
         fun `Invalid DER values should be refused`() {
             val invalidCMSSignedData = "Not really DER-encoded".toByteArray()
 
