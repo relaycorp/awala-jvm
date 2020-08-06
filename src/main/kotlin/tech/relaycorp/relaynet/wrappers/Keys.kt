@@ -1,7 +1,11 @@
 package tech.relaycorp.relaynet.wrappers
 
+import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
+import java.security.PublicKey
+import java.security.spec.InvalidKeySpecException
+import java.security.spec.X509EncodedKeySpec
 
 private const val DEFAULT_RSA_KEY_MODULUS = 2048
 private const val MIN_RSA_KEY_MODULUS = 2048
@@ -20,4 +24,14 @@ fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
     val keyGen = KeyPairGenerator.getInstance("RSA")
     keyGen.initialize(modulus)
     return keyGen.generateKeyPair()
+}
+
+fun ByteArray.deserializeRSAPublicKey(): PublicKey {
+    val spec = X509EncodedKeySpec(this)
+    val factory = KeyFactory.getInstance("RSA")
+    return try {
+        factory.generatePublic(spec)
+    } catch (exc: InvalidKeySpecException) {
+        throw KeyException("Value is not a valid RSA public key", exc)
+    }
 }

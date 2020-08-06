@@ -103,10 +103,13 @@ class SignedData(internal val bcSignedData: CMSSignedData) {
             verifierBuilder.build(signerCertificate!!.certificateHolder)
         else
             verifierBuilder.build(signerPublicKey)
-        try {
+        val isValid = try {
             signerInfo.verify(verifier)
         } catch (exc: CMSException) {
             throw SignedDataException("Invalid signature", exc)
+        }
+        if (!isValid) {
+            throw SignedDataException("Invalid signature")
         }
     }
 

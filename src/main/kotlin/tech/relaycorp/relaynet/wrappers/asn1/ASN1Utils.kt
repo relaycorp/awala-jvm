@@ -4,11 +4,18 @@ import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.DERGeneralizedTime
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERTaggedObject
 import java.io.IOException
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 internal object ASN1Utils {
+    val BER_DATETIME_FORMATTER: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+
     fun serializeSequence(items: Array<ASN1Encodable>, explicitTagging: Boolean = true): ByteArray {
         val messagesVector = ASN1EncodableVector(items.size)
         val finalItems = if (explicitTagging) items.asList() else items.mapIndexed { index, item ->
@@ -33,5 +40,10 @@ internal object ASN1Utils {
             throw ASN1Exception("Value is not an ASN.1 sequence")
         }
         return fieldSequence.toArray()
+    }
+
+    fun derEncodeUTCDate(date: ZonedDateTime): DERGeneralizedTime {
+        val dateUTC = date.withZoneSameInstant(ZoneOffset.UTC)
+        return DERGeneralizedTime(dateUTC.format(BER_DATETIME_FORMATTER))
     }
 }
