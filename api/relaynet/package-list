@@ -1,9 +1,11 @@
 $dokka.format:html
 $dokka.linkExtension:html
 $dokka.location:tech.relaycorp.relaynet.messages.payloads$batch(kotlin.sequences.Sequence((tech.relaycorp.relaynet.messages.payloads.CargoMessageWithExpiry)))tech.relaycorp.relaynet.messages.payloads/kotlin.sequences.-sequence/batch.html
+$dokka.location:tech.relaycorp.relaynet.wrappers$deserializeRSAPublicKey(kotlin.ByteArray)tech.relaycorp.relaynet.wrappers/kotlin.-byte-array/deserialize-r-s-a-public-key.html
 tech.relaycorp.relaynet
 tech.relaycorp.relaynet.crypto
 tech.relaycorp.relaynet.messages
+tech.relaycorp.relaynet.messages.control
 tech.relaycorp.relaynet.messages.payloads
 tech.relaycorp.relaynet.ramf
 tech.relaycorp.relaynet.wrappers
