@@ -60,7 +60,7 @@ class ClientRegistrationAuthorizationTest {
             val sequence = extractSequence(serialization)
             val oidRaw = sequence.first() as ASN1TaggedObject
             assertEquals(
-                OIDs.CLIENT_REGISTRATION_AUTHZ,
+                OIDs.CRA,
                 ASN1ObjectIdentifier.getInstance(oidRaw, false)
             )
         }

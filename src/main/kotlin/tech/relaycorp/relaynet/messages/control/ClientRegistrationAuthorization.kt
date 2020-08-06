@@ -25,7 +25,7 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
     fun serialize(serverPrivateKey: PrivateKey): ByteArray {
         val plaintext = ASN1Utils.serializeSequence(
             arrayOf(
-                OIDs.CLIENT_REGISTRATION_AUTHZ,
+                OIDs.CRA,
                 ASN1Utils.derEncodeUTCDate(expiryDate),
                 DEROctetString(serverData)
             ),
@@ -63,7 +63,7 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
             }
 
             val oid = ASN1ObjectIdentifier.getInstance(sequence.first() as ASN1TaggedObject, false)
-            if (oid != OIDs.CLIENT_REGISTRATION_AUTHZ) {
+            if (oid != OIDs.CRA) {
                 throw InvalidMessageException(
                     "CRA plaintext has invalid OID (got ${oid.id})"
                 )

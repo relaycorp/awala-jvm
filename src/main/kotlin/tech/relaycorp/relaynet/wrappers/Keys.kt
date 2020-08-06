@@ -26,7 +26,7 @@ fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
     return keyGen.generateKeyPair()
 }
 
-fun ByteArray.deserializeRSAKey(): PublicKey {
+fun ByteArray.deserializeRSAPublicKey(): PublicKey {
     val spec = X509EncodedKeySpec(this)
     val factory = KeyFactory.getInstance("RSA")
     return try {

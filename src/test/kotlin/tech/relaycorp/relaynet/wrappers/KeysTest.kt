@@ -3,7 +3,6 @@ package tech.relaycorp.relaynet.wrappers
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.File
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.InvalidKeySpecException
@@ -49,7 +48,8 @@ class KeysTest {
     inner class DeserializeRSAPublicKey {
         @Test
         fun `Deserialize invalid key`() {
-            val exception = assertThrows<KeyException> { "s".toByteArray().deserializeRSAKey() }
+            val exception =
+                assertThrows<KeyException> { "s".toByteArray().deserializeRSAPublicKey() }
 
             assertEquals("Value is not a valid RSA public key", exception.message)
             assertTrue(exception.cause is InvalidKeySpecException)
@@ -59,9 +59,8 @@ class KeysTest {
         fun `Deserialize valid key`() {
             val keyPair = generateRSAKeyPair()
             val publicKeySerialized = keyPair.public.encoded
-            File("/home/gus/tmp/key.der").writeBytes(publicKeySerialized)
 
-            val publicKeyDeserialized = publicKeySerialized.deserializeRSAKey()
+            val publicKeyDeserialized = publicKeySerialized.deserializeRSAPublicKey()
 
             assertEquals(publicKeySerialized.asList(), publicKeyDeserialized.encoded.asList())
         }
