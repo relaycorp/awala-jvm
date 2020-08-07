@@ -28,6 +28,9 @@ internal object ASN1Utils {
 
     @Throws(ASN1Exception::class)
     fun deserializeSequence(serialization: ByteArray): Array<ASN1Encodable> {
+        if (serialization.isEmpty()) {
+            throw ASN1Exception("Value is empty")
+        }
         val asn1InputStream = ASN1InputStream(serialization)
         val asn1Value = try {
             asn1InputStream.readObject()

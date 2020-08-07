@@ -65,7 +65,15 @@ internal class ASN1UtilsTest {
     @Nested
     inner class DeserializeSequence {
         @Test
-        fun `Value should be refused if it it's not DER-encoded`() {
+        fun `Value should be refused if it's empty`() {
+            val exception =
+                assertThrows<ASN1Exception> { ASN1Utils.deserializeSequence(byteArrayOf()) }
+
+            assertEquals("Value is empty", exception.message)
+        }
+
+        @Test
+        fun `Value should be refused if it's not DER-encoded`() {
             val exception =
                 assertThrows<ASN1Exception> { ASN1Utils.deserializeSequence("a".toByteArray()) }
 
@@ -73,7 +81,7 @@ internal class ASN1UtilsTest {
         }
 
         @Test
-        fun `Value should be refused if it it's not a sequence`() {
+        fun `Value should be refused if it's not a sequence`() {
             val serialization = DERVisibleString("hey").encoded
 
             val exception =
