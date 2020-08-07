@@ -1,7 +1,6 @@
 package tech.relaycorp.relaynet.ramf
 
 import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.dateToZonedDateTime
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.messages.payloads.Payload
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -158,8 +157,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         if (now < creationDate) {
             throw RAMFException("Creation date is in the future")
         }
-        if (creationDate < dateToZonedDateTime(senderCertificate.certificateHolder.notBefore)
-        ) {
+        if (creationDate < senderCertificate.startDate) {
             throw RAMFException("Message was created before sender certificate was valid")
         }
         if (expiryDate < now) {

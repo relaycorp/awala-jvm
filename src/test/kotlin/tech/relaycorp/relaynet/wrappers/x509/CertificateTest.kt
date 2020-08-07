@@ -597,6 +597,32 @@ class CertificateTest {
             val expectedAddress = "0${sha256Hex(stubSubjectKeyPair.public.encoded)}"
             assertEquals(expectedAddress, certificate.subjectPrivateAddress)
         }
+
+        @Test
+        fun startDate() {
+            val startDate = ZonedDateTime.now()
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate,
+                validityStartDate = startDate
+            )
+
+            assertEquals(startDate.withNano(0), certificate.startDate)
+        }
+
+        @Test
+        fun expiryDate() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate
+            )
+
+            assertEquals(stubValidityEndDate.withNano(0), certificate.expiryDate)
+        }
     }
 
     @Nested

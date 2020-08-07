@@ -14,7 +14,6 @@ import org.bouncycastle.cert.X509v3CertificateBuilder
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import tech.relaycorp.relaynet.BC_PROVIDER
-import tech.relaycorp.relaynet.dateToZonedDateTime
 import tech.relaycorp.relaynet.getSHA256Digest
 import tech.relaycorp.relaynet.getSHA256DigestHex
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
@@ -32,6 +31,7 @@ import java.security.cert.PKIXParameters
 import java.security.cert.TrustAnchor
 import java.security.cert.X509CertSelector
 import java.sql.Date
+import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
@@ -147,6 +147,18 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     val subjectPrivateAddress
         get() = "0" + getSHA256DigestHex(certificateHolder.subjectPublicKeyInfo.encoded)
 
+    /**
+     * The start date of the certificate.
+     */
+    val startDate: ZonedDateTime
+        get() = dateToZonedDateTime(certificateHolder.notBefore)
+
+    /**
+     * The expiry date of the certificate.
+     */
+    val expiryDate: ZonedDateTime
+        get() = dateToZonedDateTime(certificateHolder.notAfter)
+
     private val basicConstraints: BasicConstraints? by lazy {
         BasicConstraints.fromExtensions(certificateHolder.extensions)
     }
@@ -193,10 +205,10 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
     private fun validateValidityPeriod() {
         val now = ZonedDateTime.now()
-        if (now < dateToZonedDateTime(certificateHolder.notBefore)) {
+        if (now < startDate) {
             throw CertificateException("Certificate is not yet valid")
         }
-        if (dateToZonedDateTime(certificateHolder.notAfter) < now) {
+        if (expiryDate < now) {
             throw CertificateException("Certificate already expired")
         }
     }
@@ -289,4 +301,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
 
     private fun convertCertToJava(certificate: Certificate) =
         bcToJavaCertificateConverter.getCertificate(certificate.certificateHolder)
+
+    private fun dateToZonedDateTime(date: java.util.Date) = date.toInstant().atZone(
+        ZoneId.systemDefault()
+    )
 }
