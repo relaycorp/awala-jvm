@@ -1,3 +1,5 @@
+@file:JvmName("Keys")
+
 package tech.relaycorp.relaynet.wrappers
 
 import tech.relaycorp.relaynet.BC_PROVIDER
