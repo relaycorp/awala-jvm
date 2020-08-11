@@ -12,4 +12,6 @@ internal object OIDs {
         CLIENT_REGISTRATION_PREFIX.branch("0").intern()
     val CRA_COUNTERSIGNATURE: ASN1ObjectIdentifier =
         CLIENT_REGISTRATION_PREFIX.branch("1").intern()
+
+    val NONCE_SIGNATURE: ASN1ObjectIdentifier = RELAYNET.branch("3").intern()
 }

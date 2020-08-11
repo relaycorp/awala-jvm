@@ -5,7 +5,7 @@ import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.DummyCertPath
+import tech.relaycorp.relaynet.FullCertPath
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -20,7 +20,7 @@ class ClientRegistrationTest {
         @Test
         fun `Client certificate should be serialized`() {
             val registration =
-                ClientRegistration(DummyCertPath.endpointCert, DummyCertPath.privateGatewayCert)
+                ClientRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
 
             val serialization = registration.serialize()
 
@@ -28,7 +28,7 @@ class ClientRegistrationTest {
             val clientCertificateASN1 =
                 DEROctetString.getInstance(sequence.first() as ASN1TaggedObject, false)
             assertEquals(
-                DummyCertPath.endpointCert.serialize().asList(),
+                FullCertPath.PRIVATE_ENDPOINT.serialize().asList(),
                 clientCertificateASN1.octets.asList()
             )
         }
@@ -36,7 +36,7 @@ class ClientRegistrationTest {
         @Test
         fun `Server certificate should be serialized`() {
             val registration =
-                ClientRegistration(DummyCertPath.endpointCert, DummyCertPath.privateGatewayCert)
+                ClientRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
 
             val serialization = registration.serialize()
 
@@ -44,7 +44,7 @@ class ClientRegistrationTest {
             val serverCertificateASN1 =
                 DEROctetString.getInstance(sequence[1] as ASN1TaggedObject, false)
             assertEquals(
-                DummyCertPath.privateGatewayCert.serialize().asList(),
+                FullCertPath.PRIVATE_GW.serialize().asList(),
                 serverCertificateASN1.octets.asList()
             )
         }
@@ -99,7 +99,7 @@ class ClientRegistrationTest {
         fun `Invalid server certificates should be refused`() {
             val invalidSerialization = ASN1Utils.serializeSequence(
                 arrayOf(
-                    DEROctetString(DummyCertPath.endpointCert.serialize()),
+                    DEROctetString(FullCertPath.PRIVATE_ENDPOINT.serialize()),
                     DERNull.INSTANCE
                 ), false
             )
@@ -118,14 +118,14 @@ class ClientRegistrationTest {
         @Test
         fun `Valid registration should be accepted`() {
             val registration =
-                ClientRegistration(DummyCertPath.endpointCert, DummyCertPath.privateGatewayCert)
+                ClientRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
             val serialization = registration.serialize()
 
             val registrationDeserialized = ClientRegistration.deserialize(serialization)
 
-            assertEquals(DummyCertPath.endpointCert, registrationDeserialized.clientCertificate)
+            assertEquals(FullCertPath.PRIVATE_ENDPOINT, registrationDeserialized.clientCertificate)
             assertEquals(
-                DummyCertPath.privateGatewayCert,
+                FullCertPath.PRIVATE_GW,
                 registrationDeserialized.serverCertificate
             )
         }

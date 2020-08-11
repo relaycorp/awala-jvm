@@ -29,7 +29,7 @@ import java.security.PublicKey
 /**
  * Relaynet-specific, CMS SignedData representation.
  */
-class SignedData(internal val bcSignedData: CMSSignedData) {
+internal class SignedData(internal val bcSignedData: CMSSignedData) {
     /**
      * The signed plaintext, if it was encapsulated.
      */

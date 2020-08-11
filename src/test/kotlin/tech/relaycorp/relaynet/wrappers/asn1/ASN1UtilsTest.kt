@@ -1,10 +1,13 @@
 package tech.relaycorp.relaynet.wrappers.asn1
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1StreamParser
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.BERTaggedObjectParser
+import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DEROctetStringParser
+import org.bouncycastle.asn1.DERTaggedObject
 import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.DLSequenceParser
 import org.junit.jupiter.api.Nested
@@ -101,6 +104,41 @@ internal class ASN1UtilsTest {
             assertEquals(value1.octets.asList(), (sequence[0] as DERVisibleString).octets.asList())
             assertTrue(sequence[1] is DEROctetString)
             assertEquals(value2.octets.asList(), (sequence[1] as DEROctetString).octets.asList())
+        }
+    }
+
+    @Nested
+    inner class DeserializeOID {
+        private val oid = ASN1ObjectIdentifier("1.2.3.4.5")
+
+        @Test
+        fun `Invalid OID should be refused`() {
+            val invalidImplicitlyTaggedOID = DERTaggedObject(false, 0, DERNull.INSTANCE)
+
+            val exception = assertThrows<ASN1Exception> {
+                ASN1Utils.deserializeOID(invalidImplicitlyTaggedOID)
+            }
+
+            assertEquals("Value is not an OID", exception.message)
+            assertTrue(exception.cause is IllegalArgumentException)
+        }
+
+        @Test
+        fun `OID should be implicitly tagged by default`() {
+            val implicitlyTaggedOID = DERTaggedObject(false, 0, oid)
+
+            val oidDeserialized = ASN1Utils.deserializeOID(implicitlyTaggedOID)
+
+            assertEquals(oid, oidDeserialized)
+        }
+
+        @Test
+        fun `OID should be allowed to be explicitly tagged`() {
+            val explicitlyTaggedOID = DERTaggedObject(true, 0, oid)
+
+            val oidDeserialized = ASN1Utils.deserializeOID(explicitlyTaggedOID, true)
+
+            assertEquals(oid, oidDeserialized)
         }
     }
 }
