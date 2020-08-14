@@ -1,0 +1,87 @@
+package tech.relaycorp.relaynet.messages.control
+
+import org.bouncycastle.asn1.ASN1TaggedObject
+import org.bouncycastle.asn1.DERNull
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERVisibleString
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+class ParcelDeliveryTest {
+    val deliveryId = "the id"
+    val parcelSerialized = "This appears to be a parcel".toByteArray()
+
+    @Nested
+    inner class Serialize {
+        @Test
+        fun `Delivery id should be serialized`() {
+            val delivery = ParcelDelivery(deliveryId, parcelSerialized)
+
+            val serialization = delivery.serialize()
+
+            val sequenceASN1 = ASN1Utils.deserializeSequence(serialization)
+            val deliveryIdASN1 =
+                DERVisibleString.getInstance(sequenceASN1.first() as ASN1TaggedObject, false)
+            assertEquals(deliveryId, deliveryIdASN1.string)
+        }
+
+        @Test
+        fun `Parcel should be serialized`() {
+            val delivery = ParcelDelivery(deliveryId, parcelSerialized)
+
+            val serialization = delivery.serialize()
+
+            val sequenceASN1 = ASN1Utils.deserializeSequence(serialization)
+            val parcelSerializedASN1 =
+                DEROctetString.getInstance(sequenceASN1[1] as ASN1TaggedObject, false)
+            assertEquals(
+                parcelSerialized.asList(),
+                parcelSerializedASN1.octets.asList()
+            )
+        }
+    }
+
+    @Nested
+    inner class Deserialize {
+        @Test
+        fun `Serialization should be a DER sequence`() {
+            val exception = assertThrows<InvalidMessageException> {
+                ParcelDelivery.deserialize(byteArrayOf(0))
+            }
+
+            assertEquals("Delivery is not a DER sequence", exception.message)
+            assertTrue(exception.cause is ASN1Exception)
+        }
+
+        @Test
+        fun `Sequence should have at lease two items`() {
+            val invalidSequence = ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE), false)
+
+            val exception = assertThrows<InvalidMessageException> {
+                ParcelDelivery.deserialize(invalidSequence)
+            }
+
+            assertEquals(
+                "Delivery sequence should have at least 2 items (got 1)",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Valid deliveries should be accepted`() {
+            val delivery = ParcelDelivery(deliveryId, parcelSerialized)
+            val serialization = delivery.serialize()
+
+            val deliveryDeserialized = ParcelDelivery.deserialize(serialization)
+
+            assertEquals(deliveryId, deliveryDeserialized.deliveryId)
+            assertEquals(parcelSerialized.asList(), deliveryDeserialized.parcelSerialized.asList())
+        }
+    }
+}
