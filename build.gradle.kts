@@ -18,7 +18,7 @@ plugins {
 
     `maven-publish`
 
-    id("com.diffplug.gradle.spotless") version "3.27.1"
+    id("com.diffplug.spotless") version "5.1.1"
 
     jacoco
 }
