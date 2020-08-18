@@ -46,7 +46,8 @@ internal class ASN1UtilsTest {
             val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value2), false)
 
             val parser = ASN1StreamParser(serialization)
-            val sequence = ASN1Sequence.getInstance(parser.readObject() as DLSequenceParser).toArray()
+            val sequence =
+                ASN1Sequence.getInstance(parser.readObject() as DLSequenceParser).toArray()
 
             val item1 = ASN1Utils.getVisibleString(sequence[0] as ASN1TaggedObject)
             assertEquals(value1.string, item1.string)
