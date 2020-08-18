@@ -62,20 +62,13 @@ internal object ASN1Utils {
     }
 
     @Throws(ASN1Exception::class)
-    fun getOID(
-        oidSerialized: ASN1TaggedObject,
-        explicitTagging: Boolean = false
-    ): ASN1ObjectIdentifier {
+    fun getOID(oidSerialized: ASN1TaggedObject): ASN1ObjectIdentifier {
         return try {
-            ASN1ObjectIdentifier.getInstance(oidSerialized, explicitTagging)
+            ASN1ObjectIdentifier.getInstance(oidSerialized, false)
         } catch (exc: IllegalArgumentException) {
             throw ASN1Exception("Value is not an OID", exc)
         }
     }
-
-    @Throws(ASN1Exception::class)
-    fun getOID(oidSerialized: ASN1Encodable) =
-        getOID(oidSerialized as ASN1TaggedObject, false)
 
     fun getVisibleString(visibleString: ASN1TaggedObject): DERVisibleString =
         DERVisibleString.getInstance(visibleString, false)

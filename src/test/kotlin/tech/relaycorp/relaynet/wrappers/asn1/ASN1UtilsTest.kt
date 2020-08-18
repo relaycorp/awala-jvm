@@ -133,19 +133,10 @@ internal class ASN1UtilsTest {
         }
 
         @Test
-        fun `OID should be implicitly tagged by default`() {
+        fun `Implicitly tagged OID should be accepted`() {
             val implicitlyTaggedOID = DERTaggedObject(false, 0, oid)
 
             val oidDeserialized = ASN1Utils.getOID(implicitlyTaggedOID)
-
-            assertEquals(oid, oidDeserialized)
-        }
-
-        @Test
-        fun `OID should be allowed to be explicitly tagged`() {
-            val explicitlyTaggedOID = DERTaggedObject(true, 0, oid)
-
-            val oidDeserialized = ASN1Utils.getOID(explicitlyTaggedOID, true)
 
             assertEquals(oid, oidDeserialized)
         }
