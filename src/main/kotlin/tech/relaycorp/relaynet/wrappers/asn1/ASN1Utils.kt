@@ -4,11 +4,14 @@ import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERGeneralizedTime
+import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERTaggedObject
+import org.bouncycastle.asn1.DERVisibleString
 import java.io.IOException
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -29,7 +32,7 @@ internal object ASN1Utils {
     }
 
     @Throws(ASN1Exception::class)
-    fun deserializeSequence(serialization: ByteArray): Array<ASN1Encodable> {
+    fun deserializeSequence(serialization: ByteArray): Array<ASN1TaggedObject> {
         if (serialization.isEmpty()) {
             throw ASN1Exception("Value is empty")
         }
@@ -44,7 +47,13 @@ internal object ASN1Utils {
         } catch (_: IllegalArgumentException) {
             throw ASN1Exception("Value is not an ASN.1 sequence")
         }
-        return fieldSequence.toArray()
+        val implicitlyTaggedItems = fieldSequence.map {
+            if (it !is ASN1TaggedObject) {
+                throw ASN1Exception("Sequence contains explicitly tagged item")
+            }
+            it
+        }
+        return implicitlyTaggedItems.toTypedArray()
     }
 
     fun derEncodeUTCDate(date: ZonedDateTime): DERGeneralizedTime {
@@ -53,7 +62,7 @@ internal object ASN1Utils {
     }
 
     @Throws(ASN1Exception::class)
-    fun deserializeOID(
+    fun getOID(
         oidSerialized: ASN1TaggedObject,
         explicitTagging: Boolean = false
     ): ASN1ObjectIdentifier {
@@ -63,4 +72,14 @@ internal object ASN1Utils {
             throw ASN1Exception("Value is not an OID", exc)
         }
     }
+
+    @Throws(ASN1Exception::class)
+    fun getOID(oidSerialized: ASN1Encodable) =
+        getOID(oidSerialized as ASN1TaggedObject, false)
+
+    fun getVisibleString(visibleString: ASN1TaggedObject): DERVisibleString =
+        DERVisibleString.getInstance(visibleString, false)
+
+    fun getOctetString(octetString: ASN1TaggedObject): ASN1OctetString =
+        DEROctetString.getInstance(octetString, false)
 }

@@ -1,7 +1,5 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERGeneralizedTime
 import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.OIDs
@@ -62,22 +60,21 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
                 )
             }
 
-            val oid = ASN1ObjectIdentifier.getInstance(sequence.first() as ASN1TaggedObject, false)
+            val oid = ASN1Utils.getOID(sequence[0])
             if (oid != OIDs.CRA) {
                 throw InvalidMessageException(
                     "CRA plaintext has invalid OID (got ${oid.id})"
                 )
             }
 
-            val expiryDateDer =
-                DERGeneralizedTime.getInstance(sequence[1] as ASN1TaggedObject, false)
+            val expiryDateDer = DERGeneralizedTime.getInstance(sequence[1], false)
             val expiryDate =
                 ZonedDateTime.ofInstant(expiryDateDer.date.toInstant(), ZoneId.systemDefault())
             if (expiryDate < ZonedDateTime.now()) {
                 throw InvalidMessageException("CRA already expired")
             }
 
-            val serverDataDER = DEROctetString.getInstance(sequence[2] as ASN1TaggedObject, false)
+            val serverDataDER = ASN1Utils.getOctetString(sequence[2])
 
             return ClientRegistrationAuthorization(expiryDate, serverDataDER.octets)
         }

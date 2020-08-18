@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages
 
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
@@ -50,15 +49,15 @@ internal class ParcelCollectionAckTest {
             assertEquals(3, sequenceItems.size)
             assertEquals(
                 senderEndpointPrivateAddress,
-                DERVisibleString.getInstance(sequenceItems[0] as ASN1TaggedObject, false).string
+                ASN1Utils.getVisibleString(sequenceItems[0]).string
             )
             assertEquals(
                 recipientEndpointAddress,
-                DERVisibleString.getInstance(sequenceItems[1] as ASN1TaggedObject, false).string
+                ASN1Utils.getVisibleString(sequenceItems[1]).string
             )
             assertEquals(
                 parcelId,
-                DERVisibleString.getInstance(sequenceItems[2] as ASN1TaggedObject, false).string
+                ASN1Utils.getVisibleString(sequenceItems[2]).string
             )
         }
     }

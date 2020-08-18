@@ -15,7 +15,7 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
      */
     override fun serializePlaintext(): ByteArray {
         val items = messages.map { DEROctetString(it) as ASN1Encodable }.toTypedArray()
-        return ASN1Utils.serializeSequence(items)
+        return ASN1Utils.serializeSequence(items, false)
     }
 
     /**
@@ -33,12 +33,7 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
             } catch (exc: ASN1Exception) {
                 throw RAMFException("Invalid CargoMessageSet", exc)
             }
-            items.forEach {
-                if (it !is DEROctetString) {
-                    throw RAMFException("At least one message is not an OCTET STRING")
-                }
-            }
-            val messages = items.map { (it as DEROctetString).octets }
+            val messages = items.map { ASN1Utils.getOctetString(it).octets }
             return CargoMessageSet(messages.toTypedArray())
         }
     }

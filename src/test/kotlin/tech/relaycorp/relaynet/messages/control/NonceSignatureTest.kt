@@ -1,9 +1,7 @@
 package tech.relaycorp.relaynet.messages.control
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
-import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -55,7 +53,7 @@ class NonceSignatureTest {
 
             val signedData = SignedData.deserialize(serialization)
             val plaintextSequence = ASN1Utils.deserializeSequence(signedData.plaintext!!)
-            val oid = ASN1Utils.deserializeOID(plaintextSequence.first() as ASN1TaggedObject)
+            val oid = ASN1Utils.getOID(plaintextSequence.first())
             assertEquals(OIDs.NONCE_SIGNATURE, oid)
         }
 
@@ -67,10 +65,7 @@ class NonceSignatureTest {
 
             val signedData = SignedData.deserialize(serialization)
             val plaintextSequence = ASN1Utils.deserializeSequence(signedData.plaintext!!)
-            val nonceASN1 = DEROctetString.getInstance(
-                plaintextSequence[1] as ASN1TaggedObject,
-                false
-            )
+            val nonceASN1 = ASN1Utils.getOctetString(plaintextSequence[1])
             assertEquals(nonce.asList(), nonceASN1.octets.asList())
         }
     }

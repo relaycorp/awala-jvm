@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1TaggedObject
@@ -58,10 +57,9 @@ class ClientRegistrationAuthorizationTest {
             val serialization = authorization.serialize(keyPair.private)
 
             val sequence = extractSequence(serialization)
-            val oidRaw = sequence.first() as ASN1TaggedObject
             assertEquals(
                 OIDs.CRA,
-                ASN1ObjectIdentifier.getInstance(oidRaw, false)
+                ASN1Utils.getOID(sequence.first())
             )
         }
 
@@ -72,8 +70,7 @@ class ClientRegistrationAuthorizationTest {
             val serialization = authorization.serialize(keyPair.private)
 
             val sequence = extractSequence(serialization)
-            val expiryDateRaw = sequence[1] as ASN1TaggedObject
-            val expiryDateDer = DERGeneralizedTime.getInstance(expiryDateRaw, false)
+            val expiryDateDer = DERGeneralizedTime.getInstance(sequence[1], false)
             val expectedDate =
                 tomorrow.withZoneSameInstant(ZoneOffset.UTC).format(BER_DATETIME_FORMATTER)
             assertEquals(expectedDate, expiryDateDer.timeString)
@@ -87,11 +84,11 @@ class ClientRegistrationAuthorizationTest {
 
             val sequence = extractSequence(serialization)
             val actualServerData =
-                ASN1OctetString.getInstance(sequence.last() as ASN1TaggedObject, false)
+                ASN1OctetString.getInstance(sequence.last(), false)
             assertEquals(serverData.asList(), actualServerData.octets.asList())
         }
 
-        private fun extractSequence(serialization: ByteArray): Array<ASN1Encodable> {
+        private fun extractSequence(serialization: ByteArray): Array<ASN1TaggedObject> {
             val signedData = SignedData.deserialize(serialization)
             return ASN1Utils.deserializeSequence(signedData.plaintext!!)
         }

@@ -8,9 +8,6 @@ import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
 import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.ASN1TaggedObject
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
@@ -182,14 +179,14 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             )
         }
 
-        val recipientAddress = DERVisibleString.getInstance(fields[0] as ASN1TaggedObject, false)
+        val recipientAddress = ASN1Utils.getVisibleString(fields[0])
 
-        val messageId = DERVisibleString.getInstance(fields[1] as ASN1TaggedObject, false)
+        val messageId = ASN1Utils.getVisibleString(fields[1])
 
         // BouncyCastle doesn't support ASN.1 DATE-TIME values so we have to do the parsing
         // ourselves. We could use a DerGeneralizedTime but that's a bit risky because it may
         // contain a timezone.
-        val creationTimeDer = DERVisibleString.getInstance(fields[2] as ASN1TaggedObject, false)
+        val creationTimeDer = ASN1Utils.getVisibleString(fields[2])
         val creationTime = try {
             LocalDateTime.parse(creationTimeDer.string, ASN1Utils.BER_DATETIME_FORMATTER)
         } catch (_: DateTimeParseException) {
@@ -198,9 +195,9 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             )
         }
 
-        val ttlDer = ASN1Integer.getInstance(fields[3] as ASN1TaggedObject, false)
+        val ttlDer = ASN1Integer.getInstance(fields[3], false)
 
-        val payloadDer = DEROctetString.getInstance(fields[4] as ASN1TaggedObject, false)
+        val payloadDer = ASN1Utils.getOctetString(fields[4])
 
         return FieldSet(
             recipientAddress.string,

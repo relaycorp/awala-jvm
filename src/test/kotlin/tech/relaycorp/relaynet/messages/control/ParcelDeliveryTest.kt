@@ -1,9 +1,6 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
-import org.bouncycastle.asn1.DEROctetString
-import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -26,8 +23,7 @@ class ParcelDeliveryTest {
             val serialization = delivery.serialize()
 
             val sequenceASN1 = ASN1Utils.deserializeSequence(serialization)
-            val deliveryIdASN1 =
-                DERVisibleString.getInstance(sequenceASN1.first() as ASN1TaggedObject, false)
+            val deliveryIdASN1 = ASN1Utils.getVisibleString(sequenceASN1.first())
             assertEquals(deliveryId, deliveryIdASN1.string)
         }
 
@@ -38,8 +34,7 @@ class ParcelDeliveryTest {
             val serialization = delivery.serialize()
 
             val sequenceASN1 = ASN1Utils.deserializeSequence(serialization)
-            val parcelSerializedASN1 =
-                DEROctetString.getInstance(sequenceASN1[1] as ASN1TaggedObject, false)
+            val parcelSerializedASN1 = ASN1Utils.getOctetString(sequenceASN1[1])
             assertEquals(
                 parcelSerialized.asList(),
                 parcelSerializedASN1.octets.asList()
