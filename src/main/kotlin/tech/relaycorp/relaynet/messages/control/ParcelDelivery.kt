@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.messages.InvalidMessageException
@@ -35,10 +34,8 @@ class ParcelDelivery(val deliveryId: String, val parcelSerialized: ByteArray) {
                     "Delivery sequence should have at least 2 items (got ${sequence.size})"
                 )
             }
-            val deliveryIdASN1 =
-                DERVisibleString.getInstance(sequence[0] as ASN1TaggedObject, false)
-            val parcelSerializedASN1 =
-                DEROctetString.getInstance(sequence[1] as ASN1TaggedObject, false)
+            val deliveryIdASN1 = ASN1Utils.getVisibleString(sequence[0])
+            val parcelSerializedASN1 = ASN1Utils.getOctetString(sequence[1])
             return ParcelDelivery(deliveryIdASN1.string, parcelSerializedASN1.octets)
         }
     }

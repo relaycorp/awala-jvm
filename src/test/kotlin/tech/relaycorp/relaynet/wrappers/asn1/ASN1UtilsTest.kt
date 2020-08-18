@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet.wrappers.asn1
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1StreamParser
 import org.bouncycastle.asn1.ASN1TaggedObject
-import org.bouncycastle.asn1.BERTaggedObjectParser
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DEROctetStringParser
@@ -46,18 +46,13 @@ internal class ASN1UtilsTest {
             val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value2), false)
 
             val parser = ASN1StreamParser(serialization)
-            val sequence = parser.readObject() as DLSequenceParser
+            val sequence =
+                ASN1Sequence.getInstance(parser.readObject() as DLSequenceParser).toArray()
 
-            val item1 = DERVisibleString.getInstance(
-                ((sequence.readObject() as BERTaggedObjectParser).loadedObject as ASN1TaggedObject),
-                false
-            )
+            val item1 = ASN1Utils.getVisibleString(sequence[0] as ASN1TaggedObject)
             assertEquals(value1.string, item1.string)
 
-            val item2 = DEROctetString.getInstance(
-                ((sequence.readObject() as BERTaggedObjectParser).loadedObject as ASN1TaggedObject),
-                false
-            )
+            val item2 = ASN1Utils.getOctetString(sequence[1] as ASN1TaggedObject)
             assertEquals(
                 value2.octets.asList(),
                 (item2.loadedObject as DEROctetString).octets.asList()
@@ -94,21 +89,35 @@ internal class ASN1UtilsTest {
         }
 
         @Test
-        fun `Valid sequences should be deserialized`() {
+        fun `Any explicitly tagged item should be refused`() {
             val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value2))
+
+            val exception =
+                assertThrows<ASN1Exception> { ASN1Utils.deserializeSequence(serialization) }
+
+            assertEquals("Sequence contains explicitly tagged item", exception.message)
+        }
+
+        @Test
+        fun `Valid sequences should be deserialized`() {
+            val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value2), false)
 
             val sequence = ASN1Utils.deserializeSequence(serialization)
 
             assertEquals(2, sequence.size)
-            assertTrue(sequence[0] is DERVisibleString)
-            assertEquals(value1.octets.asList(), (sequence[0] as DERVisibleString).octets.asList())
-            assertTrue(sequence[1] is DEROctetString)
-            assertEquals(value2.octets.asList(), (sequence[1] as DEROctetString).octets.asList())
+            assertEquals(
+                value1.octets.asList(),
+                ASN1Utils.getVisibleString(sequence[0]).octets.asList()
+            )
+            assertEquals(
+                value2.octets.asList(),
+                ASN1Utils.getOctetString(sequence[1]).octets.asList()
+            )
         }
     }
 
     @Nested
-    inner class DeserializeOID {
+    inner class GetOID {
         private val oid = ASN1ObjectIdentifier("1.2.3.4.5")
 
         @Test
@@ -116,7 +125,7 @@ internal class ASN1UtilsTest {
             val invalidImplicitlyTaggedOID = DERTaggedObject(false, 0, DERNull.INSTANCE)
 
             val exception = assertThrows<ASN1Exception> {
-                ASN1Utils.deserializeOID(invalidImplicitlyTaggedOID)
+                ASN1Utils.getOID(invalidImplicitlyTaggedOID)
             }
 
             assertEquals("Value is not an OID", exception.message)
@@ -124,19 +133,10 @@ internal class ASN1UtilsTest {
         }
 
         @Test
-        fun `OID should be implicitly tagged by default`() {
+        fun `Implicitly tagged OID should be accepted`() {
             val implicitlyTaggedOID = DERTaggedObject(false, 0, oid)
 
-            val oidDeserialized = ASN1Utils.deserializeOID(implicitlyTaggedOID)
-
-            assertEquals(oid, oidDeserialized)
-        }
-
-        @Test
-        fun `OID should be allowed to be explicitly tagged`() {
-            val explicitlyTaggedOID = DERTaggedObject(true, 0, oid)
-
-            val oidDeserialized = ASN1Utils.deserializeOID(explicitlyTaggedOID, true)
+            val oidDeserialized = ASN1Utils.getOID(implicitlyTaggedOID)
 
             assertEquals(oid, oidDeserialized)
         }

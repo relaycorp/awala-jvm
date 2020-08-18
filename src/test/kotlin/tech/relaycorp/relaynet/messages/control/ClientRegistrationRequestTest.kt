@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
@@ -32,10 +31,10 @@ class ClientRegistrationRequestTest {
             val serialization = request.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeSequence(serialization)
-            val clientPublicKeyRaw = sequence[0] as ASN1TaggedObject
+            val clientPublicKeyRaw = sequence[0]
             assertEquals(
                 keyPair.public.encoded.asList(),
-                DEROctetString.getInstance(clientPublicKeyRaw, false).octets.asList()
+                ASN1Utils.getOctetString(clientPublicKeyRaw).octets.asList()
             )
         }
 
@@ -46,9 +45,9 @@ class ClientRegistrationRequestTest {
             val serialization = request.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeSequence(serialization)
-            val craCountersignatureASN1 = sequence[1] as ASN1TaggedObject
+            val craCountersignatureASN1 = sequence[1]
             val craCountersignatureSerialized =
-                DEROctetString.getInstance(craCountersignatureASN1, false).octets
+                ASN1Utils.getOctetString(craCountersignatureASN1).octets
             SignedData.deserialize(craCountersignatureSerialized)
                 .also { it.verify(signerPublicKey = keyPair.public) }
         }
@@ -60,13 +59,12 @@ class ClientRegistrationRequestTest {
             val serialization = request.serialize(keyPair.private)
 
             val requestSequence = ASN1Utils.deserializeSequence(serialization)
-            val craCountersignatureASN1 = requestSequence[1] as ASN1TaggedObject
-            val craCountersignature = DEROctetString.getInstance(craCountersignatureASN1, false)
+            val craCountersignatureASN1 = requestSequence[1]
+            val craCountersignature = ASN1Utils.getOctetString(craCountersignatureASN1)
             val craSequence = extractSignedSequence(craCountersignature.octets)
-            val oidRaw = craSequence.first() as ASN1TaggedObject
             assertEquals(
                 OIDs.CRA_COUNTERSIGNATURE,
-                ASN1ObjectIdentifier.getInstance(oidRaw, false)
+                ASN1Utils.getOID(craSequence.first())
             )
         }
 
@@ -77,16 +75,16 @@ class ClientRegistrationRequestTest {
             val serialization = request.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeSequence(serialization)
-            val signedCRA = DEROctetString.getInstance(sequence[1] as ASN1TaggedObject, false)
+            val signedCRA = ASN1Utils.getOctetString(sequence[1])
             val craSequence = extractSignedSequence(signedCRA.octets)
-            val authorizationASN1 = craSequence[1] as ASN1TaggedObject
+            val authorizationASN1 = craSequence[1]
             assertEquals(
                 craSerialized.asList(),
-                DEROctetString.getInstance(authorizationASN1, false).octets.asList()
+                ASN1Utils.getOctetString(authorizationASN1).octets.asList()
             )
         }
 
-        private fun extractSignedSequence(serialization: ByteArray): Array<ASN1Encodable> {
+        private fun extractSignedSequence(serialization: ByteArray): Array<ASN1TaggedObject> {
             val signedData = SignedData.deserialize(serialization)
             return ASN1Utils.deserializeSequence(signedData.plaintext!!)
         }

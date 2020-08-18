@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.crypto.SignedData
@@ -53,11 +52,11 @@ class NonceSignature(val nonce: ByteArray, val signerCertificate: Certificate) {
                     "Signature sequence should have at least 2 items (got ${sequence.size})"
                 )
             }
-            val oid = ASN1Utils.deserializeOID(sequence.first() as ASN1TaggedObject)
+            val oid = ASN1Utils.getOID(sequence.first())
             if (oid != OIDs.NONCE_SIGNATURE) {
                 throw InvalidMessageException("Signature OID is invalid (got ${oid.id})")
             }
-            val nonce = DEROctetString.getInstance(sequence[1] as ASN1TaggedObject, false)
+            val nonce = ASN1Utils.getOctetString(sequence[1])
             return NonceSignature(nonce.octets, signedData.signerCertificate!!)
         }
     }

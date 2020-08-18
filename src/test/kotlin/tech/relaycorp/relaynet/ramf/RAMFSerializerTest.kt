@@ -10,11 +10,8 @@ import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.BerType
 import com.beanit.jasn1.ber.types.string.BerVisibleString
 import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.ASN1OctetString
-import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERGeneralizedTime
-import org.bouncycastle.asn1.DERVisibleString
-import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -23,7 +20,7 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
 import tech.relaycorp.relaynet.issueStubCertificate
-import tech.relaycorp.relaynet.parseDer
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
@@ -160,16 +157,14 @@ class RAMFSerializerTest {
             @Test
             fun `Recipient should be stored as an ASN1 VisibleString`() {
                 val sequence = getFieldSequence(stubSerialization)
-                val recipientRaw = sequence.getObjectAt(0) as DLTaggedObject
-                val recipientDer = DERVisibleString.getInstance(recipientRaw, false)
+                val recipientDer = ASN1Utils.getVisibleString(sequence[0])
                 assertEquals(stubMessage.recipientAddress, recipientDer.string)
             }
 
             @Test
             fun `Message id should be stored as an ASN1 VisibleString`() {
                 val sequence = getFieldSequence(stubSerialization)
-                val messageIdRaw = sequence.getObjectAt(1) as DLTaggedObject
-                val messageIdDer = DERVisibleString.getInstance(messageIdRaw, false)
+                val messageIdDer = ASN1Utils.getVisibleString(sequence[1])
                 assertEquals(stubMessage.id, messageIdDer.string)
             }
 
@@ -178,7 +173,7 @@ class RAMFSerializerTest {
                 @Test
                 fun `Creation date should be stored as an ASN1 DateTime`() {
                     val sequence = getFieldSequence(stubSerialization)
-                    val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
+                    val creationTimeRaw = sequence[2]
                     // We should technically be using a DateTime type instead of GeneralizedTime, but BC
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
@@ -207,7 +202,7 @@ class RAMFSerializerTest {
 
                     val sequence = getFieldSequence(messageSerialized)
 
-                    val creationTimeRaw = sequence.getObjectAt(2) as DLTaggedObject
+                    val creationTimeRaw = sequence[2]
                     // We should technically be using a DateTime type instead of GeneralizedTime, but BC
                     // doesn't support it.
                     val creationTimeDer = DERGeneralizedTime.getInstance(creationTimeRaw, false)
@@ -222,24 +217,22 @@ class RAMFSerializerTest {
             @Test
             fun `TTL should be stored as an ASN1 Integer`() {
                 val sequence = getFieldSequence(stubSerialization)
-                val ttlRaw = sequence.getObjectAt(3) as DLTaggedObject
-                val ttlDer = ASN1Integer.getInstance(ttlRaw, false)
+                val ttlDer = ASN1Integer.getInstance(sequence[3], false)
                 assertEquals(stubMessage.ttl, ttlDer.intPositiveValueExact())
             }
 
             @Test
             fun `Payload should be stored as an ASN1 Octet String`() {
                 val sequence = getFieldSequence(stubSerialization)
-                val payloadRaw = sequence.getObjectAt(4) as DLTaggedObject
-                val payloadDer = ASN1OctetString.getInstance(payloadRaw, false)
+                val payloadDer = ASN1Utils.getOctetString(sequence[4])
                 assertEquals(stubMessage.payload.asList(), payloadDer.octets.asList())
             }
 
-            private fun getFieldSequence(serialization: ByteArray): ASN1Sequence {
+            private fun getFieldSequence(serialization: ByteArray): Array<ASN1TaggedObject> {
                 val signedDataSerialized = skipFormatSignature(serialization)
                 val signedData = SignedData.deserialize(signedDataSerialized)
                 assertNotNull(signedData.plaintext)
-                return ASN1Sequence.getInstance(parseDer(signedData.plaintext!!))
+                return ASN1Utils.deserializeSequence(signedData.plaintext!!)
             }
         }
     }

@@ -48,7 +48,7 @@ class ClientRegistration(val clientCertificate: Certificate, val serverCertifica
                 )
             }
             val clientCertificate = try {
-                deserializeCertificate(sequence[0] as ASN1TaggedObject)
+                deserializeCertificate(sequence[0])
             } catch (exc: CertificateException) {
                 throw InvalidMessageException(
                     "Client registration contains invalid client certificate",
@@ -56,7 +56,7 @@ class ClientRegistration(val clientCertificate: Certificate, val serverCertifica
                 )
             }
             val serverCertificate = try {
-                deserializeCertificate(sequence[1] as ASN1TaggedObject)
+                deserializeCertificate(sequence[1])
             } catch (exc: CertificateException) {
                 throw InvalidMessageException(
                     "Client registration contains invalid server certificate",
@@ -68,7 +68,7 @@ class ClientRegistration(val clientCertificate: Certificate, val serverCertifica
 
         @Throws(CertificateException::class)
         private fun deserializeCertificate(asn1Object: ASN1TaggedObject): Certificate {
-            val certificateASN1 = DEROctetString.getInstance(asn1Object, false)
+            val certificateASN1 = ASN1Utils.getOctetString(asn1Object)
             return Certificate.deserialize(certificateASN1.octets)
         }
     }
