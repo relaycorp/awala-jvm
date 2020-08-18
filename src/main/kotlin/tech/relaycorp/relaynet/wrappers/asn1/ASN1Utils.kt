@@ -51,7 +51,7 @@ internal object ASN1Utils {
             if (it !is ASN1TaggedObject) {
                 throw ASN1Exception("Sequence contains explicitly tagged item")
             }
-            it
+            it as ASN1TaggedObject
         }
         return implicitlyTaggedItems.toTypedArray()
     }
