@@ -17,7 +17,7 @@ private const val MAX_BATCH_LENGTH =
  *   [CargoMessage.MAX_LENGTH]
  */
 @Suppress("ArrayInDataClass")
-data class CargoMessageWithExpiry(
+public data class CargoMessageWithExpiry(
     val cargoMessageSerialized: ByteArray,
     val expiryDate: ZonedDateTime
 ) {
@@ -34,7 +34,7 @@ data class CargoMessageWithExpiry(
 /**
  * Serialization and expiry date of a cargo message set.
  */
-data class CargoMessageSetWithExpiry(
+public data class CargoMessageSetWithExpiry(
     val cargoMessageSet: CargoMessageSet,
     val latestMessageExpiryDate: ZonedDateTime
 )
@@ -47,7 +47,7 @@ data class CargoMessageSetWithExpiry(
  * multiple cargo message sets will be generated. The output will be empty if the input is
  * empty too.
  */
-suspend fun Sequence<CargoMessageWithExpiry>.batch(): Sequence<CargoMessageSetWithExpiry> =
+public suspend fun Sequence<CargoMessageWithExpiry>.batch(): Sequence<CargoMessageSetWithExpiry> =
     sequence {
         val currentBatch = mutableListOf<ByteArray>()
         var currentBatchExpiry: ZonedDateTime? = null

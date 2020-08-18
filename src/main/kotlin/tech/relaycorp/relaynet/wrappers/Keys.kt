@@ -21,7 +21,7 @@ private const val MIN_RSA_KEY_MODULUS = 2048
  * @throws KeyException If `modulus` is less than 2048
  */
 @Throws(KeyException::class)
-fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
+public fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
     if (modulus < MIN_RSA_KEY_MODULUS) {
         throw KeyException("Modulus should be at least $MIN_RSA_KEY_MODULUS (got $modulus)")
     }
@@ -30,7 +30,7 @@ fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
     return keyGen.generateKeyPair()
 }
 
-fun ByteArray.deserializeRSAPublicKey(): PublicKey {
+public fun ByteArray.deserializeRSAPublicKey(): PublicKey {
     val spec = X509EncodedKeySpec(this)
     val factory = KeyFactory.getInstance("RSA", BC_PROVIDER)
     return try {
@@ -43,5 +43,5 @@ fun ByteArray.deserializeRSAPublicKey(): PublicKey {
 /**
  * Derive private address for Relaynet node from its public key.
  */
-val PublicKey.privateAddress: String
+public val PublicKey.privateAddress: String
     get() = "0${getSHA256DigestHex(this.encoded)}"

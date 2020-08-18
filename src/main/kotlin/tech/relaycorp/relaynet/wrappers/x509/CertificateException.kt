@@ -5,5 +5,5 @@ import tech.relaycorp.relaynet.RelaynetException
 /**
  * Relaynet PKI certificate exception.
  */
-class CertificateException(message: String, cause: Throwable? = null) :
+public class CertificateException(message: String, cause: Throwable? = null) :
     RelaynetException(message, cause)

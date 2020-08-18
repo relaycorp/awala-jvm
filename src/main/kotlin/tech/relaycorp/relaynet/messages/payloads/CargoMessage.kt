@@ -7,8 +7,8 @@ import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
 /**
  * Message encapsulated in a cargo message set, classified with its type.
  */
-class CargoMessage(val messageSerialized: ByteArray) {
-    var type: Type? = null
+public class CargoMessage(public val messageSerialized: ByteArray) {
+    public var type: Type? = null
         private set
 
     init {
@@ -23,12 +23,12 @@ class CargoMessage(val messageSerialized: ByteArray) {
         }
     }
 
-    enum class Type(internal val formatSignature: List<Byte>) {
+    public enum class Type(internal val formatSignature: List<Byte>) {
         PARCEL(PARCEL_SERIALIZER.formatSignature.asList()),
         PCA(ParcelCollectionAck.FORMAT_SIGNATURE.asList())
     }
 
-    companion object {
+    public companion object {
         /**
          * Number of octets needed to represent the type and length of an 8 MiB value in DER.
          */

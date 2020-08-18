@@ -10,4 +10,4 @@ import java.io.InputStream
  * @param localId The path, database PK or any other identifier for the cargo
  * @param cargoSerialized The cargo itself
  */
-data class CargoDeliveryRequest(val localId: String, val cargoSerialized: () -> InputStream)
+public data class CargoDeliveryRequest(val localId: String, val cargoSerialized: () -> InputStream)

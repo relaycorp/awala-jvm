@@ -17,7 +17,7 @@ import java.time.ZonedDateTime
  * @param issuerCertificate The certificate of the issuer, if the subject is a private gateway
  * @param validityStartDate The start date of the certificate to be issued
  */
-fun issueGatewayCertificate(
+public fun issueGatewayCertificate(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
     validityEndDate: ZonedDateTime,
@@ -46,7 +46,7 @@ fun issueGatewayCertificate(
  * @param issuerCertificate The certificate of the issuer, if the subject is a private endpoint
  * @param validityStartDate The start date of the certificate to be issued
  */
-fun issueEndpointCertificate(
+public fun issueEndpointCertificate(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
     validityEndDate: ZonedDateTime,
@@ -74,7 +74,7 @@ fun issueEndpointCertificate(
  * @param issuerCertificate The certificate of the grantor
  * @param validityStartDate The start date of the certificate to be issued
  */
-fun issueParcelDeliveryAuthorization(
+public fun issueParcelDeliveryAuthorization(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
     validityEndDate: ZonedDateTime,

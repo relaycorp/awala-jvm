@@ -20,14 +20,14 @@ import java.security.PublicKey
  * @param clientPublicKey The client's public key
  * @param craSerialized The [ClientRegistrationAuthorization] serialized
  */
-class ClientRegistrationRequest(
-    val clientPublicKey: PublicKey,
-    val craSerialized: ByteArray
+public class ClientRegistrationRequest(
+    public val clientPublicKey: PublicKey,
+    public val craSerialized: ByteArray
 ) {
     /**
      * Sign and serialize CRR.
      */
-    fun serialize(clientPrivateKey: PrivateKey): ByteArray {
+    public fun serialize(clientPrivateKey: PrivateKey): ByteArray {
         val craCountersignaturePlaintext = ASN1Utils.serializeSequence(
             arrayOf(OIDs.CRA_COUNTERSIGNATURE, DEROctetString(craSerialized)),
             false
@@ -42,12 +42,12 @@ class ClientRegistrationRequest(
         )
     }
 
-    companion object {
+    public companion object {
         /**
          * Deserialize and validate CRR.
          */
         @Throws(InvalidMessageException::class)
-        fun deserialize(serialization: ByteArray): ClientRegistrationRequest {
+        public fun deserialize(serialization: ByteArray): ClientRegistrationRequest {
             val crrSequence = try {
                 ASN1Utils.deserializeSequence(serialization)
             } catch (exc: ASN1Exception) {

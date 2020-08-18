@@ -39,8 +39,8 @@ import java.time.ZonedDateTime
  *
  * @param certificateHolder Bouncy Castle representation of the X.509 certificate
  */
-class Certificate constructor(val certificateHolder: X509CertificateHolder) {
-    companion object {
+public class Certificate constructor(public val certificateHolder: X509CertificateHolder) {
+    public companion object {
         private val bcToJavaCertificateConverter: JcaX509CertificateConverter =
             JcaX509CertificateConverter().setProvider(BC_PROVIDER)
 
@@ -120,7 +120,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
          * @param certificateSerialized The DER-encoded serialization of the certificate
          */
         @Throws(CertificateException::class)
-        fun deserialize(certificateSerialized: ByteArray): Certificate {
+        public fun deserialize(certificateSerialized: ByteArray): Certificate {
             val certificateHolder = try {
                 X509CertificateHolder(certificateSerialized)
             } catch (_: IOException) {
@@ -135,7 +135,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     /**
      * Return the Common Name of the subject
      */
-    val commonName: String
+    public val commonName: String
         get() {
             val commonNames = certificateHolder.subject.getRDNs(BCStyle.CN)
             return commonNames.first().first.value.toString()
@@ -144,19 +144,19 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     /**
      * Calculate the private address of the subject
      */
-    val subjectPrivateAddress
+    public val subjectPrivateAddress: String
         get() = "0" + getSHA256DigestHex(certificateHolder.subjectPublicKeyInfo.encoded)
 
     /**
      * The start date of the certificate.
      */
-    val startDate: ZonedDateTime
+    public val startDate: ZonedDateTime
         get() = dateToZonedDateTime(certificateHolder.notBefore)
 
     /**
      * The expiry date of the certificate.
      */
-    val expiryDate: ZonedDateTime
+    public val expiryDate: ZonedDateTime
         get() = dateToZonedDateTime(certificateHolder.notAfter)
 
     private val basicConstraints: BasicConstraints? by lazy {
@@ -188,7 +188,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     /**
      * Return the DER cerialization of the certificate.
      */
-    fun serialize(): ByteArray {
+    public fun serialize(): ByteArray {
         return certificateHolder.encoded
     }
 
@@ -198,7 +198,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
      * @throws CertificateException If the certificate is invalid
      */
     @Throws(CertificateException::class)
-    fun validate() {
+    public fun validate() {
         validateValidityPeriod()
         validateCommonNamePresence()
     }
@@ -226,7 +226,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
      * @throws CertificateException if no path could be found
      */
     @Throws(CertificateException::class)
-    fun getCertificationPath(
+    public fun getCertificationPath(
         intermediateCAs: Collection<Certificate>,
         trustedCAs: Collection<Certificate>
     ): Array<Certificate> {

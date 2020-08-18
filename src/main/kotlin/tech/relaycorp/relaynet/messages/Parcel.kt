@@ -14,7 +14,7 @@ internal val PARCEL_SERIALIZER = RAMFSerializer(0x50, 0x00)
 /**
  * Parcel
  */
-class Parcel(
+public class Parcel(
     recipientAddress: String,
     payload: ByteArray,
     senderCertificate: Certificate,
@@ -36,13 +36,13 @@ class Parcel(
         TODO("Not yet implemented")
     }
 
-    companion object : RAMFMessageCompanion<Parcel> {
+    public companion object : RAMFMessageCompanion<Parcel> {
         /**
          * Deserialize parcel
          */
         @JvmStatic
         @Throws(RAMFException::class)
-        override fun deserialize(serialization: ByteArray) =
+        override fun deserialize(serialization: ByteArray): Parcel =
             PARCEL_SERIALIZER.deserialize(serialization, ::Parcel)
 
         /**
@@ -50,7 +50,7 @@ class Parcel(
          */
         @JvmStatic
         @Throws(RAMFException::class)
-        override fun deserialize(serialization: InputStream) =
+        override fun deserialize(serialization: InputStream): Parcel =
             PARCEL_SERIALIZER.deserialize(serialization, ::Parcel)
     }
 }

@@ -32,11 +32,11 @@ private val PRIVATE_ADDRESS_REGEX = "^0[a-f0-9]+$".toRegex()
  * @property payload The payload
  * @property senderCertificate The sender's Relaynet PKI certificate
  */
-abstract class RAMFMessage<P : Payload> internal constructor(
+public abstract class RAMFMessage<P : Payload> internal constructor(
     private val serializer: RAMFSerializer,
-    val recipientAddress: String,
-    val payload: ByteArray,
-    val senderCertificate: Certificate,
+    public val recipientAddress: String,
+    public val payload: ByteArray,
+    public val senderCertificate: Certificate,
     id: String?,
     creationDate: ZonedDateTime?,
     ttl: Int?,
@@ -45,32 +45,33 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     /**
      * The id of the message
      */
-    val id = id ?: UUID.randomUUID().toString()
+    public val id: String = id ?: UUID.randomUUID().toString()
 
     /**
      * The creation date of the message
      */
-    val creationDate: ZonedDateTime = creationDate ?: ZonedDateTime.now(ZoneId.of("UTC"))
+    public val creationDate: ZonedDateTime = creationDate ?: ZonedDateTime.now(ZoneId.of("UTC"))
 
     /**
      * The time-to-live of the message (in seconds)
      */
-    val ttl = ttl ?: DEFAULT_TTL_SECONDS
+    public val ttl: Int = ttl ?: DEFAULT_TTL_SECONDS
 
     /**
      * Certificate chain of the sender
      */
-    val senderCertificateChain = senderCertificateChain ?: setOf()
+    public val senderCertificateChain: Set<Certificate> = senderCertificateChain ?: setOf()
 
     /**
      * Expiry date of the message
      */
-    val expiryDate: ZonedDateTime get() = creationDate.plusSeconds(ttl.toLong())
+    public val expiryDate: ZonedDateTime get() = creationDate.plusSeconds(ttl.toLong())
 
     /**
      * Report whether the recipient address is private
      */
-    val isRecipientAddressPrivate get() = !recipientAddress.contains(":")
+    public val isRecipientAddressPrivate: Boolean
+        get() = !recipientAddress.contains(":")
 
     init {
         if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
@@ -106,7 +107,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
      * @param senderPrivateKey The private key to sign the message
      * @param hashingAlgorithm The hashing algorithm to use in the signature
      */
-    fun serialize(
+    public fun serialize(
         senderPrivateKey: PrivateKey,
         hashingAlgorithm: HashingAlgorithm? = null
     ): ByteArray {
@@ -114,7 +115,9 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     }
 
     @Throws(InvalidMessageException::class)
-    fun getSenderCertificationPath(trustedCAs: Collection<Certificate>) =
+    public fun getSenderCertificationPath(
+        trustedCAs: Collection<Certificate>
+    ): Array<Certificate> =
         senderCertificate.getCertificationPath(senderCertificateChain.toSet(), trustedCAs)
 
     /**
@@ -133,7 +136,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
      * @throws RAMFException If the message was never (or is no longer) valid
      */
     @Throws(RAMFException::class, InvalidMessageException::class)
-    fun validate(
+    public fun validate(
         requiredRecipientAddressType: RecipientAddressType?,
         trustedCAs: Collection<Certificate>? = null
     ) {
@@ -205,7 +208,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         }
     }
 
-    companion object {
+    public companion object {
         internal const val MAX_PAYLOAD_LENGTH = 8_388_608
     }
 }

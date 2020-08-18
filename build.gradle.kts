@@ -53,6 +53,10 @@ java {
     withSourcesJar()
 }
 
+kotlin {
+    explicitApi()
+}
+
 jacoco {
     toolVersion = "0.8.5"
 }

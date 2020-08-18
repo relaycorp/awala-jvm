@@ -17,11 +17,14 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
  * @param clientCertificate The certificate of the private endpoint/gateway
  * @param serverCertificate The certificate of the gateway acting as server
  */
-class ClientRegistration(val clientCertificate: Certificate, val serverCertificate: Certificate) {
+public class ClientRegistration(
+    public val clientCertificate: Certificate,
+    public val serverCertificate: Certificate
+) {
     /**
      * Serialize registration.
      */
-    fun serialize(): ByteArray {
+    public fun serialize(): ByteArray {
         val clientCertificateASN1 = DEROctetString(clientCertificate.serialize())
         val serverCertificateASN1 = DEROctetString(serverCertificate.serialize())
         return ASN1Utils.serializeSequence(
@@ -30,12 +33,12 @@ class ClientRegistration(val clientCertificate: Certificate, val serverCertifica
         )
     }
 
-    companion object {
+    public companion object {
         /**
          * Deserialize registration.
          */
         @Throws(InvalidMessageException::class)
-        fun deserialize(serialization: ByteArray): ClientRegistration {
+        public fun deserialize(serialization: ByteArray): ClientRegistration {
             val sequence = try {
                 ASN1Utils.deserializeSequence(serialization)
             } catch (exc: ASN1Exception) {

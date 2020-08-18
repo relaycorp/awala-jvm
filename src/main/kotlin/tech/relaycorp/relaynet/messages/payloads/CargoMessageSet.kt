@@ -9,7 +9,7 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 /**
  * Cargo message set.
  */
-class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
+public class CargoMessageSet(public val messages: Array<ByteArray>) : EncryptedPayload() {
     /**
      * Serialize cargo message set.
      */
@@ -21,13 +21,14 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
     /**
      * Return the encapsulated messages, classified by type.
      */
-    fun classifyMessages(): Sequence<CargoMessage> = messages.asSequence().map { CargoMessage(it) }
+    public fun classifyMessages(): Sequence<CargoMessage> =
+        messages.asSequence().map { CargoMessage(it) }
 
-    companion object {
+    public companion object {
         /**
          * Deserialize a cargo message set.
          */
-        fun deserialize(serialization: ByteArray): CargoMessageSet {
+        public fun deserialize(serialization: ByteArray): CargoMessageSet {
             val items = try {
                 ASN1Utils.deserializeSequence(serialization)
             } catch (exc: ASN1Exception) {

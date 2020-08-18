@@ -8,15 +8,15 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 /**
  * Parcel Collection Acknowledgement (PCA).
  */
-class ParcelCollectionAck(
-    val senderEndpointPrivateAddress: String,
-    val recipientEndpointAddress: String,
-    val parcelId: String
+public class ParcelCollectionAck(
+    public val senderEndpointPrivateAddress: String,
+    public val recipientEndpointAddress: String,
+    public val parcelId: String
 ) {
     /**
      * Serialize PCA.
      */
-    fun serialize(): ByteArray {
+    public fun serialize(): ByteArray {
         val sequence = ASN1Utils.serializeSequence(
             arrayOf(
                 DERVisibleString(senderEndpointPrivateAddress),
@@ -28,7 +28,7 @@ class ParcelCollectionAck(
         return FORMAT_SIGNATURE + sequence
     }
 
-    companion object {
+    public companion object {
         private const val concreteMessageType: Byte = 0x51
         private const val concreteMessageVersion: Byte = 0
         internal val FORMAT_SIGNATURE = byteArrayOf(
@@ -41,7 +41,7 @@ class ParcelCollectionAck(
          * Deserialize PCA.
          */
         @Throws(InvalidMessageException::class)
-        fun deserialize(serialization: ByteArray): ParcelCollectionAck {
+        public fun deserialize(serialization: ByteArray): ParcelCollectionAck {
             if (serialization.size < 10) {
                 throw InvalidMessageException("Message is too short to contain format signature")
             }

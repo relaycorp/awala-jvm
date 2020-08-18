@@ -8,7 +8,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
 import java.time.ZonedDateTime
 
-abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
+public abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
     serializer: RAMFSerializer,
     recipientAddress: String,
     payload: ByteArray,
@@ -35,7 +35,7 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
      * @throws RAMFException if the plaintext is invalid.
      */
     @Throws(RAMFException::class, EnvelopedDataException::class)
-    fun unwrapPayload(privateKey: PrivateKey): P {
+    public fun unwrapPayload(privateKey: PrivateKey): P {
         val envelopedData = EnvelopedData.deserialize(payload) as SessionlessEnvelopedData
         val plaintext = envelopedData.decrypt(privateKey)
         return deserializePayload(plaintext)
@@ -44,7 +44,7 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
     @Throws(RAMFException::class)
     internal abstract fun deserializePayload(payloadPlaintext: ByteArray): P
 
-    companion object {
+    public companion object {
         // Per the RAMF spec
         internal const val MAX_PAYLOAD_PLAINTEXT_LENGTH = 8_322_048
     }

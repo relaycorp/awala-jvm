@@ -14,7 +14,7 @@ private val SERIALIZER = RAMFSerializer(0x44, 0x00)
 /**
  * Cargo Collection Authorization (CCA)
  */
-class CargoCollectionAuthorization(
+public class CargoCollectionAuthorization(
     recipientAddress: String,
     payload: ByteArray,
     senderCertificate: Certificate,
@@ -32,15 +32,15 @@ class CargoCollectionAuthorization(
     ttl,
     senderCertificateChain
 ) {
-    override fun deserializePayload() = EmptyPayload.deserialize(payload)
+    override fun deserializePayload(): EmptyPayload = EmptyPayload.deserialize(payload)
 
-    companion object : RAMFMessageCompanion<CargoCollectionAuthorization> {
+    public companion object : RAMFMessageCompanion<CargoCollectionAuthorization> {
         /**
          * Deserialize a CCA
          */
         @JvmStatic
         @Throws(RAMFException::class)
-        override fun deserialize(serialization: ByteArray) =
+        override fun deserialize(serialization: ByteArray): CargoCollectionAuthorization =
             SERIALIZER.deserialize(serialization, ::CargoCollectionAuthorization)
 
         /**
@@ -48,7 +48,7 @@ class CargoCollectionAuthorization(
          */
         @JvmStatic
         @Throws(RAMFException::class)
-        override fun deserialize(serialization: InputStream) =
+        override fun deserialize(serialization: InputStream): CargoCollectionAuthorization =
             SERIALIZER.deserialize(serialization, ::CargoCollectionAuthorization)
     }
 }

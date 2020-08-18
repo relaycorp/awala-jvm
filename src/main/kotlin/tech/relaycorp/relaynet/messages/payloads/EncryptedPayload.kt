@@ -4,8 +4,8 @@ import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.cms.SessionlessEnvelopedData
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
-abstract class EncryptedPayload : Payload {
-    fun encrypt(
+public abstract class EncryptedPayload : Payload {
+    public fun encrypt(
         recipientCertificate: Certificate,
         symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128
     ): ByteArray {

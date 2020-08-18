@@ -18,11 +18,14 @@ import java.time.ZonedDateTime
 /**
  * Client Registration Authorization.
  */
-class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverData: ByteArray) {
+public class ClientRegistrationAuthorization(
+    public val expiryDate: ZonedDateTime,
+    public val serverData: ByteArray
+) {
     /**
      * Sign and serialize CRA
      */
-    fun serialize(serverPrivateKey: PrivateKey): ByteArray {
+    public fun serialize(serverPrivateKey: PrivateKey): ByteArray {
         val plaintext = ASN1Utils.serializeSequence(
             arrayOf(
                 OIDs.CRA,
@@ -35,12 +38,12 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
         return signedData.serialize()
     }
 
-    companion object {
+    public companion object {
         /**
          * Deserialize and validate CRA.
          */
         @Throws(InvalidMessageException::class)
-        fun deserialize(
+        public fun deserialize(
             serialization: ByteArray,
             serverPublicKey: PublicKey
         ): ClientRegistrationAuthorization {

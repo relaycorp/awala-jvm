@@ -14,11 +14,14 @@ import java.security.PrivateKey
 /**
  * Nonce signature.
  */
-class NonceSignature(val nonce: ByteArray, val signerCertificate: Certificate) {
+public class NonceSignature(
+    public val nonce: ByteArray,
+    public val signerCertificate: Certificate
+) {
     /**
      * Serialize signature.
      */
-    fun serialize(privateKey: PrivateKey): ByteArray {
+    public fun serialize(privateKey: PrivateKey): ByteArray {
         val plaintext = ASN1Utils.serializeSequence(
             arrayOf(OIDs.NONCE_SIGNATURE, DEROctetString(nonce)),
             false
@@ -32,12 +35,12 @@ class NonceSignature(val nonce: ByteArray, val signerCertificate: Certificate) {
         return signedData.serialize()
     }
 
-    companion object {
+    public companion object {
         /**
          * Deserialize and validate nonce signature.
          */
         @Throws(InvalidMessageException::class)
-        fun deserialize(serialization: ByteArray): NonceSignature {
+        public fun deserialize(serialization: ByteArray): NonceSignature {
             val signedData = try {
                 SignedData.deserialize(serialization).also { it.verify() }
             } catch (exc: SignedDataException) {

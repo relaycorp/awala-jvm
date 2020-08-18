@@ -14,7 +14,7 @@ private val SERIALIZER = RAMFSerializer(0x43, 0x00)
 /**
  * Cargo
  */
-class Cargo(
+public class Cargo(
     recipientAddress: String,
     payload: ByteArray,
     senderCertificate: Certificate,
@@ -35,13 +35,13 @@ class Cargo(
     override fun deserializePayload(payloadPlaintext: ByteArray) =
         CargoMessageSet.deserialize(payloadPlaintext)
 
-    companion object : RAMFMessageCompanion<Cargo> {
+    public companion object : RAMFMessageCompanion<Cargo> {
         /**
          * Deserialize cargo
          */
         @JvmStatic
         @Throws(RAMFException::class)
-        override fun deserialize(serialization: ByteArray) =
+        override fun deserialize(serialization: ByteArray): Cargo =
             SERIALIZER.deserialize(serialization, ::Cargo)
 
         /**
@@ -49,7 +49,7 @@ class Cargo(
          */
         @JvmStatic
         @Throws(RAMFException::class)
-        override fun deserialize(serialization: InputStream) =
+        override fun deserialize(serialization: InputStream): Cargo =
             SERIALIZER.deserialize(serialization, ::Cargo)
     }
 }

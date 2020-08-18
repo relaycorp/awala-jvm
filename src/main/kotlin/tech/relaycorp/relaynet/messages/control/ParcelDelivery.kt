@@ -10,21 +10,21 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 /**
  * Parcel delivery.
  */
-class ParcelDelivery(val deliveryId: String, val parcelSerialized: ByteArray) {
+public class ParcelDelivery(public val deliveryId: String, public val parcelSerialized: ByteArray) {
     /**
      * Serialize delivery.
      */
-    fun serialize(): ByteArray = ASN1Utils.serializeSequence(
+    public fun serialize(): ByteArray = ASN1Utils.serializeSequence(
         arrayOf(DERVisibleString(deliveryId), DEROctetString(parcelSerialized)),
         false
     )
 
-    companion object {
+    public companion object {
         /**
          * Deserialize delivery
          */
         @Throws(InvalidMessageException::class)
-        fun deserialize(serialization: ByteArray): ParcelDelivery {
+        public fun deserialize(serialization: ByteArray): ParcelDelivery {
             val sequence = try {
                 ASN1Utils.deserializeSequence(serialization)
             } catch (exc: ASN1Exception) {
