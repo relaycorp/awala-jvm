@@ -30,8 +30,12 @@ repositories {
 }
 
 dependencies {
+    val kotlinCoroutinesVersion = "1.3.8"
+
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     // Bouncy Castle
     implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
@@ -45,7 +49,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.3.8")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
 }
 
 java {

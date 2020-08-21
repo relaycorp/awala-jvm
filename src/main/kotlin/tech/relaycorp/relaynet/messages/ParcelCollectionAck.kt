@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages
 
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -58,8 +57,7 @@ class ParcelCollectionAck(
             if (sequence.size < 3) {
                 throw InvalidMessageException("PCA should have 3 items (got ${sequence.size})")
             }
-            val fields =
-                sequence.map { DERVisibleString.getInstance(it as ASN1TaggedObject, false) }
+            val fields = sequence.map { ASN1Utils.getVisibleString(it) }
             return ParcelCollectionAck(fields[0].string, fields[1].string, fields[2].string)
         }
     }

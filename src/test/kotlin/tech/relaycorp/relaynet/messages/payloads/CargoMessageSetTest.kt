@@ -1,8 +1,5 @@
 package tech.relaycorp.relaynet.messages.payloads
 
-import org.bouncycastle.asn1.ASN1Encodable
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
@@ -38,7 +35,7 @@ internal class CargoMessageSetTest {
 
             val serialization = cargoMessageSet.serializePlaintext()
 
-            val messages = deserializeDERSequence(serialization)
+            val messages = ASN1Utils.deserializeSequence(serialization)
             assertEquals(0, messages.size)
         }
 
@@ -49,9 +46,9 @@ internal class CargoMessageSetTest {
 
             val serialization = cargoMessageSet.serializePlaintext()
 
-            val messages = deserializeDERSequence(serialization)
+            val messages = ASN1Utils.deserializeSequence(serialization)
             assertEquals(1, messages.size)
-            val messageDer = DEROctetString.getInstance(messages.first())
+            val messageDer = ASN1Utils.getOctetString(messages.first())
             assertEquals(message.asList(), messageDer.octets.asList())
         }
 
@@ -63,19 +60,12 @@ internal class CargoMessageSetTest {
 
             val serialization = cargoMessageSet.serializePlaintext()
 
-            val messages = deserializeDERSequence(serialization)
+            val messages = ASN1Utils.deserializeSequence(serialization)
             assertEquals(2, messages.size)
-            val message1Der = DEROctetString.getInstance(messages[0])
-            val message2Der = DEROctetString.getInstance(messages[1])
+            val message1Der = ASN1Utils.getOctetString(messages[0])
+            val message2Der = ASN1Utils.getOctetString(messages[1])
             assertEquals(message1.asList(), message1Der.octets.asList())
             assertEquals(message2.asList(), message2Der.octets.asList())
-        }
-
-        private fun deserializeDERSequence(derSequenceSerialized: ByteArray): Array<ASN1Encodable> {
-            val asn1InputStream = ASN1InputStream(derSequenceSerialized)
-            val asn1Value = asn1InputStream.readObject()
-            val fieldSequence = ASN1Sequence.getInstance(asn1Value)
-            return fieldSequence.toArray()
         }
     }
 
@@ -104,16 +94,6 @@ internal class CargoMessageSetTest {
         }
 
         @Test
-        fun `Inner value should be an ASN1 OCTET STRING`() {
-            val serialization = ASN1Utils.serializeSequence(arrayOf(DERVisibleString("item")))
-            val exception = assertThrows<RAMFException> {
-                CargoMessageSet.deserialize(serialization)
-            }
-
-            assertEquals("At least one message is not an OCTET STRING", exception.message)
-        }
-
-        @Test
         fun `An empty sequence should be accepted`() {
             val serialization = ASN1Utils.serializeSequence(emptyArray())
 
@@ -125,7 +105,8 @@ internal class CargoMessageSetTest {
         @Test
         fun `A single-item sequence should be accepted`() {
             val message = "the message".toByteArray()
-            val serialization = ASN1Utils.serializeSequence(arrayOf(DEROctetString(message)))
+            val serialization =
+                ASN1Utils.serializeSequence(arrayOf(DEROctetString(message)), false)
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 
@@ -141,7 +122,8 @@ internal class CargoMessageSetTest {
                 arrayOf(
                     DEROctetString(message1),
                     DEROctetString(message2)
-                )
+                ),
+                false
             )
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)

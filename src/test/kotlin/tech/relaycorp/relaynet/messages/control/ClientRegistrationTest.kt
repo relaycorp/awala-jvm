@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Nested
@@ -25,8 +24,7 @@ class ClientRegistrationTest {
             val serialization = registration.serialize()
 
             val sequence = ASN1Utils.deserializeSequence(serialization)
-            val clientCertificateASN1 =
-                DEROctetString.getInstance(sequence.first() as ASN1TaggedObject, false)
+            val clientCertificateASN1 = ASN1Utils.getOctetString(sequence.first())
             assertEquals(
                 FullCertPath.PRIVATE_ENDPOINT.serialize().asList(),
                 clientCertificateASN1.octets.asList()
@@ -41,8 +39,7 @@ class ClientRegistrationTest {
             val serialization = registration.serialize()
 
             val sequence = ASN1Utils.deserializeSequence(serialization)
-            val serverCertificateASN1 =
-                DEROctetString.getInstance(sequence[1] as ASN1TaggedObject, false)
+            val serverCertificateASN1 = ASN1Utils.getOctetString(sequence[1])
             assertEquals(
                 FullCertPath.PRIVATE_GW.serialize().asList(),
                 serverCertificateASN1.octets.asList()

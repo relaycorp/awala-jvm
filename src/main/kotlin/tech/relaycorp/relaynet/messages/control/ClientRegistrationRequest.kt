@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.OIDs
@@ -58,8 +57,7 @@ class ClientRegistrationRequest(
                     "CRR sequence should have at least 2 items (got ${crrSequence.size})"
                 )
             }
-            val clientPublicKeyASN1 =
-                DEROctetString.getInstance(crrSequence[0] as ASN1TaggedObject, false)
+            val clientPublicKeyASN1 = ASN1Utils.getOctetString(crrSequence[0])
             val clientPublicKey = try {
                 clientPublicKeyASN1.octets.deserializeRSAPublicKey()
             } catch (exc: KeyException) {
@@ -67,7 +65,7 @@ class ClientRegistrationRequest(
             }
 
             val craSerialized =
-                extractCRAFromCountersignature(crrSequence[1] as ASN1TaggedObject, clientPublicKey)
+                extractCRAFromCountersignature(crrSequence[1], clientPublicKey)
 
             return ClientRegistrationRequest(clientPublicKey, craSerialized)
         }
@@ -78,7 +76,7 @@ class ClientRegistrationRequest(
             clientPublicKey: PublicKey
         ): ByteArray {
             val craCountersignatureSerialized =
-                DEROctetString.getInstance(craCountersignatureASN1, false).octets
+                ASN1Utils.getOctetString(craCountersignatureASN1).octets
             val craCountersignature = try {
                 SignedData.deserialize(craCountersignatureSerialized)
                     .also { it.verify(signerPublicKey = clientPublicKey) }
@@ -102,17 +100,14 @@ class ClientRegistrationRequest(
                         "${craCountersignatureSequence.size})"
                 )
             }
-            val craCountersignatureOID = ASN1ObjectIdentifier.getInstance(
-                craCountersignatureSequence[0] as ASN1TaggedObject, false
-            )
+            val craCountersignatureOID = ASN1Utils.getOID(craCountersignatureSequence[0])
             if (craCountersignatureOID != OIDs.CRA_COUNTERSIGNATURE) {
                 throw InvalidMessageException(
                     "CRA countersignature has invalid OID (got ${craCountersignatureOID.id})"
                 )
             }
 
-            val craSerializationASN1 = craCountersignatureSequence[1] as ASN1TaggedObject
-            return DEROctetString.getInstance(craSerializationASN1, false).octets
+            return ASN1Utils.getOctetString(craCountersignatureSequence[1]).octets
         }
     }
 }
