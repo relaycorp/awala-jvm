@@ -1,0 +1,26 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>PDCClient - relaynet</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">relaynet</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.bindings.pdc</a>&nbsp;/&nbsp;<a href="./index.html">PDCClient</a><br/>
+<br/>
+<h1>PDCClient</h1>
+<code><span class="keyword">interface </span><span class="identifier">PDCClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/io/Closeable.html"><span class="identifier">Closeable</span></a></code>
+<p>Interface for all Parcel Delivery Connection clients.</p>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="collect-parcels.html">collectParcels</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">collectParcels</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.NonceSigner)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/nonceSigners">nonceSigners</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-nonce-signer/index.html"><span class="identifier">NonceSigner</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.NonceSigner)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/streamingMode">streamingMode</span><span class="symbol">:</span>&nbsp;<a href="../-streaming-mode/index.html"><span class="identifier">StreamingMode</span></a>&nbsp;<span class="symbol">=</span>&nbsp;StreamingMode.KeepAlive<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Flow</span><span class="symbol">&lt;</span><a href="../-parcel-collection/index.html"><span class="identifier">ParcelCollection</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
