@@ -10,5 +10,4 @@ search_enabled: false
 
 exclude:
   - Gemfile
-  - Gemfile.lock
   - vendor
