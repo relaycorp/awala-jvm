@@ -47,7 +47,7 @@ internal object ASN1Utils {
         } catch (_: IllegalArgumentException) {
             throw ASN1Exception("Value is not an ASN.1 sequence")
         }
-        val implicitlyTaggedItems = fieldSequence.map {
+        @Suppress("USELESS_CAST") val implicitlyTaggedItems = fieldSequence.map {
             if (it !is ASN1TaggedObject) {
                 throw ASN1Exception("Sequence contains explicitly tagged item")
             }

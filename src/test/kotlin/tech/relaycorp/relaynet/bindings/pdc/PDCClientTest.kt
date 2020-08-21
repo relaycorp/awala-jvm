@@ -12,6 +12,7 @@ class MockPDCClient : PDCClient {
     var parcelsCollected = false
 
     override fun close() = throw NotImplementedError()
+    override suspend fun deliverParcel(parcelSerialized: ByteArray) = throw NotImplementedError()
     override suspend fun collectParcels(
         nonceSigners: Array<NonceSigner>,
         streamingMode: StreamingMode
