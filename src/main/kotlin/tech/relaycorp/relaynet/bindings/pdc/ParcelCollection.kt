@@ -11,10 +11,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
  *
  * @param parcelSerialized The serialization of the parcel
  * @param trustedCertificates The collection of certificates regarded trusted
- * @param ackCallback The callback to execute when the collection is acknowledged
- *
- * @property ack Callback to aknowledge that the parcel has been successfully processed and/or
- *     stored
+ * @param ack The callback to execute when the collection is acknowledged
  */
 class ParcelCollection(
     val parcelSerialized: ByteArray,
