@@ -15,7 +15,7 @@ class MockPDCClient : PDCClient {
     override suspend fun collectParcels(
         nonceSigners: Array<NonceSigner>,
         streamingMode: StreamingMode
-    ): Flow<ParcelCollector> = flow {
+    ): Flow<ParcelCollection> = flow {
         parcelsCollected = true
     }
 }

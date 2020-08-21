@@ -32,4 +32,9 @@ class NonceSignerTest {
         val signature = NonceSignature.deserialize(serialization)
         assertEquals(certificate, signature.signerCertificate)
     }
+
+    @Test
+    fun `Signer certificate should be exposed`() {
+        assertEquals(certificate, signer.certificate)
+    }
 }

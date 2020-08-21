@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -13,13 +14,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class ParcelCollectorTest {
+@ExperimentalCoroutinesApi
+class ParcelCollectionTest {
     private val dummyParcelSerialized = "parcel".toByteArray()
     private val dummyACK: suspend () -> Unit = {}
 
     @Test
     fun `Parcel serialized should be honored`() {
-        val collector = ParcelCollector(dummyParcelSerialized, emptySet(), dummyACK)
+        val collector = ParcelCollection(dummyParcelSerialized, emptySet(), dummyACK)
 
         assertEquals(dummyParcelSerialized.asList(), collector.parcelSerialized.asList())
     }
@@ -27,14 +29,14 @@ class ParcelCollectorTest {
     @Test
     fun `Trusted certificates should be honored`() {
         val trustedCertificates = setOf(FullCertPath.PRIVATE_ENDPOINT)
-        val collector = ParcelCollector(dummyParcelSerialized, trustedCertificates, dummyACK)
+        val collector = ParcelCollection(dummyParcelSerialized, trustedCertificates, dummyACK)
 
         assertEquals(trustedCertificates, collector.trustedCertificates)
     }
 
     @Test
     fun `ACK callback should be honored`() {
-        val collector = ParcelCollector("parcel".toByteArray(), emptySet(), dummyACK)
+        val collector = ParcelCollection("parcel".toByteArray(), emptySet(), dummyACK)
 
         assertEquals(dummyACK, collector.ack)
     }
@@ -48,7 +50,7 @@ class ParcelCollectorTest {
         @Test
         fun `Malformed parcels should be refused`() {
             val collector =
-                ParcelCollector("invalid".toByteArray(), setOf(recipientCertificate), dummyACK)
+                ParcelCollection("invalid".toByteArray(), setOf(recipientCertificate), dummyACK)
 
             assertThrows<RAMFException> { collector.deserializeAndValidateParcel() }
         }
@@ -56,7 +58,7 @@ class ParcelCollectorTest {
         @Test
         fun `Parcels bound for public endpoints should be refused`() {
             val invalidParcel = Parcel("https://public.endpoint", payload, senderCertificate)
-            val collector = ParcelCollector(
+            val collector = ParcelCollection(
                 invalidParcel.serialize(KeyPairSet.PDA_GRANTEE.private),
                 setOf(recipientCertificate),
                 dummyACK
@@ -74,7 +76,7 @@ class ParcelCollectorTest {
                 payload,
                 FullCertPath.PUBLIC_GW // Unauthorized sender
             )
-            val collector = ParcelCollector(
+            val collector = ParcelCollection(
                 invalidParcel.serialize(KeyPairSet.PUBLIC_GW.private),
                 setOf(recipientCertificate),
                 dummyACK
@@ -92,7 +94,7 @@ class ParcelCollectorTest {
                 payload,
                 senderCertificate
             )
-            val collector = ParcelCollector(
+            val collector = ParcelCollection(
                 parcel.serialize(KeyPairSet.PDA_GRANTEE.private),
                 setOf(recipientCertificate),
                 dummyACK

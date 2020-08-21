@@ -6,11 +6,27 @@ import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.ramf.RecipientAddressType
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
-class ParcelCollector(
+/**
+ * Collection of a single parcel.
+ *
+ * @param parcelSerialized The serialization of the parcel
+ * @param trustedCertificates The collection of certificates regarded trusted
+ * @param ackCallback The callback to execute when the collection is acknowledged
+ *
+ * @property ack Callback to aknowledge that the parcel has been successfully processed and/or
+ *     stored
+ */
+class ParcelCollection(
     val parcelSerialized: ByteArray,
     val trustedCertificates: Collection<Certificate>,
     val ack: suspend () -> Unit
 ) {
+    /**
+     * Deserialize and validate the parcel being collected.
+     *
+     * The parcel will be refused if it's bound for a public endpoint or if the sender is not
+     * authorized to reach the recipient.
+     */
     @Throws(RAMFException::class, InvalidMessageException::class)
     fun deserializeAndValidateParcel(): Parcel =
         Parcel.deserialize(parcelSerialized)
