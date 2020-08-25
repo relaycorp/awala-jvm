@@ -1,10 +1,11 @@
 package tech.relaycorp.relaynet.messages.control
 
+import org.bouncycastle.asn1.ASN1GeneralizedTime
+import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DERGeneralizedTime
 import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.OIDs
-import tech.relaycorp.relaynet.crypto.SignedData
-import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.crypto.RSASigning
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -21,16 +22,14 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
      * Sign and serialize CRA
      */
     fun serialize(serverPrivateKey: PrivateKey): ByteArray {
-        val plaintext = ASN1Utils.serializeSequence(
-            arrayOf(
-                OIDs.CRA,
-                ASN1Utils.derEncodeUTCDate(expiryDate),
-                DEROctetString(serverData)
-            ),
+        val expiryDateASN1 = ASN1Utils.derEncodeUTCDate(expiryDate)
+        val serverDataASN1 = DEROctetString(serverData)
+        val signaturePlaintext = makeSignaturePlaintext(expiryDateASN1, serverDataASN1)
+        val signature = RSASigning.sign(signaturePlaintext, serverPrivateKey)
+        return ASN1Utils.serializeSequence(
+            arrayOf(expiryDateASN1, serverDataASN1, DEROctetString(signature)),
             false
         )
-        val signedData = SignedData.sign(plaintext, serverPrivateKey)
-        return signedData.serialize()
     }
 
     companion object {
@@ -42,16 +41,10 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
             serialization: ByteArray,
             serverPublicKey: PublicKey
         ): ClientRegistrationAuthorization {
-            val signedData = try {
-                SignedData.deserialize(serialization)
-                    .also { it.verify(signerPublicKey = serverPublicKey) }
-            } catch (exc: SignedDataException) {
-                throw InvalidMessageException("Serialization is not a valid SignedData value", exc)
-            }
             val sequence = try {
-                ASN1Utils.deserializeSequence(signedData.plaintext!!)
+                ASN1Utils.deserializeSequence(serialization)
             } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("CRA plaintext should be a DER sequence")
+                throw InvalidMessageException("CRA is not a valid DER sequence", exc)
             }
 
             if (sequence.size < 3) {
@@ -60,23 +53,27 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
                 )
             }
 
-            val oid = ASN1Utils.getOID(sequence[0])
-            if (oid != OIDs.CRA) {
-                throw InvalidMessageException(
-                    "CRA plaintext has invalid OID (got ${oid.id})"
-                )
-            }
-
-            val expiryDateDer = DERGeneralizedTime.getInstance(sequence[1], false)
+            val expiryDateASN1 = DERGeneralizedTime.getInstance(sequence[0], false)
             val expiryDate =
-                ZonedDateTime.ofInstant(expiryDateDer.date.toInstant(), ZoneId.systemDefault())
+                ZonedDateTime.ofInstant(expiryDateASN1.date.toInstant(), ZoneId.systemDefault())
             if (expiryDate < ZonedDateTime.now()) {
                 throw InvalidMessageException("CRA already expired")
             }
 
-            val serverDataDER = ASN1Utils.getOctetString(sequence[2])
+            val serverDataASN1 = ASN1Utils.getOctetString(sequence[1])
 
-            return ClientRegistrationAuthorization(expiryDate, serverDataDER.octets)
+            val signature = ASN1Utils.getOctetString(sequence[2]).octets
+            val expectedPlaintext = makeSignaturePlaintext(expiryDateASN1, serverDataASN1)
+            if (!RSASigning.verify(signature, serverPublicKey, expectedPlaintext)) {
+                throw InvalidMessageException("CRA signature is invalid")
+            }
+
+            return ClientRegistrationAuthorization(expiryDate, serverDataASN1.octets)
         }
+
+        private fun makeSignaturePlaintext(
+            expiryDateASN1: ASN1GeneralizedTime,
+            serverDataASN1: ASN1OctetString
+        ) = ASN1Utils.serializeSequence(arrayOf(OIDs.CRA, expiryDateASN1, serverDataASN1), false)
     }
 }

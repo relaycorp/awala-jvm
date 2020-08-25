@@ -1,25 +1,22 @@
 package tech.relaycorp.relaynet.messages.control
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERGeneralizedTime
-import org.bouncycastle.asn1.DERNull
+import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.BER_DATETIME_FORMATTER
 import tech.relaycorp.relaynet.OIDs
-import tech.relaycorp.relaynet.crypto.SignedData
-import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.crypto.RSASigning
 import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ClientRegistrationAuthorizationTest {
@@ -30,47 +27,13 @@ class ClientRegistrationAuthorizationTest {
     @Nested
     inner class Serialize {
         @Test
-        fun `SignedData value should be valid`() {
-            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
-
-            val serialization = authorization.serialize(keyPair.private)
-
-            SignedData.deserialize(serialization)
-                .also { it.verify(signerPublicKey = keyPair.public) }
-        }
-
-        @Test
-        fun `SignedData value should encapsulate authorization data`() {
-            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
-
-            val serialization = authorization.serialize(keyPair.private)
-
-            val signedData = SignedData.deserialize(serialization)
-            assertNotNull(signedData.plaintext)
-            ASN1Utils.deserializeSequence(signedData.plaintext!!)
-        }
-
-        @Test
-        fun `The right OID should be used`() {
-            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
-
-            val serialization = authorization.serialize(keyPair.private)
-
-            val sequence = extractSequence(serialization)
-            assertEquals(
-                OIDs.CRA,
-                ASN1Utils.getOID(sequence.first())
-            )
-        }
-
-        @Test
         fun `Expiry date should be honored`() {
             val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
 
             val serialization = authorization.serialize(keyPair.private)
 
-            val sequence = extractSequence(serialization)
-            val expiryDateDer = DERGeneralizedTime.getInstance(sequence[1], false)
+            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val expiryDateDer = DERGeneralizedTime.getInstance(sequence[0], false)
             val expectedDate =
                 tomorrow.withZoneSameInstant(ZoneOffset.UTC).format(BER_DATETIME_FORMATTER)
             assertEquals(expectedDate, expiryDateDer.timeString)
@@ -82,15 +45,24 @@ class ClientRegistrationAuthorizationTest {
 
             val serialization = authorization.serialize(keyPair.private)
 
-            val sequence = extractSequence(serialization)
-            val actualServerData =
-                ASN1OctetString.getInstance(sequence.last(), false)
+            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val actualServerData = ASN1OctetString.getInstance(sequence[1], false)
             assertEquals(serverData.asList(), actualServerData.octets.asList())
         }
 
-        private fun extractSequence(serialization: ByteArray): Array<ASN1TaggedObject> {
-            val signedData = SignedData.deserialize(serialization)
-            return ASN1Utils.deserializeSequence(signedData.plaintext!!)
+        @Test
+        fun `Signature should be valid`() {
+            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
+
+            val serialization = authorization.serialize(keyPair.private)
+
+            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val signature = ASN1Utils.getOctetString(sequence[2]).octets
+            val expectedPlaintext = ASN1Utils.serializeSequence(
+                arrayOf(OIDs.CRA, ASN1Utils.derEncodeUTCDate(tomorrow), DEROctetString(serverData)),
+                false
+            )
+            assertTrue(RSASigning.verify(signature, keyPair.public, expectedPlaintext))
         }
     }
 
@@ -104,46 +76,16 @@ class ClientRegistrationAuthorizationTest {
                 ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
             }
 
-            assertEquals("Serialization is not a valid SignedData value", exception.message)
-            assertTrue(exception.cause is SignedDataException)
-        }
-
-        @Test
-        fun `Invalid signatures should be refused`() {
-            val anotherKeyPair = generateRSAKeyPair()
-            val serialization =
-                SignedData.sign("f".toByteArray(), anotherKeyPair.private).serialize()
-
-            val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
-            }
-
-            assertEquals("Serialization is not a valid SignedData value", exception.message)
-            assertTrue(exception.cause is SignedDataException)
-        }
-
-        @Test
-        fun `Plaintext should be a DER sequence`() {
-            val serialization =
-                SignedData.sign(DERNull.INSTANCE.encoded, keyPair.private).serialize()
-
-            val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
-            }
-
-            assertEquals(
-                "CRA plaintext should be a DER sequence",
-                exception.message
-            )
+            assertEquals("CRA is not a valid DER sequence", exception.message)
+            assertTrue(exception.cause is ASN1Exception)
         }
 
         @Test
         fun `Sequence should have at least 3 items`() {
-            val plaintext = ASN1Utils.serializeSequence(
+            val serialization = ASN1Utils.serializeSequence(
                 arrayOf(DERVisibleString("a"), DERVisibleString("b")),
                 false
             )
-            val serialization = SignedData.sign(plaintext, keyPair.private).serialize()
 
             val exception = assertThrows<InvalidMessageException> {
                 ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
@@ -151,25 +93,6 @@ class ClientRegistrationAuthorizationTest {
 
             assertEquals(
                 "CRA plaintext should have at least 3 items (got 2)",
-                exception.message
-            )
-        }
-
-        @Test
-        fun `Invalid OIDs should be refused`() {
-            val invalidOID = ASN1ObjectIdentifier("1.2.3")
-            val plaintext = ASN1Utils.serializeSequence(
-                arrayOf(invalidOID, DERVisibleString("a"), DERVisibleString("b")),
-                false
-            )
-            val serialization = SignedData.sign(plaintext, keyPair.private).serialize()
-
-            val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
-            }
-
-            assertEquals(
-                "CRA plaintext has invalid OID (got ${invalidOID.id})",
                 exception.message
             )
         }
@@ -185,6 +108,25 @@ class ClientRegistrationAuthorizationTest {
             }
 
             assertEquals("CRA already expired", exception.message)
+        }
+
+        @Test
+        fun `Invalid signatures should be refused`() {
+            val invalidSignature = "not a valid signature".toByteArray()
+            val serialization = ASN1Utils.serializeSequence(
+                arrayOf(
+                    ASN1Utils.derEncodeUTCDate(tomorrow),
+                    DEROctetString(serverData),
+                    DEROctetString(invalidSignature)
+                ),
+                false
+            )
+
+            val exception = assertThrows<InvalidMessageException> {
+                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
+            }
+
+            assertEquals("CRA signature is invalid", exception.message)
         }
 
         @Test
