@@ -10,7 +10,6 @@ import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.CMSSignedData
 import org.bouncycastle.cms.CMSSignedDataGenerator
 import org.bouncycastle.cms.CMSTypedData
-import org.bouncycastle.cms.SignerInfoGenerator
 import org.bouncycastle.cms.SignerInformation
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder
@@ -24,7 +23,6 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.io.IOException
 import java.security.PrivateKey
-import java.security.PublicKey
 
 /**
  * Relaynet-specific, CMS SignedData representation.
@@ -69,11 +67,9 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
      * Verify signature.
      *
      * @param expectedPlaintext The plaintext to be verified if none is encapsulated
-     * @param signerPublicKey The signer's public key if a corresponding certificate isn't
-     *     encapsulated
      */
     @Throws(SignedDataException::class)
-    fun verify(expectedPlaintext: ByteArray? = null, signerPublicKey: PublicKey? = null) {
+    fun verify(expectedPlaintext: ByteArray? = null) {
         if (plaintext != null && expectedPlaintext != null) {
             throw SignedDataException(
                 "No specific plaintext should be expected because one is already encapsulated"
@@ -83,15 +79,8 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
             ?: expectedPlaintext
             ?: throw SignedDataException("Plaintext should be encapsulated or explicitly set")
 
-        if (signerCertificate != null && signerPublicKey != null) {
-            throw SignedDataException(
-                "No specific signer certificate should be expected because one is already " +
-                    "encapsulated"
-            )
-        } else if (signerCertificate == null && signerPublicKey == null) {
-            throw SignedDataException(
-                "Signer certificate should be encapsulated or explicitly set"
-            )
+        if (signerCertificate == null) {
+            throw SignedDataException("Signer certificate should be encapsulated")
         }
         val signedData = CMSSignedData(
             CMSProcessableByteArray(signedPlaintext),
@@ -99,10 +88,7 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
         )
         val signerInfo = getSignerInfo(signedData)
         val verifierBuilder = JcaSimpleSignerInfoVerifierBuilder().setProvider(BC_PROVIDER)
-        val verifier = if (signerCertificate != null)
-            verifierBuilder.build(signerCertificate!!.certificateHolder)
-        else
-            verifierBuilder.build(signerPublicKey)
+        val verifier = verifierBuilder.build(signerCertificate!!.certificateHolder)
         val isValid = try {
             signerInfo.verify(verifier)
         } catch (exc: CMSException) {
@@ -137,52 +123,13 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
                 contentSigner,
                 signerCertificate.certificateHolder
             )
-            return sign(
-                plaintext,
-                signerInfoGenerator,
-                encapsulatedCertificates,
-                encapsulatePlaintext
-            )
-        }
-
-        /**
-         * Generate SignedData value with a SignerInfo using a SubjectKeyIdentifier.
-         */
-        @JvmStatic
-        fun sign(
-            plaintext: ByteArray,
-            signerPrivateKey: PrivateKey,
-            hashingAlgorithm: HashingAlgorithm? = null,
-            encapsulatePlaintext: Boolean = true
-        ): SignedData {
-            val contentSigner = makeContentSigner(signerPrivateKey, hashingAlgorithm)
-            val signerInfoGenerator = makeSignerInfoGeneratorBuilder().build(
-                contentSigner,
-                byteArrayOf()
-            )
-            return sign(
-                plaintext,
-                signerInfoGenerator,
-                emptySet(),
-                encapsulatePlaintext
-            )
-        }
-
-        private fun sign(
-            plaintext: ByteArray,
-            signerInfoGenerator: SignerInfoGenerator,
-            encapsulatedCertificates: Set<Certificate>,
-            encapsulatePlaintext: Boolean
-        ): SignedData {
             val signedDataGenerator = CMSSignedDataGenerator()
-
             signedDataGenerator.addSignerInfoGenerator(signerInfoGenerator)
-
             val certs = JcaCertStore(encapsulatedCertificates.map { it.certificateHolder })
             signedDataGenerator.addCertificates(certs)
-
             val plaintextCms: CMSTypedData = CMSProcessableByteArray(plaintext)
-            val bcSignedData = signedDataGenerator.generate(plaintextCms, encapsulatePlaintext)
+            val bcSignedData = signedDataGenerator.generate(plaintextCms, encapsulatePlaintext
+            )
             return SignedData(
                 // Work around BC bug that keeps the plaintext encapsulated in the CMSSignedData
                 // instance even if it's not encapsulated
