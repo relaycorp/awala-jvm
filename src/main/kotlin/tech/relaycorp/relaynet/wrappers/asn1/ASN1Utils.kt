@@ -32,7 +32,9 @@ internal object ASN1Utils {
     }
 
     @Throws(ASN1Exception::class)
-    fun deserializeSequence(serialization: ByteArray): Array<ASN1TaggedObject> {
+    inline fun <reified T : ASN1Encodable> deserializeHomogeneousSequence(
+        serialization: ByteArray
+    ): Array<T> {
         if (serialization.isEmpty()) {
             throw ASN1Exception("Value is empty")
         }
@@ -42,19 +44,25 @@ internal object ASN1Utils {
         } catch (_: IOException) {
             throw ASN1Exception("Value is not DER-encoded")
         }
-        val fieldSequence: ASN1Sequence = try {
+        val sequence = try {
             ASN1Sequence.getInstance(asn1Value)
         } catch (_: IllegalArgumentException) {
             throw ASN1Exception("Value is not an ASN.1 sequence")
         }
-        @Suppress("USELESS_CAST") val implicitlyTaggedItems = fieldSequence.map {
-            if (it !is ASN1TaggedObject) {
-                throw ASN1Exception("Sequence contains explicitly tagged item")
+        return sequence.map {
+            if (it !is T) {
+                throw ASN1Exception("Sequence contains an item of an unexpected type " +
+                    "(${it::class.java.simpleName})"
+                )
             }
-            it as ASN1TaggedObject
-        }
-        return implicitlyTaggedItems.toTypedArray()
+            @Suppress("USELESS_CAST")
+            it as T
+        }.toTypedArray()
     }
+
+    @Throws(ASN1Exception::class)
+    fun deserializeHeterogeneousSequence(serialization: ByteArray): Array<ASN1TaggedObject> =
+        deserializeHomogeneousSequence(serialization)
 
     fun derEncodeUTCDate(date: ZonedDateTime): DERGeneralizedTime {
         val dateUTC = date.withZoneSameInstant(ZoneOffset.UTC)

@@ -50,7 +50,7 @@ class ParcelCollectionAck(
             }
             val derSequence = serialization.sliceArray(10 until serialization.size)
             val sequence = try {
-                ASN1Utils.deserializeSequence(derSequence)
+                ASN1Utils.deserializeHeterogeneousSequence(derSequence)
             } catch (exc: ASN1Exception) {
                 throw InvalidMessageException("PCA is not a valid DER sequence", exc)
             }

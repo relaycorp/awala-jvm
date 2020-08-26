@@ -169,7 +169,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
     @Throws(RAMFException::class)
     private fun deserializeFields(serialization: ByteArray): FieldSet {
         val fields = try {
-            ASN1Utils.deserializeSequence(serialization)
+            ASN1Utils.deserializeHeterogeneousSequence(serialization)
         } catch (exc: ASN1Exception) {
             throw RAMFException("Invalid RAMF message", exc)
         }

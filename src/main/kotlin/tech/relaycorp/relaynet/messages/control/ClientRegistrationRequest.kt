@@ -48,7 +48,7 @@ class ClientRegistrationRequest(
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): ClientRegistrationRequest {
             val crrSequence = try {
-                ASN1Utils.deserializeSequence(serialization)
+                ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
                 throw InvalidMessageException("CRR is not a DER sequence", exc)
             }

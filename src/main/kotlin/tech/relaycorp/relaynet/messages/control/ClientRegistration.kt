@@ -37,7 +37,7 @@ class ClientRegistration(val clientCertificate: Certificate, val serverCertifica
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): ClientRegistration {
             val sequence = try {
-                ASN1Utils.deserializeSequence(serialization)
+                ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
                 throw InvalidMessageException("Client registration is not a DER sequence", exc)
             }

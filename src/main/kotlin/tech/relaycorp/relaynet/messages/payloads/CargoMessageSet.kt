@@ -15,7 +15,7 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
      */
     override fun serializePlaintext(): ByteArray {
         val items = messages.map { DEROctetString(it) as ASN1Encodable }.toTypedArray()
-        return ASN1Utils.serializeSequence(items, false)
+        return ASN1Utils.serializeSequence(items)
     }
 
     /**
@@ -29,11 +29,11 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
          */
         fun deserialize(serialization: ByteArray): CargoMessageSet {
             val items = try {
-                ASN1Utils.deserializeSequence(serialization)
+                ASN1Utils.deserializeHomogeneousSequence<DEROctetString>(serialization)
             } catch (exc: ASN1Exception) {
                 throw RAMFException("Invalid CargoMessageSet", exc)
             }
-            val messages = items.map { ASN1Utils.getOctetString(it).octets }
+            val messages = items.map { it.octets }
             return CargoMessageSet(messages.toTypedArray())
         }
     }

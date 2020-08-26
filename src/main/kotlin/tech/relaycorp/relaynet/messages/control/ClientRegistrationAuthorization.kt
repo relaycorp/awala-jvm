@@ -42,7 +42,7 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
             serverPublicKey: PublicKey
         ): ClientRegistrationAuthorization {
             val sequence = try {
-                ASN1Utils.deserializeSequence(serialization)
+                ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
                 throw InvalidMessageException("CRA is not a valid DER sequence", exc)
             }

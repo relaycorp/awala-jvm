@@ -23,7 +23,7 @@ class ClientRegistrationTest {
 
             val serialization = registration.serialize()
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val clientCertificateASN1 = ASN1Utils.getOctetString(sequence.first())
             assertEquals(
                 FullCertPath.PRIVATE_ENDPOINT.serialize().asList(),
@@ -38,7 +38,7 @@ class ClientRegistrationTest {
 
             val serialization = registration.serialize()
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val serverCertificateASN1 = ASN1Utils.getOctetString(sequence[1])
             assertEquals(
                 FullCertPath.PRIVATE_GW.serialize().asList(),

@@ -35,7 +35,7 @@ internal class CargoMessageSetTest {
 
             val serialization = cargoMessageSet.serializePlaintext()
 
-            val messages = ASN1Utils.deserializeSequence(serialization)
+            val messages = ASN1Utils.deserializeHomogeneousSequence<DEROctetString>(serialization)
             assertEquals(0, messages.size)
         }
 
@@ -46,10 +46,9 @@ internal class CargoMessageSetTest {
 
             val serialization = cargoMessageSet.serializePlaintext()
 
-            val messages = ASN1Utils.deserializeSequence(serialization)
+            val messages = ASN1Utils.deserializeHomogeneousSequence<DEROctetString>(serialization)
             assertEquals(1, messages.size)
-            val messageDer = ASN1Utils.getOctetString(messages.first())
-            assertEquals(message.asList(), messageDer.octets.asList())
+            assertEquals(message.asList(), messages.first().octets.asList())
         }
 
         @Test
@@ -60,12 +59,10 @@ internal class CargoMessageSetTest {
 
             val serialization = cargoMessageSet.serializePlaintext()
 
-            val messages = ASN1Utils.deserializeSequence(serialization)
+            val messages = ASN1Utils.deserializeHomogeneousSequence<DEROctetString>(serialization)
             assertEquals(2, messages.size)
-            val message1Der = ASN1Utils.getOctetString(messages[0])
-            val message2Der = ASN1Utils.getOctetString(messages[1])
-            assertEquals(message1.asList(), message1Der.octets.asList())
-            assertEquals(message2.asList(), message2Der.octets.asList())
+            assertEquals(message1.asList(), messages[0].octets.asList())
+            assertEquals(message2.asList(), messages[1].octets.asList())
         }
     }
 
@@ -105,32 +102,27 @@ internal class CargoMessageSetTest {
         @Test
         fun `A single-item sequence should be accepted`() {
             val message = "the message".toByteArray()
-            val serialization =
-                ASN1Utils.serializeSequence(arrayOf(DEROctetString(message)), false)
+            val cms = CargoMessageSet(arrayOf(message))
+            val serialization = cms.serializePlaintext()
 
-            val cargoMessageSet = CargoMessageSet.deserialize(serialization)
+            val cmsDeserialized = CargoMessageSet.deserialize(serialization)
 
-            assertEquals(1, cargoMessageSet.messages.size)
-            assertEquals(message.asList(), cargoMessageSet.messages.first().asList())
+            assertEquals(1, cmsDeserialized.messages.size)
+            assertEquals(message.asList(), cmsDeserialized.messages.first().asList())
         }
 
         @Test
         fun `A multi-item sequence should be accepted`() {
             val message1 = "message 1".toByteArray()
             val message2 = "message 2".toByteArray()
-            val serialization = ASN1Utils.serializeSequence(
-                arrayOf(
-                    DEROctetString(message1),
-                    DEROctetString(message2)
-                ),
-                false
-            )
+            val cms = CargoMessageSet(arrayOf(message1, message2))
+            val serialization = cms.serializePlaintext()
 
-            val cargoMessageSet = CargoMessageSet.deserialize(serialization)
+            val cmsDeserialized = CargoMessageSet.deserialize(serialization)
 
-            assertEquals(2, cargoMessageSet.messages.size)
-            assertEquals(message1.asList(), cargoMessageSet.messages[0].asList())
-            assertEquals(message2.asList(), cargoMessageSet.messages[1].asList())
+            assertEquals(2, cmsDeserialized.messages.size)
+            assertEquals(message1.asList(), cmsDeserialized.messages[0].asList())
+            assertEquals(message2.asList(), cmsDeserialized.messages[1].asList())
         }
     }
 

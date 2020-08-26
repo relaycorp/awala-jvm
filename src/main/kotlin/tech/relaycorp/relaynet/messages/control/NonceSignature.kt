@@ -43,7 +43,7 @@ class NonceSignature(val nonce: ByteArray, val signerCertificate: Certificate) {
                 throw InvalidMessageException("SignedData value is invalid", exc)
             }
             val sequence = try {
-                ASN1Utils.deserializeSequence(signedData.plaintext!!)
+                ASN1Utils.deserializeHeterogeneousSequence(signedData.plaintext!!)
             } catch (exc: ASN1Exception) {
                 throw InvalidMessageException("Signature plaintext is not a DER sequence", exc)
             }

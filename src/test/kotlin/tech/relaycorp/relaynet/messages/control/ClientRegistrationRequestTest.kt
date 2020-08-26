@@ -27,7 +27,7 @@ class ClientRegistrationRequestTest {
 
             val serialization = request.serialize(keyPair.private)
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val clientPublicKeyRaw = sequence[0]
             assertEquals(
                 keyPair.public.encoded.asList(),
@@ -41,7 +41,7 @@ class ClientRegistrationRequestTest {
 
             val serialization = request.serialize(keyPair.private)
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val craDeserialized = ASN1Utils.getOctetString(sequence[1]).octets
             assertEquals(
                 craSerialized.asList(),
@@ -55,7 +55,7 @@ class ClientRegistrationRequestTest {
 
             val serialization = request.serialize(keyPair.private)
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val craCountersignatureASN1 = sequence[2]
             val craCountersignature =
                 ASN1Utils.getOctetString(craCountersignatureASN1).octets

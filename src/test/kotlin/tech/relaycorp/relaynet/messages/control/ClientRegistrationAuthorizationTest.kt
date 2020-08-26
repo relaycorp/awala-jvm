@@ -32,7 +32,7 @@ class ClientRegistrationAuthorizationTest {
 
             val serialization = authorization.serialize(keyPair.private)
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val expiryDateDer = DERGeneralizedTime.getInstance(sequence[0], false)
             val expectedDate =
                 tomorrow.withZoneSameInstant(ZoneOffset.UTC).format(BER_DATETIME_FORMATTER)
@@ -45,7 +45,7 @@ class ClientRegistrationAuthorizationTest {
 
             val serialization = authorization.serialize(keyPair.private)
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val actualServerData = ASN1OctetString.getInstance(sequence[1], false)
             assertEquals(serverData.asList(), actualServerData.octets.asList())
         }
@@ -56,7 +56,7 @@ class ClientRegistrationAuthorizationTest {
 
             val serialization = authorization.serialize(keyPair.private)
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val signature = ASN1Utils.getOctetString(sequence[2]).octets
             val expectedPlaintext = ASN1Utils.serializeSequence(
                 arrayOf(OIDs.CRA, ASN1Utils.derEncodeUTCDate(tomorrow), DEROctetString(serverData)),

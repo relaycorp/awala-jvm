@@ -25,7 +25,7 @@ class ParcelDelivery(val deliveryId: String, val parcelSerialized: ByteArray) {
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): ParcelDelivery {
             val sequence = try {
-                ASN1Utils.deserializeSequence(serialization)
+                ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
                 throw InvalidMessageException("Delivery is not a DER sequence", exc)
             }

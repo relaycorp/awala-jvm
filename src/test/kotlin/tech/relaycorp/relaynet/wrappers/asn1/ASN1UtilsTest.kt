@@ -64,16 +64,18 @@ internal class ASN1UtilsTest {
     inner class DeserializeSequence {
         @Test
         fun `Value should be refused if it's empty`() {
-            val exception =
-                assertThrows<ASN1Exception> { ASN1Utils.deserializeSequence(byteArrayOf()) }
+            val exception = assertThrows<ASN1Exception> {
+                ASN1Utils.deserializeHeterogeneousSequence(byteArrayOf())
+            }
 
             assertEquals("Value is empty", exception.message)
         }
 
         @Test
         fun `Value should be refused if it's not DER-encoded`() {
-            val exception =
-                assertThrows<ASN1Exception> { ASN1Utils.deserializeSequence("a".toByteArray()) }
+            val exception = assertThrows<ASN1Exception> {
+                ASN1Utils.deserializeHeterogeneousSequence("a".toByteArray())
+            }
 
             assertEquals("Value is not DER-encoded", exception.message)
         }
@@ -82,27 +84,46 @@ internal class ASN1UtilsTest {
         fun `Value should be refused if it's not a sequence`() {
             val serialization = DERVisibleString("hey").encoded
 
-            val exception =
-                assertThrows<ASN1Exception> { ASN1Utils.deserializeSequence(serialization) }
+            val exception = assertThrows<ASN1Exception> {
+                ASN1Utils.deserializeHeterogeneousSequence(serialization)
+            }
 
             assertEquals("Value is not an ASN.1 sequence", exception.message)
         }
 
         @Test
-        fun `Any explicitly tagged item should be refused`() {
-            val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value2))
+        fun `Explicitly tagged items should be deserialized with their corresponding types`() {
+            val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value1))
 
-            val exception =
-                assertThrows<ASN1Exception> { ASN1Utils.deserializeSequence(serialization) }
+            val sequence = ASN1Utils.deserializeHomogeneousSequence<DERVisibleString>(serialization)
 
-            assertEquals("Sequence contains explicitly tagged item", exception.message)
+            assertEquals(2, sequence.size)
+            val value1Deserialized = sequence.first()
+            assertEquals(value1, value1Deserialized)
+            val value2Deserialized = sequence.last()
+            assertEquals(value1, value2Deserialized)
         }
 
         @Test
-        fun `Valid sequences should be deserialized`() {
+        fun `Explicitly tagged items with unexpected types should be refused`() {
+            val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value2))
+
+            val exception = assertThrows<ASN1Exception> {
+                ASN1Utils.deserializeHomogeneousSequence<DERVisibleString>(serialization)
+            }
+
+            assertEquals(
+                "Sequence contains an item of an unexpected type " +
+                    "(${value2::class.java.simpleName})",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Implicitly tagged items should be deserialized with their corresponding types`() {
             val serialization = ASN1Utils.serializeSequence(arrayOf(value1, value2), false)
 
-            val sequence = ASN1Utils.deserializeSequence(serialization)
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
 
             assertEquals(2, sequence.size)
             assertEquals(

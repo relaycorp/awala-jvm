@@ -22,7 +22,7 @@ class ParcelDeliveryTest {
 
             val serialization = delivery.serialize()
 
-            val sequenceASN1 = ASN1Utils.deserializeSequence(serialization)
+            val sequenceASN1 = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val deliveryIdASN1 = ASN1Utils.getVisibleString(sequenceASN1.first())
             assertEquals(deliveryId, deliveryIdASN1.string)
         }
@@ -33,7 +33,7 @@ class ParcelDeliveryTest {
 
             val serialization = delivery.serialize()
 
-            val sequenceASN1 = ASN1Utils.deserializeSequence(serialization)
+            val sequenceASN1 = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val parcelSerializedASN1 = ASN1Utils.getOctetString(sequenceASN1[1])
             assertEquals(
                 parcelSerialized.asList(),

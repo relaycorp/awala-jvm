@@ -42,7 +42,7 @@ class NonceSignatureTest {
 
             val signedData = SignedData.deserialize(serialization)
             assertNotNull(signedData.plaintext)
-            ASN1Utils.deserializeSequence(signedData.plaintext!!)
+            ASN1Utils.deserializeHeterogeneousSequence(signedData.plaintext!!)
         }
 
         @Test
@@ -52,7 +52,8 @@ class NonceSignatureTest {
             val serialization = signature.serialize(signerPrivateKey)
 
             val signedData = SignedData.deserialize(serialization)
-            val plaintextSequence = ASN1Utils.deserializeSequence(signedData.plaintext!!)
+            val plaintextSequence =
+                ASN1Utils.deserializeHeterogeneousSequence(signedData.plaintext!!)
             val oid = ASN1Utils.getOID(plaintextSequence.first())
             assertEquals(OIDs.NONCE_SIGNATURE, oid)
         }
@@ -64,7 +65,8 @@ class NonceSignatureTest {
             val serialization = signature.serialize(signerPrivateKey)
 
             val signedData = SignedData.deserialize(serialization)
-            val plaintextSequence = ASN1Utils.deserializeSequence(signedData.plaintext!!)
+            val plaintextSequence =
+                ASN1Utils.deserializeHeterogeneousSequence(signedData.plaintext!!)
             val nonceASN1 = ASN1Utils.getOctetString(plaintextSequence[1])
             assertEquals(nonce.asList(), nonceASN1.octets.asList())
         }

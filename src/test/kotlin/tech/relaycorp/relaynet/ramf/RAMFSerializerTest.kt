@@ -232,7 +232,7 @@ class RAMFSerializerTest {
                 val signedDataSerialized = skipFormatSignature(serialization)
                 val signedData = SignedData.deserialize(signedDataSerialized)
                 assertNotNull(signedData.plaintext)
-                return ASN1Utils.deserializeSequence(signedData.plaintext!!)
+                return ASN1Utils.deserializeHeterogeneousSequence(signedData.plaintext!!)
             }
         }
     }

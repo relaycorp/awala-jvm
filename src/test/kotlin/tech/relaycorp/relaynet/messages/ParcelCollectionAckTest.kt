@@ -45,7 +45,8 @@ internal class ParcelCollectionAckTest {
             val serialization = pca.serialize()
 
             val derSequence = serialization.slice(10 until serialization.size)
-            val sequenceItems = ASN1Utils.deserializeSequence(derSequence.toByteArray())
+            val sequenceItems =
+                ASN1Utils.deserializeHeterogeneousSequence(derSequence.toByteArray())
             assertEquals(3, sequenceItems.size)
             assertEquals(
                 senderEndpointPrivateAddress,
