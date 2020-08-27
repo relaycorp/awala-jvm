@@ -26,15 +26,13 @@ class ClientRegistrationRequest(
      * Sign and serialize CRR.
      */
     fun serialize(clientPrivateKey: PrivateKey): ByteArray {
-        val craCountersignaturePlaintext = ASN1Utils.serializeSequence(
-            arrayOf(OIDs.CRA_COUNTERSIGNATURE, DEROctetString(craSerialized)),
-            false
-        )
+        val craSerializedASN1 = DEROctetString(craSerialized)
+        val craCountersignaturePlaintext = makeCRACountersignaturePlaintext(craSerializedASN1)
         val craCountersignature = RSASigning.sign(craCountersignaturePlaintext, clientPrivateKey)
         return ASN1Utils.serializeSequence(
             arrayOf(
                 DEROctetString(clientPublicKey.encoded),
-                DEROctetString(craSerialized),
+                craSerializedASN1,
                 DEROctetString(craCountersignature)
             ),
             false
@@ -77,13 +75,17 @@ class ClientRegistrationRequest(
             craCountersignature: ByteArray,
             clientPublicKey: PublicKey
         ) {
-            val expectedPlaintext = ASN1Utils.serializeSequence(
-                arrayOf(OIDs.CRA_COUNTERSIGNATURE, craSerialized),
-                false
-            )
+            val expectedPlaintext = makeCRACountersignaturePlaintext(craSerialized)
             if (!RSASigning.verify(craCountersignature, clientPublicKey, expectedPlaintext)) {
                 throw InvalidMessageException("CRA countersignature is invalid")
             }
         }
+
+        private fun makeCRACountersignaturePlaintext(
+            craSerializedASN1: ASN1OctetString
+        ): ByteArray = ASN1Utils.serializeSequence(
+            arrayOf(OIDs.CRA_COUNTERSIGNATURE, craSerializedASN1),
+            false
+        )
     }
 }
