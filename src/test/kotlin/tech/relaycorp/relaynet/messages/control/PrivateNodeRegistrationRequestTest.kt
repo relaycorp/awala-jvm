@@ -36,7 +36,7 @@ class PrivateNodeRegistrationRequestTest {
         }
 
         @Test
-        fun `PNRA countersignature should contain correct PNRA`() {
+        fun `Authorization should be honored`() {
             val request = PrivateNodeRegistrationRequest(keyPair.public, pnraSerialized)
 
             val serialization = request.serialize(keyPair.private)
