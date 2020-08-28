@@ -15,55 +15,55 @@ import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ClientRegistrationRequestTest {
-    private val craSerialized = "CRA".toByteArray()
+class PrivateNodeRegistrationRequestTest {
+    private val pnraSerialized = "PNRA".toByteArray()
     private val keyPair = generateRSAKeyPair()
 
     @Nested
     inner class Serialize {
         @Test
-        fun `Client public key should be honored`() {
-            val request = ClientRegistrationRequest(keyPair.public, craSerialized)
+        fun `Private node public key should be honored`() {
+            val request = PrivateNodeRegistrationRequest(keyPair.public, pnraSerialized)
 
             val serialization = request.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            val clientPublicKeyRaw = sequence[0]
+            val privateNodePublicKeyRaw = sequence[0]
             assertEquals(
                 keyPair.public.encoded.asList(),
-                ASN1Utils.getOctetString(clientPublicKeyRaw).octets.asList()
+                ASN1Utils.getOctetString(privateNodePublicKeyRaw).octets.asList()
             )
         }
 
         @Test
-        fun `CRA countersignature should contain correct CRA`() {
-            val request = ClientRegistrationRequest(keyPair.public, craSerialized)
+        fun `PNRA countersignature should contain correct PNRA`() {
+            val request = PrivateNodeRegistrationRequest(keyPair.public, pnraSerialized)
 
             val serialization = request.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            val craDeserialized = ASN1Utils.getOctetString(sequence[1]).octets
+            val pnraDeserialized = ASN1Utils.getOctetString(sequence[1]).octets
             assertEquals(
-                craSerialized.asList(),
-                craDeserialized.asList()
+                pnraSerialized.asList(),
+                pnraDeserialized.asList()
             )
         }
 
         @Test
-        fun `CRA countersignature should be valid`() {
-            val request = ClientRegistrationRequest(keyPair.public, craSerialized)
+        fun `PNRA countersignature should be valid`() {
+            val request = PrivateNodeRegistrationRequest(keyPair.public, pnraSerialized)
 
             val serialization = request.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            val craCountersignatureASN1 = sequence[2]
-            val craCountersignature =
-                ASN1Utils.getOctetString(craCountersignatureASN1).octets
+            val pnraCountersignatureASN1 = sequence[2]
+            val pnraCountersignature =
+                ASN1Utils.getOctetString(pnraCountersignatureASN1).octets
             val expectedPlaintext = ASN1Utils.serializeSequence(
-                arrayOf(OIDs.CRA_COUNTERSIGNATURE, DEROctetString(craSerialized)),
+                arrayOf(OIDs.PNRA_COUNTERSIGNATURE, DEROctetString(pnraSerialized)),
                 false
             )
-            assertTrue(RSASigning.verify(craCountersignature, keyPair.public, expectedPlaintext))
+            assertTrue(RSASigning.verify(pnraCountersignature, keyPair.public, expectedPlaintext))
         }
     }
 
@@ -74,10 +74,10 @@ class ClientRegistrationRequestTest {
             val serialization = "invalid".toByteArray()
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationRequest.deserialize(serialization)
+                PrivateNodeRegistrationRequest.deserialize(serialization)
             }
 
-            assertEquals("CRR is not a DER sequence", exception.message)
+            assertEquals("PNRR is not a DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
         }
 
@@ -87,14 +87,14 @@ class ClientRegistrationRequestTest {
                 ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE, DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationRequest.deserialize(serialization)
+                PrivateNodeRegistrationRequest.deserialize(serialization)
             }
 
-            assertEquals("CRR sequence should have at least 3 items (got 2)", exception.message)
+            assertEquals("PNRR sequence should have at least 3 items (got 2)", exception.message)
         }
 
         @Test
-        fun `Malformed client public key should be refused`() {
+        fun `Malformed private node public key should be refused`() {
             val serialization = ASN1Utils.serializeSequence(
                 arrayOf(
                     DEROctetString("foo".toByteArray()),
@@ -105,43 +105,43 @@ class ClientRegistrationRequestTest {
             )
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationRequest.deserialize(serialization)
+                PrivateNodeRegistrationRequest.deserialize(serialization)
             }
 
-            assertEquals("Client public key is invalid", exception.message)
+            assertEquals("Private node public key is invalid", exception.message)
             assertTrue(exception.cause is KeyException)
         }
 
         @Test
-        fun `Invalid CRA countersignatures should be refused`() {
+        fun `Invalid PNRA countersignatures should be refused`() {
             val serialization = ASN1Utils.serializeSequence(
                 arrayOf(
                     DEROctetString(keyPair.public.encoded),
-                    DEROctetString(craSerialized),
+                    DEROctetString(pnraSerialized),
                     DEROctetString(RSASigning.sign("foo".toByteArray(), keyPair.private))
                 ),
                 false
             )
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationRequest.deserialize(serialization)
+                PrivateNodeRegistrationRequest.deserialize(serialization)
             }
 
-            assertEquals("CRA countersignature is invalid", exception.message)
+            assertEquals("PNRA countersignature is invalid", exception.message)
         }
 
         @Test
         fun `Valid values should be accepted`() {
-            val crr = ClientRegistrationRequest(keyPair.public, craSerialized)
+            val crr = PrivateNodeRegistrationRequest(keyPair.public, pnraSerialized)
             val serialization = crr.serialize(keyPair.private)
 
-            val crrDeserialized = ClientRegistrationRequest.deserialize(serialization)
+            val crrDeserialized = PrivateNodeRegistrationRequest.deserialize(serialization)
 
             assertEquals(
-                crr.clientPublicKey.encoded.asList(),
-                crrDeserialized.clientPublicKey.encoded.asList()
+                crr.privateNodePublicKey.encoded.asList(),
+                crrDeserialized.privateNodePublicKey.encoded.asList()
             )
-            assertEquals(crr.craSerialized.asList(), crrDeserialized.craSerialized.asList())
+            assertEquals(crr.pnraSerialized.asList(), crrDeserialized.pnraSerialized.asList())
         }
     }
 }

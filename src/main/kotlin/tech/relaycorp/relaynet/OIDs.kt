@@ -8,9 +8,9 @@ internal object OIDs {
     private val RELAYNET = RELAYCORP.branch("0").intern()
 
     private val CLIENT_REGISTRATION_PREFIX = RELAYNET.branch("2").intern()
-    val CRA: ASN1ObjectIdentifier =
+    val PNRA: ASN1ObjectIdentifier =
         CLIENT_REGISTRATION_PREFIX.branch("0").intern()
-    val CRA_COUNTERSIGNATURE: ASN1ObjectIdentifier =
+    val PNRA_COUNTERSIGNATURE: ASN1ObjectIdentifier =
         CLIENT_REGISTRATION_PREFIX.branch("1").intern()
 
     val NONCE_SIGNATURE: ASN1ObjectIdentifier = RELAYNET.branch("3").intern()
