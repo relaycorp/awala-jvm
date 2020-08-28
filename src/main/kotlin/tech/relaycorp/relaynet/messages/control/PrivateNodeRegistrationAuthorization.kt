@@ -15,41 +15,44 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /**
- * Client Registration Authorization.
+ * Private Node Registration Authorization (PNRA).
  */
-class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverData: ByteArray) {
+class PrivateNodeRegistrationAuthorization(
+    val expiryDate: ZonedDateTime,
+    val gatewayData: ByteArray
+) {
     /**
-     * Sign and serialize CRA
+     * Sign and serialize.
      */
-    fun serialize(serverPrivateKey: PrivateKey): ByteArray {
+    fun serialize(gatewayPrivateKey: PrivateKey): ByteArray {
         val expiryDateASN1 = ASN1Utils.derEncodeUTCDate(expiryDate)
-        val serverDataASN1 = DEROctetString(serverData)
-        val signaturePlaintext = makeSignaturePlaintext(expiryDateASN1, serverDataASN1)
-        val signature = RSASigning.sign(signaturePlaintext, serverPrivateKey)
+        val gatewayDataASN1 = DEROctetString(gatewayData)
+        val signaturePlaintext = makeSignaturePlaintext(expiryDateASN1, gatewayDataASN1)
+        val signature = RSASigning.sign(signaturePlaintext, gatewayPrivateKey)
         return ASN1Utils.serializeSequence(
-            arrayOf(expiryDateASN1, serverDataASN1, DEROctetString(signature)),
+            arrayOf(expiryDateASN1, gatewayDataASN1, DEROctetString(signature)),
             false
         )
     }
 
     companion object {
         /**
-         * Deserialize and validate CRA.
+         * Deserialize and validate.
          */
         @Throws(InvalidMessageException::class)
         fun deserialize(
             serialization: ByteArray,
-            serverPublicKey: PublicKey
-        ): ClientRegistrationAuthorization {
+            gatewayPublicKey: PublicKey
+        ): PrivateNodeRegistrationAuthorization {
             val sequence = try {
                 ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("CRA is not a valid DER sequence", exc)
+                throw InvalidMessageException("PNRA is not a valid DER sequence", exc)
             }
 
             if (sequence.size < 3) {
                 throw InvalidMessageException(
-                    "CRA plaintext should have at least 3 items (got ${sequence.size})"
+                    "PNRA plaintext should have at least 3 items (got ${sequence.size})"
                 )
             }
 
@@ -57,23 +60,23 @@ class ClientRegistrationAuthorization(val expiryDate: ZonedDateTime, val serverD
             val expiryDate =
                 ZonedDateTime.ofInstant(expiryDateASN1.date.toInstant(), ZoneId.systemDefault())
             if (expiryDate < ZonedDateTime.now()) {
-                throw InvalidMessageException("CRA already expired")
+                throw InvalidMessageException("PNRA already expired")
             }
 
-            val serverDataASN1 = ASN1Utils.getOctetString(sequence[1])
+            val gatewayDataASN1 = ASN1Utils.getOctetString(sequence[1])
 
             val signature = ASN1Utils.getOctetString(sequence[2]).octets
-            val expectedPlaintext = makeSignaturePlaintext(expiryDateASN1, serverDataASN1)
-            if (!RSASigning.verify(signature, serverPublicKey, expectedPlaintext)) {
-                throw InvalidMessageException("CRA signature is invalid")
+            val expectedPlaintext = makeSignaturePlaintext(expiryDateASN1, gatewayDataASN1)
+            if (!RSASigning.verify(signature, gatewayPublicKey, expectedPlaintext)) {
+                throw InvalidMessageException("PNRA signature is invalid")
             }
 
-            return ClientRegistrationAuthorization(expiryDate, serverDataASN1.octets)
+            return PrivateNodeRegistrationAuthorization(expiryDate, gatewayDataASN1.octets)
         }
 
         private fun makeSignaturePlaintext(
             expiryDateASN1: ASN1GeneralizedTime,
-            serverDataASN1: ASN1OctetString
-        ) = ASN1Utils.serializeSequence(arrayOf(OIDs.CRA, expiryDateASN1, serverDataASN1), false)
+            gatewayDataASN1: ASN1OctetString
+        ) = ASN1Utils.serializeSequence(arrayOf(OIDs.PNRA, expiryDateASN1, gatewayDataASN1), false)
     }
 }

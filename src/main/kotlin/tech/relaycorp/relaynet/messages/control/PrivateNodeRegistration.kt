@@ -9,23 +9,26 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 /**
- * Client registration with a private or public gateway.
+ * Private node registration with its private or public gateway.
  *
- * When the client is a private endpoint, the server must be a private gateway. When the client
- * is a private gateway, the server must be a public gateway.
+ * When the node is a private endpoint, the gateway must be private. When the node is a private
+ * gateway, the gateway must be public.
  *
- * @param clientCertificate The certificate of the private endpoint/gateway
- * @param serverCertificate The certificate of the gateway acting as server
+ * @param privateNodeCertificate The certificate of the private node
+ * @param gatewayCertificate The certificate of the gateway acting as server
  */
-class ClientRegistration(val clientCertificate: Certificate, val serverCertificate: Certificate) {
+class PrivateNodeRegistration(
+    val privateNodeCertificate: Certificate,
+    val gatewayCertificate: Certificate
+) {
     /**
      * Serialize registration.
      */
     fun serialize(): ByteArray {
-        val clientCertificateASN1 = DEROctetString(clientCertificate.serialize())
-        val serverCertificateASN1 = DEROctetString(serverCertificate.serialize())
+        val nodeCertificateASN1 = DEROctetString(privateNodeCertificate.serialize())
+        val gatewayCertificateASN1 = DEROctetString(gatewayCertificate.serialize())
         return ASN1Utils.serializeSequence(
-            arrayOf(clientCertificateASN1, serverCertificateASN1),
+            arrayOf(nodeCertificateASN1, gatewayCertificateASN1),
             false
         )
     }
@@ -35,35 +38,35 @@ class ClientRegistration(val clientCertificate: Certificate, val serverCertifica
          * Deserialize registration.
          */
         @Throws(InvalidMessageException::class)
-        fun deserialize(serialization: ByteArray): ClientRegistration {
+        fun deserialize(serialization: ByteArray): PrivateNodeRegistration {
             val sequence = try {
                 ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("Client registration is not a DER sequence", exc)
+                throw InvalidMessageException("Node registration is not a DER sequence", exc)
             }
             if (sequence.size < 2) {
                 throw InvalidMessageException(
-                    "Client registration sequence should have at least two items (got " +
+                    "Node registration sequence should have at least two items (got " +
                         "${sequence.size})"
                 )
             }
-            val clientCertificate = try {
+            val nodeCertificate = try {
                 deserializeCertificate(sequence[0])
             } catch (exc: CertificateException) {
                 throw InvalidMessageException(
-                    "Client registration contains invalid client certificate",
+                    "Node registration contains invalid node certificate",
                     exc
                 )
             }
-            val serverCertificate = try {
+            val gatewayCertificate = try {
                 deserializeCertificate(sequence[1])
             } catch (exc: CertificateException) {
                 throw InvalidMessageException(
-                    "Client registration contains invalid server certificate",
+                    "Node registration contains invalid gateway certificate",
                     exc
                 )
             }
-            return ClientRegistration(clientCertificate, serverCertificate)
+            return PrivateNodeRegistration(nodeCertificate, gatewayCertificate)
         }
 
         @Throws(CertificateException::class)

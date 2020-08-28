@@ -13,36 +13,36 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ClientRegistrationTest {
+class PrivateNodeRegistrationTest {
     @Nested
     inner class Serialize {
         @Test
-        fun `Client certificate should be serialized`() {
+        fun `Node certificate should be serialized`() {
             val registration =
-                ClientRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
+                PrivateNodeRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
 
             val serialization = registration.serialize()
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            val clientCertificateASN1 = ASN1Utils.getOctetString(sequence.first())
+            val nodeCertificateASN1 = ASN1Utils.getOctetString(sequence.first())
             assertEquals(
                 FullCertPath.PRIVATE_ENDPOINT.serialize().asList(),
-                clientCertificateASN1.octets.asList()
+                nodeCertificateASN1.octets.asList()
             )
         }
 
         @Test
-        fun `Server certificate should be serialized`() {
+        fun `Gateway certificate should be serialized`() {
             val registration =
-                ClientRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
+                PrivateNodeRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
 
             val serialization = registration.serialize()
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            val serverCertificateASN1 = ASN1Utils.getOctetString(sequence[1])
+            val gatewayCertificateASN1 = ASN1Utils.getOctetString(sequence[1])
             assertEquals(
                 FullCertPath.PRIVATE_GW.serialize().asList(),
-                serverCertificateASN1.octets.asList()
+                gatewayCertificateASN1.octets.asList()
             )
         }
     }
@@ -54,10 +54,10 @@ class ClientRegistrationTest {
             val invalidSerialization = "foo".toByteArray()
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistration.deserialize(invalidSerialization)
+                PrivateNodeRegistration.deserialize(invalidSerialization)
             }
 
-            assertEquals("Client registration is not a DER sequence", exception.message)
+            assertEquals("Node registration is not a DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
         }
 
@@ -67,33 +67,33 @@ class ClientRegistrationTest {
                 ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistration.deserialize(invalidSerialization)
+                PrivateNodeRegistration.deserialize(invalidSerialization)
             }
 
             assertEquals(
-                "Client registration sequence should have at least two items (got 1)",
+                "Node registration sequence should have at least two items (got 1)",
                 exception.message
             )
         }
 
         @Test
-        fun `Invalid client certificates should be refused`() {
+        fun `Invalid node certificates should be refused`() {
             val invalidSerialization =
                 ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE, DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistration.deserialize(invalidSerialization)
+                PrivateNodeRegistration.deserialize(invalidSerialization)
             }
 
             assertEquals(
-                "Client registration contains invalid client certificate",
+                "Node registration contains invalid node certificate",
                 exception.message
             )
             assertTrue(exception.cause is CertificateException)
         }
 
         @Test
-        fun `Invalid server certificates should be refused`() {
+        fun `Invalid gateway certificates should be refused`() {
             val invalidSerialization = ASN1Utils.serializeSequence(
                 arrayOf(
                     DEROctetString(FullCertPath.PRIVATE_ENDPOINT.serialize()),
@@ -102,11 +102,11 @@ class ClientRegistrationTest {
             )
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistration.deserialize(invalidSerialization)
+                PrivateNodeRegistration.deserialize(invalidSerialization)
             }
 
             assertEquals(
-                "Client registration contains invalid server certificate",
+                "Node registration contains invalid gateway certificate",
                 exception.message
             )
             assertTrue(exception.cause is CertificateException)
@@ -115,15 +115,18 @@ class ClientRegistrationTest {
         @Test
         fun `Valid registration should be accepted`() {
             val registration =
-                ClientRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
+                PrivateNodeRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
             val serialization = registration.serialize()
 
-            val registrationDeserialized = ClientRegistration.deserialize(serialization)
+            val registrationDeserialized = PrivateNodeRegistration.deserialize(serialization)
 
-            assertEquals(FullCertPath.PRIVATE_ENDPOINT, registrationDeserialized.clientCertificate)
+            assertEquals(
+                FullCertPath.PRIVATE_ENDPOINT,
+                registrationDeserialized.privateNodeCertificate
+            )
             assertEquals(
                 FullCertPath.PRIVATE_GW,
-                registrationDeserialized.serverCertificate
+                registrationDeserialized.gatewayCertificate
             )
         }
     }

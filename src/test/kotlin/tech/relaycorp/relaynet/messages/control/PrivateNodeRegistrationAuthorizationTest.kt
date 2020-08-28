@@ -19,16 +19,16 @@ import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ClientRegistrationAuthorizationTest {
+class PrivateNodeRegistrationAuthorizationTest {
     private val tomorrow = ZonedDateTime.now().plusDays(1)
-    private val serverData = "this is opaque to the client".toByteArray()
+    private val gatewayData = "this is opaque to the private node".toByteArray()
     private val keyPair = generateRSAKeyPair()
 
     @Nested
     inner class Serialize {
         @Test
         fun `Expiry date should be honored`() {
-            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
+            val authorization = PrivateNodeRegistrationAuthorization(tomorrow, gatewayData)
 
             val serialization = authorization.serialize(keyPair.private)
 
@@ -40,26 +40,30 @@ class ClientRegistrationAuthorizationTest {
         }
 
         @Test
-        fun `Server data should be honored`() {
-            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
+        fun `Gateway data should be honored`() {
+            val authorization = PrivateNodeRegistrationAuthorization(tomorrow, gatewayData)
 
             val serialization = authorization.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            val actualServerData = ASN1OctetString.getInstance(sequence[1], false)
-            assertEquals(serverData.asList(), actualServerData.octets.asList())
+            val actualGatewayData = ASN1OctetString.getInstance(sequence[1], false)
+            assertEquals(gatewayData.asList(), actualGatewayData.octets.asList())
         }
 
         @Test
         fun `Signature should be valid`() {
-            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
+            val authorization = PrivateNodeRegistrationAuthorization(tomorrow, gatewayData)
 
             val serialization = authorization.serialize(keyPair.private)
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val signature = ASN1Utils.getOctetString(sequence[2]).octets
             val expectedPlaintext = ASN1Utils.serializeSequence(
-                arrayOf(OIDs.CRA, ASN1Utils.derEncodeUTCDate(tomorrow), DEROctetString(serverData)),
+                arrayOf(
+                    OIDs.PNRA,
+                    ASN1Utils.derEncodeUTCDate(tomorrow),
+                    DEROctetString(gatewayData)
+                ),
                 false
             )
             assertTrue(RSASigning.verify(signature, keyPair.public, expectedPlaintext))
@@ -73,10 +77,10 @@ class ClientRegistrationAuthorizationTest {
             val serialization = "invalid".toByteArray()
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
             }
 
-            assertEquals("CRA is not a valid DER sequence", exception.message)
+            assertEquals("PNRA is not a valid DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
         }
 
@@ -88,11 +92,11 @@ class ClientRegistrationAuthorizationTest {
             )
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
             }
 
             assertEquals(
-                "CRA plaintext should have at least 3 items (got 2)",
+                "PNRA plaintext should have at least 3 items (got 2)",
                 exception.message
             )
         }
@@ -100,14 +104,14 @@ class ClientRegistrationAuthorizationTest {
         @Test
         fun `Expired authorizations should be refused`() {
             val oneSecondAgo = ZonedDateTime.now().minusSeconds(1)
-            val authorization = ClientRegistrationAuthorization(oneSecondAgo, serverData)
+            val authorization = PrivateNodeRegistrationAuthorization(oneSecondAgo, gatewayData)
             val serialization = authorization.serialize(keyPair.private)
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
             }
 
-            assertEquals("CRA already expired", exception.message)
+            assertEquals("PNRA already expired", exception.message)
         }
 
         @Test
@@ -116,29 +120,29 @@ class ClientRegistrationAuthorizationTest {
             val serialization = ASN1Utils.serializeSequence(
                 arrayOf(
                     ASN1Utils.derEncodeUTCDate(tomorrow),
-                    DEROctetString(serverData),
+                    DEROctetString(gatewayData),
                     DEROctetString(invalidSignature)
                 ),
                 false
             )
 
             val exception = assertThrows<InvalidMessageException> {
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
             }
 
-            assertEquals("CRA signature is invalid", exception.message)
+            assertEquals("PNRA signature is invalid", exception.message)
         }
 
         @Test
         fun `Valid values should be accepted`() {
-            val authorization = ClientRegistrationAuthorization(tomorrow, serverData)
+            val authorization = PrivateNodeRegistrationAuthorization(tomorrow, gatewayData)
             val serialization = authorization.serialize(keyPair.private)
 
             val authorizationDeserialized =
-                ClientRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
 
             assertEquals(tomorrow.withNano(0), authorizationDeserialized.expiryDate)
-            assertEquals(serverData.asList(), authorizationDeserialized.serverData.asList())
+            assertEquals(gatewayData.asList(), authorizationDeserialized.gatewayData.asList())
         }
     }
 }
