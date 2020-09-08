@@ -2,6 +2,8 @@ package tech.relaycorp.relaynet.bindings.pdc
 
 import tech.relaycorp.relaynet.messages.control.NonceSignature
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.net.URI
+import java.net.http.HttpRequest
 import java.security.PrivateKey
 
 /**
@@ -15,4 +17,9 @@ class NonceSigner(val certificate: Certificate, private val privateKey: PrivateK
         val signature = NonceSignature(nonce, certificate)
         return signature.serialize(privateKey)
     }
+
+    fun thingy() = HttpRequest.newBuilder()
+        .uri(URI("https://postman-echo.com/get"))
+        .GET()
+        .build()
 }

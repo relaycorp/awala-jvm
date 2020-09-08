@@ -6,6 +6,7 @@ import tech.relaycorp.relaynet.messages.control.NonceSignature
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class NonceSignerTest {
     private val nonce = "The nonce".toByteArray()
@@ -36,5 +37,10 @@ class NonceSignerTest {
     @Test
     fun `Signer certificate should be exposed`() {
         assertEquals(certificate, signer.certificate)
+    }
+
+    @Test
+    fun `Check thingy`() {
+        assertNotNull(signer.thingy())
     }
 }

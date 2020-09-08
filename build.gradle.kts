@@ -21,6 +21,8 @@ plugins {
     id("com.diffplug.spotless") version "5.1.1"
 
     jacoco
+
+    id("ru.vyarus.animalsniffer") version "1.5.1"
 }
 
 repositories {
@@ -53,6 +55,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
+
+    signature("org.codehaus.mojo.signature:java18:1.0")
+    signature("net.sf.androidscents.signature:android-api-level-21:5.0.1_r2")
 }
 
 java {
