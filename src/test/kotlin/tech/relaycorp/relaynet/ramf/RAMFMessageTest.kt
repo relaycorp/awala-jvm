@@ -14,7 +14,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -634,7 +634,7 @@ class RAMFMessageTest {
             }
 
             @Test
-            fun `Message should be refused if recipient is private and doesn't match sender issuer`() {
+            fun `Message should be refused if private recipient doesn't match sender issuer`() {
                 val anotherRecipientKeyPair = generateRSAKeyPair()
                 val anotherRecipientCert = issueStubCertificate(
                     anotherRecipientKeyPair.public,

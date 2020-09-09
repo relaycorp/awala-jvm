@@ -11,7 +11,7 @@ import java.security.PrivateKey
 import java.time.ZoneId
 import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.UUID
 
 private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1024
 private const val MAX_MESSAGE_ID_LENGTH = 64
