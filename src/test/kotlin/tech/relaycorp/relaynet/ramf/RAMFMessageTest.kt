@@ -599,12 +599,12 @@ class RAMFMessageTest {
                     message.validate(null, setOf(FullCertPath.PUBLIC_GW))
                 }
 
-                assertEquals("Sender is not authorized", exception.message)
+                assertEquals("Sender is not trusted", exception.message)
                 assertTrue(exception.cause is CertificateException)
             }
 
             @Test
-            fun `Message should be accepted if sender is trusted`() {
+            fun `Message should be accepted if recipient is private and sender is trusted`() {
                 val message = StubEncryptedRAMFMessage(
                     FullCertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
                     payload,
@@ -619,7 +619,22 @@ class RAMFMessageTest {
             }
 
             @Test
-            fun `Message should be refused if message recipient does not match sender issuer`() {
+            fun `Message should be accepted if recipient is public and sender is trusted`() {
+                val message = StubEncryptedRAMFMessage(
+                    "https://endpoint.example.com",
+                    payload,
+                    FullCertPath.PDA,
+                    senderCertificateChain = setOf(
+                        FullCertPath.PRIVATE_GW,
+                        FullCertPath.PRIVATE_ENDPOINT
+                    )
+                )
+
+                message.validate(null, setOf(FullCertPath.PUBLIC_GW))
+            }
+
+            @Test
+            fun `Message should be refused if private recipient doesn't match sender issuer`() {
                 val anotherRecipientKeyPair = generateRSAKeyPair()
                 val anotherRecipientCert = issueStubCertificate(
                     anotherRecipientKeyPair.public,
@@ -637,22 +652,6 @@ class RAMFMessageTest {
                 }
 
                 assertEquals("Sender is authorized by the wrong recipient", exception.message)
-            }
-
-            @Test
-            fun `Authorization enforcement should be skipped if recipient address is public`() {
-                val untrustedSenderKeyPair = generateRSAKeyPair()
-                val untrustedSenderCert = issueStubCertificate(
-                    untrustedSenderKeyPair.public,
-                    untrustedSenderKeyPair.private
-                )
-                val message = StubEncryptedRAMFMessage(
-                    "https://foo.relaycorp.tech",
-                    payload,
-                    untrustedSenderCert
-                )
-
-                message.validate(null, setOf(FullCertPath.PUBLIC_GW))
             }
 
             @Test

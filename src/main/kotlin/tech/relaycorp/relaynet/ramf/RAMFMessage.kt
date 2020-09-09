@@ -21,7 +21,7 @@ private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
 internal typealias RAMFMessageConstructor<M> =
-        (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
+    (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
 
 private val PRIVATE_ADDRESS_REGEX = "^0[a-f0-9]+$".toRegex()
 
@@ -120,10 +120,12 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     /**
      * Validate the message.
      *
-     * If the recipient address is private, passing a collection of `trustedCAs` will also make
-     * sure that the sender is authorized to send this message to the recipient.
+     * Passing a collection of [trustedCAs] will also verify:
      *
-     * If there are no trusted CAs, avoid setting `trustedCAs` to an empty collection as that will
+     * - That there's a valid path between the sender's certificate and one of the [trustedCAs].
+     * - That, if the recipient address is private, the sender's issuer is the recipient itself.
+     *
+     * If there are no trusted CAs, avoid setting [trustedCAs] to an empty collection as that will
      * always cause validation to fail. This is intentional: We won't try to guess whether you made
      * a mistake or really meant to skip authorization checks.
      *
@@ -147,8 +149,8 @@ abstract class RAMFMessage<P : Payload> internal constructor(
             throw RAMFException("Invalid sender certificate", exc)
         }
 
-        if (trustedCAs != null && isRecipientAddressPrivate) {
-            validateAuthorization(trustedCAs)
+        if (trustedCAs != null) {
+            validateAuthorization(trustedCAs, isRecipientAddressPrivate)
         }
     }
 
@@ -191,17 +193,22 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     }
 
     @Throws(InvalidMessageException::class)
-    private fun validateAuthorization(trustedCAs: Collection<Certificate>) {
+    private fun validateAuthorization(
+        trustedCAs: Collection<Certificate>,
+        isRecipientAddressPrivate: Boolean
+    ) {
         val certificationPath = try {
             getSenderCertificationPath(trustedCAs)
         } catch (exc: CertificateException) {
-            throw InvalidMessageException("Sender is not authorized", exc)
+            throw InvalidMessageException("Sender is not trusted", exc)
         }
 
-        val recipientCertificate = certificationPath[1]
-        val recipientPrivateAddress = recipientCertificate.subjectPrivateAddress
-        if (recipientPrivateAddress != recipientAddress) {
-            throw InvalidMessageException("Sender is authorized by the wrong recipient")
+        if (isRecipientAddressPrivate) {
+            val recipientCertificate = certificationPath[1]
+            val recipientPrivateAddress = recipientCertificate.subjectPrivateAddress
+            if (recipientPrivateAddress != recipientAddress) {
+                throw InvalidMessageException("Sender is authorized by the wrong recipient")
+            }
         }
     }
 
