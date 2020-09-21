@@ -28,10 +28,10 @@ import java.security.InvalidAlgorithmParameterException
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.cert.CertPathBuilderException
-import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
+import java.util.Date
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -751,8 +751,8 @@ class CertificateTest {
                 val builder = X509v3CertificateBuilder(
                     issuerDistinguishedNameBuilder.build(),
                     42.toBigInteger(),
-                    Date.valueOf(LocalDateTime.now().toLocalDate()),
-                    Date.valueOf(stubValidityEndDate.toLocalDate().plusMonths(1)),
+                    Date.from(ZonedDateTime.now().toInstant()),
+                    Date.from(stubValidityEndDate.plusMonths(1).toInstant()),
                     issuerDistinguishedNameBuilder.build(),
                     SubjectPublicKeyInfo.getInstance(stubSubjectKeyPair.public.encoded)
                 )
@@ -1086,8 +1086,8 @@ class CertificateTest {
         val builder = X509v3CertificateBuilder(
             issuerDistinguishedNameBuilder.build(),
             42.toBigInteger(),
-            Date.valueOf(LocalDateTime.now().toLocalDate()),
-            Date.valueOf(LocalDateTime.now().toLocalDate().plusMonths(1)),
+            Date.from(LocalDateTime.now().toInstant(UTC)),
+            Date.from(LocalDateTime.now().plusMonths(1).toInstant(UTC)),
             issuerDistinguishedNameBuilder.build(),
             SubjectPublicKeyInfo.getInstance(publicKey.encoded)
         )
