@@ -30,9 +30,9 @@ import java.security.cert.PKIXCertPathBuilderResult
 import java.security.cert.PKIXParameters
 import java.security.cert.TrustAnchor
 import java.security.cert.X509CertSelector
-import java.sql.Date
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.Date
 
 /**
  * Relaynet PKI Certificate.
