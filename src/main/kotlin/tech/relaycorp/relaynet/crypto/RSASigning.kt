@@ -5,6 +5,10 @@ import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Signature
 
+/**
+ * Plain RSA signatures are used when CMS SignedData can't be used. That is, when the signer
+ * doesn't (yet) have a certificate.
+ */
 internal object RSASigning {
     fun sign(plaintext: ByteArray, privateKey: PrivateKey): ByteArray {
         val signature = makeSignature()
