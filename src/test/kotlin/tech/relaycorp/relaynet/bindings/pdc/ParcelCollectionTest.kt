@@ -70,7 +70,7 @@ class ParcelCollectionTest {
         }
 
         @Test
-        fun `Unauthorized parcels should be refused`() {
+        fun `Parcels from unauthorized senders should be refused`() {
             val invalidParcel = Parcel(
                 recipientCertificate.subjectPrivateAddress,
                 payload,
