@@ -455,7 +455,7 @@ class RAMFMessageTest {
             private val publicAddress = "https://example.com"
 
             @Test
-            fun `Public addresses should be accepted`() {
+            fun `Public address should be allowed if no specific type is required`() {
                 val message = StubEncryptedRAMFMessage(
                     publicAddress,
                     payload,
@@ -467,7 +467,7 @@ class RAMFMessageTest {
             }
 
             @Test
-            fun `Private addresses should be accepted`() {
+            fun `Private address should be allowed if no specific type is required`() {
                 val message = StubEncryptedRAMFMessage(
                     privateAddress,
                     payload,
@@ -546,30 +546,6 @@ class RAMFMessageTest {
                 )
 
                 message.validate(RecipientAddressType.PUBLIC)
-            }
-
-            @Test
-            fun `Private address should be allowed if no specific type is required`() {
-                val message = StubEncryptedRAMFMessage(
-                    privateAddress,
-                    payload,
-                    senderCertificate,
-                    messageId
-                )
-
-                message.validate(null)
-            }
-
-            @Test
-            fun `Public address should be allowed if no specific type is required`() {
-                val message = StubEncryptedRAMFMessage(
-                    publicAddress,
-                    payload,
-                    senderCertificate,
-                    messageId
-                )
-
-                message.validate(null)
             }
         }
 
