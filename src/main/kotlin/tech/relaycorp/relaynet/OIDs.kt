@@ -13,5 +13,5 @@ internal object OIDs {
     val PNRA_COUNTERSIGNATURE: ASN1ObjectIdentifier =
         PRIVATE_NODE_REGISTRATION_PREFIX.branch("1").intern()
 
-    val NONCE_SIGNATURE: ASN1ObjectIdentifier = RELAYNET.branch("3").intern()
+    val DETACHED_SIGNATURE: ASN1ObjectIdentifier = RELAYNET.branch("3").intern()
 }
