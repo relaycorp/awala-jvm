@@ -10,7 +10,7 @@ interface PDCClient : Closeable {
     suspend fun deliverParcel(parcelSerialized: ByteArray)
 
     suspend fun collectParcels(
-        nonceSigners: Array<NonceSigner>,
+        nonceSigners: Array<Signer>,
         streamingMode: StreamingMode = StreamingMode.KeepAlive
     ): Flow<ParcelCollection>
 }
