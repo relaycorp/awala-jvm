@@ -13,11 +13,13 @@
 <tbody>
 <tr>
 <td>
-<h4><a href="-nonce-signer/index.html">NonceSigner</a></h4>
+<h4><a href="-detached-signature-type/index.html">DetachedSignatureType</a></h4>
 </td>
 <td>
-<p>Handshake nonce signer for a given private endpoint or private gateway.</p>
-<code><span class="keyword">class </span><span class="identifier">NonceSigner</span></code></td>
+<p>Utility to sign and verify CMS SignedData values where the plaintext is not encapsulated (to
+avoid re-encoding the plaintext for performance reasons), and the signer's certificate is
+encapsulated.</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">DetachedSignatureType</span></code></td>
 </tr>
 <tr>
 <td>
@@ -34,6 +36,14 @@
 <td>
 <p>Interface for all Parcel Delivery Connection clients.</p>
 <code><span class="keyword">interface </span><span class="identifier">PDCClient</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/io/Closeable.html"><span class="identifier">Closeable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-signer/index.html">Signer</a></h4>
+</td>
+<td>
+<p>Object to produce detached signatures given a key pair.</p>
+<code><span class="keyword">class </span><span class="identifier">Signer</span></code></td>
 </tr>
 <tr>
 <td>
