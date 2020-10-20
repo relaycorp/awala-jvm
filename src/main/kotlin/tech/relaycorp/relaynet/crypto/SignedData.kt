@@ -92,7 +92,7 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
         val isValid = try {
             signerInfo.verify(verifier)
         } catch (exc: CMSException) {
-            throw SignedDataException("Invalid signature", exc)
+            throw SignedDataException("Could not verify signature", exc)
         }
         if (!isValid) {
             throw SignedDataException("Invalid signature")

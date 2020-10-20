@@ -400,7 +400,7 @@ class SignedDataTest {
 
             val exception = assertThrows<SignedDataException> { invalidSignedData.verify() }
 
-            assertEquals("Invalid signature", exception.message)
+            assertEquals("Could not verify signature", exception.message)
             assertTrue(exception.cause is CMSException)
         }
 
@@ -433,8 +433,28 @@ class SignedDataTest {
             val exception =
                 assertThrows<SignedDataException> { invalidSignedData.verify(stubPlaintext) }
 
-            assertEquals("Invalid signature", exception.message)
+            assertEquals("Could not verify signature", exception.message)
             assertTrue(exception.cause is CMSException)
+        }
+
+        @Test
+        fun `Signature with non-matching asymmetric keys should be refused`() {
+            // Do the verification with a different key pair
+
+            val anotherKeyPair = generateRSAKeyPair()
+            val signedData = SignedData.sign(
+                stubPlaintext,
+                anotherKeyPair.private,
+                stubCertificate,
+                setOf(stubCertificate)
+            )
+
+            val exception = assertThrows<SignedDataException> {
+                signedData.verify()
+            }
+
+            assertEquals("Invalid signature", exception.message)
+            assertNull(exception.cause)
         }
 
         @Test
