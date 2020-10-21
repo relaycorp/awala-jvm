@@ -9,7 +9,6 @@ import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
-import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import kotlin.test.assertEquals
@@ -70,7 +69,7 @@ class DetachedSignatureTypeTest {
                 setOf(FullCertPath.PRIVATE_ENDPOINT)
             ).serialize()
 
-            val exception = assertThrows<InvalidMessageException> {
+            val exception = assertThrows<InvalidSignatureException> {
                 signatureType.verify(invalidSignedData, plaintext, listOf(FullCertPath.PRIVATE_GW))
             }
 
@@ -83,7 +82,7 @@ class DetachedSignatureTypeTest {
             val serialization =
                 signatureType.sign(plaintext, KeyPairSet.PUBLIC_GW.private, FullCertPath.PUBLIC_GW)
 
-            val exception = assertThrows<InvalidMessageException> {
+            val exception = assertThrows<InvalidSignatureException> {
                 signatureType.verify(serialization, plaintext, listOf(FullCertPath.PRIVATE_GW))
             }
 
