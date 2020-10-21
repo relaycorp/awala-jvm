@@ -5,7 +5,6 @@ import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
-import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
@@ -42,7 +41,7 @@ enum class DetachedSignatureType(internal val oid: ASN1ObjectIdentifier) {
     /**
      * Verify `signatureSerialized` and return the signer's certificate if valid.
      */
-    @Throws(InvalidMessageException::class)
+    @Throws(InvalidSignatureException::class)
     fun verify(
         signatureSerialized: ByteArray,
         expectedPlaintext: ByteArray,
@@ -52,13 +51,13 @@ enum class DetachedSignatureType(internal val oid: ASN1ObjectIdentifier) {
         val signedData = try {
             SignedData.deserialize(signatureSerialized).also { it.verify(safePlaintext) }
         } catch (exc: SignedDataException) {
-            throw InvalidMessageException("SignedData value is invalid", exc)
+            throw InvalidSignatureException("SignedData value is invalid", exc)
         }
         val signerCertificate = signedData.signerCertificate!!
         try {
             signerCertificate.getCertificationPath(emptyList(), trustedCertificates)
         } catch (exc: CertificateException) {
-            throw InvalidMessageException("Signer is not trusted", exc)
+            throw InvalidSignatureException("Signer is not trusted", exc)
         }
         return signerCertificate
     }
