@@ -18,6 +18,7 @@
 <h4><a href="collect-parcels.html">collectParcels</a></h4>
 </td>
 <td>
+<p>Collect parcels on behalf of the specified nodes.</p>
 <code><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">collectParcels</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.Signer)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/nonceSigners">nonceSigners</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-signer/index.html"><span class="identifier">Signer</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.Signer)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/streamingMode">streamingMode</span><span class="symbol">:</span>&nbsp;<a href="../-streaming-mode/index.html"><span class="identifier">StreamingMode</span></a>&nbsp;<span class="symbol">=</span>&nbsp;StreamingMode.KeepAlive<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Flow</span><span class="symbol">&lt;</span><a href="../-parcel-collection/index.html"><span class="identifier">ParcelCollection</span></a><span class="symbol">&gt;</span></code></td>
 </tr>
 <tr>
@@ -25,7 +26,24 @@
 <h4><a href="deliver-parcel.html">deliverParcel</a></h4>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">deliverParcel</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray)/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+<p>Deliver a parcel.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">deliverParcel</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray, tech.relaycorp.relaynet.bindings.pdc.Signer)/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray, tech.relaycorp.relaynet.bindings.pdc.Signer)/deliverySigner">deliverySigner</span><span class="symbol">:</span>&nbsp;<a href="../-signer/index.html"><span class="identifier">Signer</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="pre-register-node.html">preRegisterNode</a></h4>
+</td>
+<td>
+<p>Request a Private Node Registration Authorization (PNRA).</p>
+<code><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">preRegisterNode</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$preRegisterNode(java.security.PublicKey)/nodePublicKey">nodePublicKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../tech.relaycorp.relaynet.messages.control/-private-node-registration-authorization/index.html"><span class="identifier">PrivateNodeRegistrationAuthorization</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="register-node.html">registerNode</a></h4>
+</td>
+<td>
+<p>Register a private node.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">registerNode</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$registerNode(kotlin.ByteArray)/pnrrSerialized">pnrrSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../tech.relaycorp.relaynet.messages.control/-private-node-registration/index.html"><span class="identifier">PrivateNodeRegistration</span></a></code></td>
 </tr>
 </tbody>
 </table>

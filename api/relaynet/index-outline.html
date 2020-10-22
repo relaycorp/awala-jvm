@@ -223,6 +223,19 @@
 </BODY>
 </HTML>
 </ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-client-binding-exception/index.html"><span class="keyword">class </span><span class="identifier">ClientBindingException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-client-binding-exception/-init-.html"><span class="identifier">ClientBindingException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ClientBindingException$<init>(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-detached-signature-type/index.html"><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">DetachedSignatureType</span></a></a><br/>
 <ul>
 <HTML>
@@ -407,6 +420,19 @@
 </BODY>
 </HTML>
 </ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-nonce-signer-exception/index.html"><span class="keyword">class </span><span class="identifier">NonceSignerException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-nonce-signer-exception/-init-.html"><span class="identifier">NonceSignerException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.NonceSignerException$<init>(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.messages/-parcel/index.html"><span class="keyword">class </span><span class="identifier">Parcel</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.ramf/-encrypted-r-a-m-f-message/index.html"><span class="identifier">EncryptedRAMFMessage</span></a><span class="symbol">&lt;</span><a href="tech.relaycorp.relaynet.messages.payloads/-service-message/index.html"><span class="identifier">ServiceMessage</span></a><span class="symbol">&gt;</span></a></a><br/>
 <ul>
 <HTML>
@@ -511,10 +537,13 @@
 </HEAD>
 <BODY>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/collect-parcels.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">collectParcels</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.Signer)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/nonceSigners">nonceSigners</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="tech.relaycorp.relaynet.bindings.pdc/-signer/index.html"><span class="identifier">Signer</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.Signer)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/streamingMode">streamingMode</span><span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-streaming-mode/index.html"><span class="identifier">StreamingMode</span></a>&nbsp;<span class="symbol">=</span>&nbsp;StreamingMode.KeepAlive<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Flow</span><span class="symbol">&lt;</span><a href="tech.relaycorp.relaynet.bindings.pdc/-parcel-collection/index.html"><span class="identifier">ParcelCollection</span></a><span class="symbol">&gt;</span></a></a><br/>
-<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/deliver-parcel.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">deliverParcel</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray)/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></a></a><br/>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/deliver-parcel.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">deliverParcel</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray, tech.relaycorp.relaynet.bindings.pdc.Signer)/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray, tech.relaycorp.relaynet.bindings.pdc.Signer)/deliverySigner">deliverySigner</span><span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-signer/index.html"><span class="identifier">Signer</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></a></a><br/>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/pre-register-node.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">preRegisterNode</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$preRegisterNode(java.security.PublicKey)/nodePublicKey">nodePublicKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="tech.relaycorp.relaynet.messages.control/-private-node-registration-authorization/index.html"><span class="identifier">PrivateNodeRegistrationAuthorization</span></a></a></a><br/>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/register-node.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">registerNode</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$registerNode(kotlin.ByteArray)/pnrrSerialized">pnrrSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="tech.relaycorp.relaynet.messages.control/-private-node-registration/index.html"><span class="identifier">PrivateNodeRegistration</span></a></a></a><br/>
 </BODY>
 </HTML>
 </ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="keyword">sealed</span> <span class="keyword">class </span><span class="identifier">PDCException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet/-relaynet-exception/index.html"><span class="identifier">RelaynetException</span></a></a></a><br/>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.messages.control/-private-node-registration/index.html"><span class="keyword">class </span><span class="identifier">PrivateNodeRegistration</span></a></a><br/>
 <ul>
 <HTML>
@@ -617,6 +646,19 @@
 </BODY>
 </HTML>
 </ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-rejected-parcel-exception/index.html"><span class="keyword">class </span><span class="identifier">RejectedParcelException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-rejected-parcel-exception/-init-.html"><span class="identifier">RejectedParcelException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.RejectedParcelException$<init>(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet/-relaynet-exception/index.html"><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">RelaynetException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></a></a><br/>
 <ul>
 <HTML>
@@ -630,6 +672,33 @@
 </BODY>
 </HTML>
 </ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-binding-exception/index.html"><span class="keyword">class </span><span class="identifier">ServerBindingException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-server-exception.html"><span class="identifier">ServerException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-binding-exception/-init-.html"><span class="identifier">ServerBindingException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerBindingException$<init>(kotlin.String, kotlin.Throwable)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerBindingException$<init>(kotlin.String, kotlin.Throwable)/cause">cause</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-connection-exception/index.html"><span class="keyword">class </span><span class="identifier">ServerConnectionException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-server-exception.html"><span class="identifier">ServerException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-connection-exception/-init-.html"><span class="identifier">ServerConnectionException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerConnectionException$<init>(kotlin.String, kotlin.Throwable)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerConnectionException$<init>(kotlin.String, kotlin.Throwable)/cause">cause</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-exception.html"><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">ServerException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.messages.payloads/-service-message/index.html"><span class="keyword">class </span><span class="identifier">ServiceMessage</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.messages.payloads/-encrypted-payload/index.html"><span class="identifier">EncryptedPayload</span></a></a></a><br/>
 <ul>
 <HTML>
@@ -814,6 +883,19 @@
 <link rel="stylesheet" href="../style.css">
 </HEAD>
 <BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-client-binding-exception/index.html"><span class="keyword">class </span><span class="identifier">ClientBindingException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-client-binding-exception/-init-.html"><span class="identifier">ClientBindingException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ClientBindingException$<init>(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-detached-signature-type/index.html"><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">DetachedSignatureType</span></a></a><br/>
 <ul>
 <HTML>
@@ -840,6 +922,19 @@
 </HEAD>
 <BODY>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-invalid-signature-exception/-init-.html"><span class="identifier">InvalidSignatureException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.InvalidSignatureException$<init>(kotlin.String, kotlin.Throwable)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.InvalidSignatureException$<init>(kotlin.String, kotlin.Throwable)/cause">cause</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-nonce-signer-exception/index.html"><span class="keyword">class </span><span class="identifier">NonceSignerException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-nonce-signer-exception/-init-.html"><span class="identifier">NonceSignerException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.NonceSignerException$<init>(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span></a></a><br/>
 </BODY>
 </HTML>
 </ul>
@@ -870,10 +965,53 @@
 </HEAD>
 <BODY>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/collect-parcels.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">collectParcels</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.Signer)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/nonceSigners">nonceSigners</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="tech.relaycorp.relaynet.bindings.pdc/-signer/index.html"><span class="identifier">Signer</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$collectParcels(kotlin.Array((tech.relaycorp.relaynet.bindings.pdc.Signer)), tech.relaycorp.relaynet.bindings.pdc.StreamingMode)/streamingMode">streamingMode</span><span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-streaming-mode/index.html"><span class="identifier">StreamingMode</span></a>&nbsp;<span class="symbol">=</span>&nbsp;StreamingMode.KeepAlive<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Flow</span><span class="symbol">&lt;</span><a href="tech.relaycorp.relaynet.bindings.pdc/-parcel-collection/index.html"><span class="identifier">ParcelCollection</span></a><span class="symbol">&gt;</span></a></a><br/>
-<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/deliver-parcel.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">deliverParcel</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray)/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></a></a><br/>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/deliver-parcel.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">deliverParcel</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray, tech.relaycorp.relaynet.bindings.pdc.Signer)/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$deliverParcel(kotlin.ByteArray, tech.relaycorp.relaynet.bindings.pdc.Signer)/deliverySigner">deliverySigner</span><span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-signer/index.html"><span class="identifier">Signer</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></a></a><br/>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/pre-register-node.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">preRegisterNode</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$preRegisterNode(java.security.PublicKey)/nodePublicKey">nodePublicKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="tech.relaycorp.relaynet.messages.control/-private-node-registration-authorization/index.html"><span class="identifier">PrivateNodeRegistrationAuthorization</span></a></a></a><br/>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-client/register-node.html"><span class="keyword">abstract</span> <span class="keyword">suspend</span> <span class="keyword">fun </span><span class="identifier">registerNode</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.PDCClient$registerNode(kotlin.ByteArray)/pnrrSerialized">pnrrSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="tech.relaycorp.relaynet.messages.control/-private-node-registration/index.html"><span class="identifier">PrivateNodeRegistration</span></a></a></a><br/>
 </BODY>
 </HTML>
 </ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="keyword">sealed</span> <span class="keyword">class </span><span class="identifier">PDCException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet/-relaynet-exception/index.html"><span class="identifier">RelaynetException</span></a></a></a><br/>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-rejected-parcel-exception/index.html"><span class="keyword">class </span><span class="identifier">RejectedParcelException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-rejected-parcel-exception/-init-.html"><span class="identifier">RejectedParcelException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.RejectedParcelException$<init>(kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-binding-exception/index.html"><span class="keyword">class </span><span class="identifier">ServerBindingException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-server-exception.html"><span class="identifier">ServerException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-binding-exception/-init-.html"><span class="identifier">ServerBindingException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerBindingException$<init>(kotlin.String, kotlin.Throwable)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerBindingException$<init>(kotlin.String, kotlin.Throwable)/cause">cause</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-connection-exception/index.html"><span class="keyword">class </span><span class="identifier">ServerConnectionException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-server-exception.html"><span class="identifier">ServerException</span></a></a></a><br/>
+<ul>
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Module Contents</title>
+<link rel="stylesheet" href="../style.css">
+</HEAD>
+<BODY>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-connection-exception/-init-.html"><span class="identifier">ServerConnectionException</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerConnectionException$<init>(kotlin.String, kotlin.Throwable)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ServerConnectionException$<init>(kotlin.String, kotlin.Throwable)/cause">cause</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span></a></a><br/>
+</BODY>
+</HTML>
+</ul>
+<a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-server-exception.html"><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">ServerException</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="tech.relaycorp.relaynet.bindings.pdc/-p-d-c-exception.html"><span class="identifier">PDCException</span></a></a></a><br/>
 <a href="/home/runner/work/relaynet-jvm/relaynet-jvm/build/docs/api/relaynet/index"><a href="tech.relaycorp.relaynet.bindings.pdc/-signer/index.html"><span class="keyword">class </span><span class="identifier">Signer</span></a></a><br/>
 <ul>
 <HTML>
