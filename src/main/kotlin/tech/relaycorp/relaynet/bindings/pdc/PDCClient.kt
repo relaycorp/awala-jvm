@@ -2,7 +2,7 @@ package tech.relaycorp.relaynet.bindings.pdc
 
 import kotlinx.coroutines.flow.Flow
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistration
-import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistrationAuthorization
+import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistrationRequest
 import java.io.Closeable
 import java.security.PublicKey
 
@@ -19,7 +19,7 @@ interface PDCClient : Closeable {
         ServerException::class,
         ClientBindingException::class
     )
-    suspend fun preRegisterNode(nodePublicKey: PublicKey): PrivateNodeRegistrationAuthorization
+    suspend fun preRegisterNode(nodePublicKey: PublicKey): PrivateNodeRegistrationRequest
 
     /**
      * Register a private node.

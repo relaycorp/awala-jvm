@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistration
-import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistrationAuthorization
+import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistrationRequest
 import java.security.PublicKey
 import kotlin.test.assertTrue
 
@@ -18,7 +18,7 @@ class MockPDCClient : PDCClient {
 
     override suspend fun preRegisterNode(
         nodePublicKey: PublicKey
-    ): PrivateNodeRegistrationAuthorization = throw NotImplementedError()
+    ): PrivateNodeRegistrationRequest = throw NotImplementedError()
 
     override suspend fun registerNode(pnrrSerialized: ByteArray): PrivateNodeRegistration =
         throw NotImplementedError()
