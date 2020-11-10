@@ -623,6 +623,21 @@ class CertificateTest {
 
             assertEquals(stubValidityEndDate.withNano(0), certificate.expiryDate)
         }
+
+        @Test
+        fun subjectPublicKey() {
+            val certificate = Certificate.issue(
+                stubSubjectCommonName,
+                stubSubjectKeyPair.public,
+                stubSubjectKeyPair.private,
+                stubValidityEndDate
+            )
+
+            assertEquals(
+                stubSubjectKeyPair.public.encoded.asList(),
+                certificate.subjectPublicKey.encoded.asList()
+            )
+        }
     }
 
     @Nested
