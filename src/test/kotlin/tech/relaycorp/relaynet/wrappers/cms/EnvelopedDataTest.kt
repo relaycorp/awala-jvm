@@ -251,7 +251,7 @@ class SessionlessEnvelopedDataTest {
             }
 
             @Test
-            fun `AES-GCM-128 should be used by default`() {
+            fun `AES-CBC-128 should be used by default`() {
                 val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
 
                 assertEquals(
@@ -364,6 +364,6 @@ private fun generateBcEnvelopedData(
 ): CMSEnvelopedData {
     val msg = CMSProcessableByteArray(PLAINTEXT)
     val encryptorBuilder =
-        JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_GCM).setProvider(BC_PROVIDER)
+        JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider(BC_PROVIDER)
     return cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())
 }

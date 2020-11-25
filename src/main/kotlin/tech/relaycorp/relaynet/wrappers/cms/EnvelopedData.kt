@@ -22,11 +22,11 @@ import java.security.spec.MGF1ParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 
-// Use GCM mode to encrypt payloads per RS-018
+// CBC mode is temporary. See: https://github.com/relaycorp/relayverse/issues/16
 private val cmsContentEncryptionAlgorithm = mapOf(
-    SymmetricEncryption.AES_128 to CMSAlgorithm.AES128_GCM,
-    SymmetricEncryption.AES_192 to CMSAlgorithm.AES192_GCM,
-    SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_GCM
+    SymmetricEncryption.AES_128 to CMSAlgorithm.AES128_CBC,
+    SymmetricEncryption.AES_192 to CMSAlgorithm.AES192_CBC,
+    SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_CBC
 )
 
 internal sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {

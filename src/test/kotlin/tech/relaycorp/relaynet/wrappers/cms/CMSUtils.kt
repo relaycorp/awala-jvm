@@ -21,7 +21,7 @@ val HASHING_ALGORITHM_OIDS = mapOf(
 )
 
 val PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS = mapOf(
-    SymmetricEncryption.AES_128 to "2.16.840.1.101.3.4.1.6",
-    SymmetricEncryption.AES_192 to "2.16.840.1.101.3.4.1.26",
-    SymmetricEncryption.AES_256 to "2.16.840.1.101.3.4.1.46"
+    SymmetricEncryption.AES_128 to "2.16.840.1.101.3.4.1.2",
+    SymmetricEncryption.AES_192 to "2.16.840.1.101.3.4.1.22",
+    SymmetricEncryption.AES_256 to "2.16.840.1.101.3.4.1.42"
 )
