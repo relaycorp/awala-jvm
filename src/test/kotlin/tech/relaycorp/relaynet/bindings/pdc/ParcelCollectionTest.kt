@@ -4,7 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.FullCertPath
+import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.messages.Parcel
@@ -28,7 +28,7 @@ class ParcelCollectionTest {
 
     @Test
     fun `Trusted certificates should be honored`() {
-        val trustedCertificates = setOf(FullCertPath.PRIVATE_ENDPOINT)
+        val trustedCertificates = setOf(PDACertPath.PRIVATE_ENDPOINT)
         val collector = ParcelCollection(dummyParcelSerialized, trustedCertificates, dummyACK)
 
         assertEquals(trustedCertificates, collector.trustedCertificates)
@@ -43,8 +43,8 @@ class ParcelCollectionTest {
 
     @Nested
     inner class DeserializeAndValidateParcel {
-        val recipientCertificate = FullCertPath.PRIVATE_ENDPOINT
-        val senderCertificate = FullCertPath.PDA
+        private val recipientCertificate = PDACertPath.PRIVATE_ENDPOINT
+        private val senderCertificate = PDACertPath.PDA
         val payload = "payload".toByteArray()
 
         @Test
@@ -74,7 +74,7 @@ class ParcelCollectionTest {
             val invalidParcel = Parcel(
                 recipientCertificate.subjectPrivateAddress,
                 payload,
-                FullCertPath.PUBLIC_GW // Unauthorized sender
+                PDACertPath.PUBLIC_GW // Unauthorized sender
             )
             val collector = ParcelCollection(
                 invalidParcel.serialize(KeyPairSet.PUBLIC_GW.private),

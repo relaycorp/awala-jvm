@@ -66,15 +66,18 @@ fun issueEndpointCertificate(
 }
 
 /**
- * Issue a Parcel Delivery Authorization (PDA) to an endpoint.
+ * Issue a Parcel Delivery Authorization (PDA) or Cargo Delivery Authorization (CDA).
  *
- * @param subjectPublicKey The public key of the grantee endpoint
- * @param issuerPrivateKey The private key of the granter endpoint
+ * The issuer must be the *private* node wishing to receive messages from the subject. Both
+ * nodes must be of the same type: Both gateways or both endpoints.
+ *
+ * @param subjectPublicKey The public key of the grantee node
+ * @param issuerPrivateKey The private key of the granter node
  * @param validityEndDate The end date of the certificate to be issued
  * @param issuerCertificate The certificate of the grantor
  * @param validityStartDate The start date of the certificate to be issued
  */
-fun issueParcelDeliveryAuthorization(
+fun issueDeliveryAuthorization(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
     validityEndDate: ZonedDateTime,

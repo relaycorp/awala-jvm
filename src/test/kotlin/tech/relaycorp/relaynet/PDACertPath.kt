@@ -2,7 +2,10 @@ package tech.relaycorp.relaynet
 
 import java.time.ZonedDateTime
 
-object FullCertPath {
+/**
+ * Full certification path from a public gateway to a PDA.
+ */
+object PDACertPath {
     private val now: ZonedDateTime = ZonedDateTime.now()
     private val twoSecondsAgo = now.minusSeconds(2)
     private val tomorrow = now.plusDays(1)
@@ -27,7 +30,7 @@ object FullCertPath {
         PRIVATE_GW,
         twoSecondsAgo
     )
-    val PDA = issueParcelDeliveryAuthorization(
+    val PDA = issueDeliveryAuthorization(
         KeyPairSet.PDA_GRANTEE.public,
         KeyPairSet.PRIVATE_ENDPOINT.private,
         tomorrow,
