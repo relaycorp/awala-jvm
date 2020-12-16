@@ -2,7 +2,7 @@ package tech.relaycorp.relaynet.ramf
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.FullCertPath
+import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.issueStubCertificate
@@ -22,14 +22,14 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class RAMFMessageTest {
-    private val recipientAddress = FullCertPath.PRIVATE_ENDPOINT.subjectPrivateAddress
+    private val recipientAddress = PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress
     private val messageId = "message-id"
     private val creationDateUtc: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
     private val ttl = 1
     private val payload = "payload".toByteArray()
 
     private val senderKeyPair = KeyPairSet.PDA_GRANTEE
-    private val senderCertificate = FullCertPath.PDA
+    private val senderCertificate = PDACertPath.PDA
 
     @Nested
     inner class Constructor {
@@ -311,18 +311,18 @@ class RAMFMessageTest {
         val message = StubEncryptedRAMFMessage(
             recipientAddress,
             payload,
-            FullCertPath.PRIVATE_ENDPOINT,
-            senderCertificateChain = setOf(FullCertPath.PRIVATE_GW)
+            PDACertPath.PRIVATE_ENDPOINT,
+            senderCertificateChain = setOf(PDACertPath.PRIVATE_GW)
         )
 
         val certificationPath =
-            message.getSenderCertificationPath(setOf(FullCertPath.PUBLIC_GW))
+            message.getSenderCertificationPath(setOf(PDACertPath.PUBLIC_GW))
 
         assertEquals(
             listOf(
-                FullCertPath.PRIVATE_ENDPOINT,
-                FullCertPath.PRIVATE_GW,
-                FullCertPath.PUBLIC_GW
+                PDACertPath.PRIVATE_ENDPOINT,
+                PDACertPath.PRIVATE_GW,
+                PDACertPath.PUBLIC_GW
             ),
             certificationPath.asList()
         )
@@ -572,7 +572,7 @@ class RAMFMessageTest {
                 )
 
                 val exception = assertThrows<InvalidMessageException> {
-                    message.validate(null, setOf(FullCertPath.PUBLIC_GW))
+                    message.validate(null, setOf(PDACertPath.PUBLIC_GW))
                 }
 
                 assertEquals("Sender is not trusted", exception.message)
@@ -582,16 +582,16 @@ class RAMFMessageTest {
             @Test
             fun `Message should be accepted if recipient is private and sender is trusted`() {
                 val message = StubEncryptedRAMFMessage(
-                    FullCertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
+                    PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
                     payload,
-                    FullCertPath.PDA,
+                    PDACertPath.PDA,
                     senderCertificateChain = setOf(
-                        FullCertPath.PRIVATE_GW,
-                        FullCertPath.PRIVATE_ENDPOINT
+                        PDACertPath.PRIVATE_GW,
+                        PDACertPath.PRIVATE_ENDPOINT
                     )
                 )
 
-                message.validate(null, setOf(FullCertPath.PUBLIC_GW))
+                message.validate(null, setOf(PDACertPath.PUBLIC_GW))
             }
 
             @Test
@@ -599,14 +599,14 @@ class RAMFMessageTest {
                 val message = StubEncryptedRAMFMessage(
                     "https://endpoint.example.com",
                     payload,
-                    FullCertPath.PDA,
+                    PDACertPath.PDA,
                     senderCertificateChain = setOf(
-                        FullCertPath.PRIVATE_GW,
-                        FullCertPath.PRIVATE_ENDPOINT
+                        PDACertPath.PRIVATE_GW,
+                        PDACertPath.PRIVATE_ENDPOINT
                     )
                 )
 
-                message.validate(null, setOf(FullCertPath.PUBLIC_GW))
+                message.validate(null, setOf(PDACertPath.PUBLIC_GW))
             }
 
             @Test
@@ -619,12 +619,12 @@ class RAMFMessageTest {
                 val message = StubEncryptedRAMFMessage(
                     anotherRecipientCert.subjectPrivateAddress,
                     payload,
-                    FullCertPath.PRIVATE_ENDPOINT,
-                    senderCertificateChain = setOf(FullCertPath.PRIVATE_GW)
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    senderCertificateChain = setOf(PDACertPath.PRIVATE_GW)
                 )
 
                 val exception = assertThrows<InvalidMessageException> {
-                    message.validate(null, setOf(FullCertPath.PUBLIC_GW))
+                    message.validate(null, setOf(PDACertPath.PUBLIC_GW))
                 }
 
                 assertEquals("Sender is authorized by the wrong recipient", exception.message)
@@ -638,7 +638,7 @@ class RAMFMessageTest {
                     untrustedSenderKeyPair.private
                 )
                 val message = StubEncryptedRAMFMessage(
-                    FullCertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
+                    PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
                     payload,
                     untrustedSenderCert
                 )

@@ -4,7 +4,7 @@ import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.FullCertPath
+import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.crypto.SignedData
@@ -20,7 +20,7 @@ class DetachedSignatureTypeTest {
     val signatureType = DetachedSignatureType.NONCE
 
     val signerPrivateKey = KeyPairSet.PRIVATE_ENDPOINT.private!!
-    val signerCertificate = FullCertPath.PRIVATE_ENDPOINT
+    val signerCertificate = PDACertPath.PRIVATE_ENDPOINT
     val plaintext = "the plaintext".toByteArray()
 
     @Nested
@@ -65,12 +65,12 @@ class DetachedSignatureTypeTest {
             val invalidSignedData = SignedData.sign(
                 byteArrayOf(),
                 KeyPairSet.PDA_GRANTEE.private, // Key doesn't correspond to certificate
-                FullCertPath.PRIVATE_ENDPOINT,
-                setOf(FullCertPath.PRIVATE_ENDPOINT)
+                PDACertPath.PRIVATE_ENDPOINT,
+                setOf(PDACertPath.PRIVATE_ENDPOINT)
             ).serialize()
 
             val exception = assertThrows<InvalidSignatureException> {
-                signatureType.verify(invalidSignedData, plaintext, listOf(FullCertPath.PRIVATE_GW))
+                signatureType.verify(invalidSignedData, plaintext, listOf(PDACertPath.PRIVATE_GW))
             }
 
             assertEquals("SignedData value is invalid", exception.message)
@@ -80,10 +80,10 @@ class DetachedSignatureTypeTest {
         @Test
         fun `Untrusted signers should be refused`() {
             val serialization =
-                signatureType.sign(plaintext, KeyPairSet.PUBLIC_GW.private, FullCertPath.PUBLIC_GW)
+                signatureType.sign(plaintext, KeyPairSet.PUBLIC_GW.private, PDACertPath.PUBLIC_GW)
 
             val exception = assertThrows<InvalidSignatureException> {
-                signatureType.verify(serialization, plaintext, listOf(FullCertPath.PRIVATE_GW))
+                signatureType.verify(serialization, plaintext, listOf(PDACertPath.PRIVATE_GW))
             }
 
             assertEquals("Signer is not trusted", exception.message)
@@ -95,7 +95,7 @@ class DetachedSignatureTypeTest {
             val serialization = signatureType.sign(plaintext, signerPrivateKey, signerCertificate)
 
             val actualSignerCertificate =
-                signatureType.verify(serialization, plaintext, listOf(FullCertPath.PRIVATE_GW))
+                signatureType.verify(serialization, plaintext, listOf(PDACertPath.PRIVATE_GW))
 
             assertEquals(signerCertificate, actualSignerCertificate)
         }

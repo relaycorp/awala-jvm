@@ -223,14 +223,14 @@ class PKITest {
     }
 
     @Nested
-    inner class IssueParcelDeliveryAuthorization {
+    inner class IssueDeliveryAuthorization {
         private val recipientKeyPair = generateRSAKeyPair()
         private val recipientCertificate =
             issueEndpointCertificate(recipientKeyPair.public, recipientKeyPair.private, tomorrow)
 
         @Test
         fun `Subject CommonName should be set to private address of subject`() {
-            val certificate = issueParcelDeliveryAuthorization(
+            val certificate = issueDeliveryAuthorization(
                 keyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
@@ -242,7 +242,7 @@ class PKITest {
 
         @Test
         fun `Subject public key should be honored`() {
-            val certificate = issueParcelDeliveryAuthorization(
+            val certificate = issueDeliveryAuthorization(
                 keyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
@@ -257,7 +257,7 @@ class PKITest {
 
         @Test
         fun `Issuer private key should be honored`() {
-            val certificate = issueParcelDeliveryAuthorization(
+            val certificate = issueDeliveryAuthorization(
                 keyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
@@ -272,7 +272,7 @@ class PKITest {
 
         @Test
         fun `Validity end date should be honored`() {
-            val certificate = issueParcelDeliveryAuthorization(
+            val certificate = issueDeliveryAuthorization(
                 keyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
@@ -288,7 +288,7 @@ class PKITest {
         @Test
         fun `Validity start date should be honored if set`() {
             val startDate = ZonedDateTime.now().minusSeconds(30)
-            val certificate = issueParcelDeliveryAuthorization(
+            val certificate = issueDeliveryAuthorization(
                 keyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
@@ -304,7 +304,7 @@ class PKITest {
 
         @Test
         fun `Subject should not be marked as CA`() {
-            val certificate = issueParcelDeliveryAuthorization(
+            val certificate = issueDeliveryAuthorization(
                 keyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
@@ -318,7 +318,7 @@ class PKITest {
 
         @Test
         fun `pathLenConstraint should be 0`() {
-            val certificate = issueParcelDeliveryAuthorization(
+            val certificate = issueDeliveryAuthorization(
                 keyPair.public,
                 recipientKeyPair.private,
                 tomorrow,

@@ -4,7 +4,7 @@ import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.FullCertPath
+import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -19,14 +19,14 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Node certificate should be serialized`() {
             val registration =
-                PrivateNodeRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
+                PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
 
             val serialization = registration.serialize()
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val nodeCertificateASN1 = ASN1Utils.getOctetString(sequence.first())
             assertEquals(
-                FullCertPath.PRIVATE_ENDPOINT.serialize().asList(),
+                PDACertPath.PRIVATE_ENDPOINT.serialize().asList(),
                 nodeCertificateASN1.octets.asList()
             )
         }
@@ -34,14 +34,14 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Gateway certificate should be serialized`() {
             val registration =
-                PrivateNodeRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
+                PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
 
             val serialization = registration.serialize()
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val gatewayCertificateASN1 = ASN1Utils.getOctetString(sequence[1])
             assertEquals(
-                FullCertPath.PRIVATE_GW.serialize().asList(),
+                PDACertPath.PRIVATE_GW.serialize().asList(),
                 gatewayCertificateASN1.octets.asList()
             )
         }
@@ -96,7 +96,7 @@ class PrivateNodeRegistrationTest {
         fun `Invalid gateway certificates should be refused`() {
             val invalidSerialization = ASN1Utils.serializeSequence(
                 arrayOf(
-                    DEROctetString(FullCertPath.PRIVATE_ENDPOINT.serialize()),
+                    DEROctetString(PDACertPath.PRIVATE_ENDPOINT.serialize()),
                     DERNull.INSTANCE
                 ), false
             )
@@ -115,17 +115,17 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Valid registration should be accepted`() {
             val registration =
-                PrivateNodeRegistration(FullCertPath.PRIVATE_ENDPOINT, FullCertPath.PRIVATE_GW)
+                PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
             val serialization = registration.serialize()
 
             val registrationDeserialized = PrivateNodeRegistration.deserialize(serialization)
 
             assertEquals(
-                FullCertPath.PRIVATE_ENDPOINT,
+                PDACertPath.PRIVATE_ENDPOINT,
                 registrationDeserialized.privateNodeCertificate
             )
             assertEquals(
-                FullCertPath.PRIVATE_GW,
+                PDACertPath.PRIVATE_GW,
                 registrationDeserialized.gatewayCertificate
             )
         }
