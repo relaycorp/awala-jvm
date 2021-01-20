@@ -23,6 +23,7 @@ import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.sha256Hex
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
+import java.io.IOException
 import java.math.BigInteger
 import java.security.InvalidAlgorithmParameterException
 import java.security.PrivateKey
@@ -568,6 +569,7 @@ class CertificateTest {
             }
 
             assertEquals("Value should be a DER-encoded, X.509 v3 certificate", exception.message)
+            assertTrue(exception.cause is IOException)
         }
     }
 
