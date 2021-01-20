@@ -124,9 +124,10 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
         fun deserialize(certificateSerialized: ByteArray): Certificate {
             val certificateHolder = try {
                 X509CertificateHolder(certificateSerialized)
-            } catch (_: IOException) {
+            } catch (exc: IOException) {
                 throw CertificateException(
-                    "Value should be a DER-encoded, X.509 v3 certificate"
+                    "Value should be a DER-encoded, X.509 v3 certificate",
+                    exc
                 )
             }
             return Certificate(certificateHolder)
@@ -309,7 +310,7 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     private fun convertCertToJava(certificate: Certificate) =
         bcToJavaCertificateConverter.getCertificate(certificate.certificateHolder)
 
-    private fun dateToZonedDateTime(date: java.util.Date) = date.toInstant().atZone(
+    private fun dateToZonedDateTime(date: Date) = date.toInstant().atZone(
         ZoneId.systemDefault()
     )
 }
