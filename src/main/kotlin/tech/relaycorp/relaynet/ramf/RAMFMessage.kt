@@ -159,9 +159,6 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         if (now < creationDate) {
             throw RAMFException("Creation date is in the future")
         }
-        if (creationDate < senderCertificate.startDate) {
-            throw RAMFException("Message was created before sender certificate was valid")
-        }
         if (expiryDate < now) {
             throw RAMFException("Message already expired")
         }

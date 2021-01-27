@@ -348,25 +348,6 @@ class RAMFMessageTest {
             }
 
             @Test
-            fun `Creation date before start date of sender certificate should be refused`() {
-                val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
-                    .atZone(ZoneId.systemDefault()).minusSeconds(1)
-                val message = StubEncryptedRAMFMessage(
-                    recipientAddress,
-                    payload,
-                    senderCertificate,
-                    creationDate = creationDate
-                )
-
-                val exception = assertThrows<RAMFException> { message.validate(null) }
-
-                assertEquals(
-                    "Message was created before sender certificate was valid",
-                    exception.message
-                )
-            }
-
-            @Test
             fun `Creation date matching start date of sender certificate should be accepted`() {
                 val creationDate = senderCertificate.certificateHolder.notBefore.toInstant()
                     .atZone(ZoneId.systemDefault())
