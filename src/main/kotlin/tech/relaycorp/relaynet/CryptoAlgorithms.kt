@@ -26,3 +26,12 @@ enum class SymmetricEncryption {
     AES_192,
     AES_256
 }
+
+/**
+ * Supported ECDH curves.
+ */
+enum class ECDHCurve {
+    P256,
+    P384,
+    P521,
+}

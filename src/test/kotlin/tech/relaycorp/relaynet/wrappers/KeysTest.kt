@@ -2,10 +2,16 @@ package tech.relaycorp.relaynet.wrappers
 
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.ECDHCurve
 import tech.relaycorp.relaynet.sha256Hex
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.security.interfaces.ECPrivateKey
+import java.security.interfaces.ECPublicKey
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.InvalidKeySpecException
@@ -84,6 +90,45 @@ class KeysTest {
             val publicKeyDeserialized = publicKeySerialized.deserializeRSAPublicKey()
 
             assertTrue(publicKeyDeserialized is BCRSAPublicKey)
+        }
+    }
+
+    @Nested
+    inner class GenerateECDHKeyPair {
+        @Test
+        fun `NIST P-256 curve should be used by default`() {
+            val keyPair = generateECDHKeyPair()
+
+            assertPrivateKeyCurveEquals("P-256", keyPair.private)
+            assertPublicKeyCurveEquals("P-256", keyPair.public)
+        }
+
+        @Test
+        fun `NIST P-384 should be supported`() {
+            val keyPair = generateECDHKeyPair(ECDHCurve.P384)
+
+            assertPrivateKeyCurveEquals("P-384", keyPair.private)
+            assertPublicKeyCurveEquals("P-384", keyPair.public)
+        }
+
+        @Test
+        fun `NIST P-521 should be supported`() {
+            val keyPair = generateECDHKeyPair(ECDHCurve.P521)
+
+            assertPrivateKeyCurveEquals("P-521", keyPair.private)
+            assertPublicKeyCurveEquals("P-521", keyPair.public)
+        }
+
+        private fun assertPrivateKeyCurveEquals(curveName: String, privateKey: PrivateKey) {
+            assertTrue(privateKey is ECPrivateKey)
+            assertEquals("EC", privateKey.algorithm)
+            assertEquals(curveName, (privateKey.params as ECNamedCurveSpec).name)
+        }
+
+        private fun assertPublicKeyCurveEquals(curveName: String, publicKey: PublicKey) {
+            assertTrue(publicKey is ECPublicKey)
+            assertEquals("EC", publicKey.algorithm)
+            assertEquals(curveName, ((publicKey).params as ECNamedCurveSpec).name)
         }
     }
 
