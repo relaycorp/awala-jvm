@@ -21,6 +21,14 @@
 </tr>
 <tr>
 <td>
+<h4><a href="-e-c-d-h-curve/index.html">ECDHCurve</a></h4>
+</td>
+<td>
+<p>Supported ECDH curves.</p>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">ECDHCurve</span></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="-hashing-algorithm/index.html">HashingAlgorithm</a></h4>
 </td>
 <td>
@@ -76,6 +84,14 @@
 <td>
 <p>Issue Relaynet PKI certificate to a private or public gateway.</p>
 <code><span class="keyword">fun </span><span class="identifier">issueGatewayCertificate</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/subjectPublicKey">subjectPublicKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/issuerPrivateKey">issuerPrivateKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PrivateKey.html"><span class="identifier">PrivateKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/validityEndDate">validityEndDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/issuerCertificate">issuerCertificate</span><span class="symbol">:</span>&nbsp;<a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueGatewayCertificate(java.security.PublicKey, java.security.PrivateKey, java.time.ZonedDateTime, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime)/validityStartDate">validityStartDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span>&nbsp;<span class="symbol">=</span>&nbsp;ZonedDateTime.now()<span class="symbol">)</span><span class="symbol">: </span><a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="issue-initial-d-h-key-certificate.html">issueInitialDHKeyCertificate</a></h4>
+</td>
+<td>
+<p>Issue an initial (EC)DH certificate to initiate a channel session.</p>
+<code><span class="keyword">fun </span><span class="identifier">issueInitialDHKeyCertificate</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet$issueInitialDHKeyCertificate(java.security.PublicKey, java.security.PrivateKey, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime, java.time.ZonedDateTime)/subjectPublicKey">subjectPublicKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueInitialDHKeyCertificate(java.security.PublicKey, java.security.PrivateKey, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime, java.time.ZonedDateTime)/issuerPrivateKey">issuerPrivateKey</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/security/PrivateKey.html"><span class="identifier">PrivateKey</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueInitialDHKeyCertificate(java.security.PublicKey, java.security.PrivateKey, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime, java.time.ZonedDateTime)/issuerCertificate">issuerCertificate</span><span class="symbol">:</span>&nbsp;<a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueInitialDHKeyCertificate(java.security.PublicKey, java.security.PrivateKey, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime, java.time.ZonedDateTime)/validityEndDate">validityEndDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet$issueInitialDHKeyCertificate(java.security.PublicKey, java.security.PrivateKey, tech.relaycorp.relaynet.wrappers.x509.Certificate, java.time.ZonedDateTime, java.time.ZonedDateTime)/validityStartDate">validityStartDate</span><span class="symbol">:</span>&nbsp;<span class="identifier">ZonedDateTime</span>&nbsp;<span class="symbol">=</span>&nbsp;ZonedDateTime.now(ZoneId.of("UTC"))<span class="symbol">)</span><span class="symbol">: </span><a href="../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a></code></td>
 </tr>
 </tbody>
 </table>
