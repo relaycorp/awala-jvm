@@ -5,6 +5,7 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.KeyPairSet
+import tech.relaycorp.relaynet.assertDateIsAlmostNow
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
@@ -119,11 +120,7 @@ class RAMFMessageTest {
             )
 
             assertEquals("UTC", message.creationDate.zone.id)
-
-            val now = ZonedDateTime.now(ZoneId.of("UTC"))
-            val secondsAgo = now.minusSeconds(2)
-            assertTrue(secondsAgo < message.creationDate)
-            assertTrue(message.creationDate <= now)
+            assertDateIsAlmostNow(message.creationDate)
         }
 
         @Test

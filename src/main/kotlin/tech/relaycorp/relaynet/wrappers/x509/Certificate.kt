@@ -16,7 +16,6 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.getSHA256Digest
 import tech.relaycorp.relaynet.getSHA256DigestHex
-import tech.relaycorp.relaynet.wrappers.deserializeRSAPublicKey
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 import java.io.IOException
 import java.security.InvalidAlgorithmParameterException
@@ -105,7 +104,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
             val signer = JcaContentSignerBuilder("SHA256WITHRSAANDMGF1")
                 .setProvider(BC_PROVIDER)
                 .build(issuerPrivateKey)
-            return Certificate(builder.build(signer))
+            val certificateHolder = builder.build(signer)
+            return Certificate(certificateHolder)
         }
 
         @Throws(CertificateException::class)
@@ -146,8 +146,8 @@ class Certificate constructor(val certificateHolder: X509CertificateHolder) {
     /**
      * The public key of the subject.
      */
-    val subjectPublicKey
-        get() = certificateHolder.subjectPublicKeyInfo.encoded.deserializeRSAPublicKey()
+    val subjectPublicKey: PublicKey
+        get() = convertCertToJava(this).publicKey
 
     /**
      * Calculate the private address of the subject.
