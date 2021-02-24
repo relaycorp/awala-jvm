@@ -29,7 +29,7 @@ private val cmsContentEncryptionAlgorithm = mapOf(
     SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_CBC
 )
 
-internal sealed class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
+internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
     companion object {
         @Throws(EnvelopedDataException::class)
         fun deserialize(envelopedDataSerialized: ByteArray): EnvelopedData {
@@ -94,7 +94,7 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             plaintext: ByteArray,
             recipientCertificate: Certificate,
             symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128
-        ): EnvelopedData {
+        ): SessionlessEnvelopedData {
             // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
             // CMSProcessableInputStream doesn't seem to be accessible here
             val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
