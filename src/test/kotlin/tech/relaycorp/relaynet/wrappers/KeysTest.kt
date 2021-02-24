@@ -94,6 +94,38 @@ class KeysTest {
     }
 
     @Nested
+    inner class DeserializeECPublicKey {
+        @Test
+        fun `Deserialize invalid key`() {
+            val exception =
+                assertThrows<KeyException> { "s".toByteArray().deserializeECPublicKey() }
+
+            assertEquals("Value is not a valid EC public key", exception.message)
+            assertTrue(exception.cause is InvalidKeySpecException)
+        }
+
+        @Test
+        fun `Deserialize valid key`() {
+            val keyPair = generateECDHKeyPair()
+            val publicKeySerialized = keyPair.public.encoded
+
+            val publicKeyDeserialized = publicKeySerialized.deserializeECPublicKey()
+
+            assertEquals(publicKeySerialized.asList(), publicKeyDeserialized.encoded.asList())
+        }
+
+        @Test
+        fun `BouncyCastle provider should be used`() {
+            val keyPair = generateECDHKeyPair()
+            val publicKeySerialized = keyPair.public.encoded
+
+            val publicKeyDeserialized = publicKeySerialized.deserializeECPublicKey()
+
+            assertTrue(publicKeyDeserialized is ECPublicKey)
+        }
+    }
+
+    @Nested
     inner class GenerateECDHKeyPair {
         @Test
         fun `NIST P-256 curve should be used by default`() {

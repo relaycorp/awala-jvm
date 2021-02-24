@@ -38,13 +38,17 @@ fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
     return keyGen.generateKeyPair()
 }
 
-fun ByteArray.deserializeRSAPublicKey(): PublicKey {
+fun ByteArray.deserializeRSAPublicKey() = deserializePublicKey("RSA")
+
+fun ByteArray.deserializeECPublicKey() = deserializePublicKey("EC")
+
+private fun ByteArray.deserializePublicKey(algorithm: String): PublicKey {
     val spec = X509EncodedKeySpec(this)
-    val factory = KeyFactory.getInstance("RSA", BC_PROVIDER)
+    val factory = KeyFactory.getInstance(algorithm, BC_PROVIDER)
     return try {
         factory.generatePublic(spec)
     } catch (exc: InvalidKeySpecException) {
-        throw KeyException("Value is not a valid RSA public key", exc)
+        throw KeyException("Value is not a valid $algorithm public key", exc)
     }
 }
 
