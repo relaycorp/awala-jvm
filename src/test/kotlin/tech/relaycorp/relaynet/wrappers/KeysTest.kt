@@ -128,7 +128,7 @@ class KeysTest {
         private fun assertPublicKeyCurveEquals(curveName: String, publicKey: PublicKey) {
             assertTrue(publicKey is ECPublicKey)
             assertEquals("EC", publicKey.algorithm)
-            assertEquals(curveName, ((publicKey).params as ECNamedCurveSpec).name)
+            assertEquals(curveName, (publicKey.params as ECNamedCurveSpec).name)
         }
     }
 

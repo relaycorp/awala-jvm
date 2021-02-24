@@ -13,41 +13,41 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PKITest {
-    val keyPair = generateRSAKeyPair()
+    val identityKeyPair = generateRSAKeyPair()
     val tomorrow: ZonedDateTime = ZonedDateTime.now(UTC).plusDays(1)
 
     @Nested
     inner class IssueGatewayCertificate {
         @Test
         fun `CommonName should be set to private address of gateway`() {
-            val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
         }
 
         @Test
         fun `Subject public key should be honored`() {
-            val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
-                keyPair.public.encoded.asList(),
+                identityKeyPair.public.encoded.asList(),
                 certificate.certificateHolder.subjectPublicKeyInfo.encoded.asList()
             )
         }
 
         @Test
         fun `Issuer private key should be honored`() {
-            val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val verifierProvider = JcaContentVerifierProviderBuilder()
                 .setProvider(BC_PROVIDER)
-                .build(keyPair.public)
+                .build(identityKeyPair.public)
             assertTrue(certificate.certificateHolder.isSignatureValid(verifierProvider))
         }
 
         @Test
         fun `Validity end date should be honored`() {
-            val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
                 tomorrow.toEpochSecond(),
@@ -59,8 +59,8 @@ class PKITest {
         fun `Validity start date should be honored if set`() {
             val startDate = ZonedDateTime.now().minusSeconds(30)
             val certificate = issueGatewayCertificate(
-                keyPair.public,
-                keyPair.private,
+                identityKeyPair.public,
+                identityKeyPair.private,
                 tomorrow,
                 validityStartDate = startDate
             )
@@ -78,8 +78,8 @@ class PKITest {
                 issueGatewayCertificate(issuerKeyPair.public, issuerKeyPair.private, tomorrow)
 
             val subjectCertificate = issueGatewayCertificate(
-                keyPair.public,
-                keyPair.private,
+                identityKeyPair.public,
+                identityKeyPair.private,
                 tomorrow,
                 issuerCertificate = issuerCertificate
             )
@@ -93,7 +93,7 @@ class PKITest {
 
         @Test
         fun `Subject should be marked as CA`() {
-            val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertTrue(
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).isCA
@@ -102,7 +102,7 @@ class PKITest {
 
         @Test
         fun `pathLenConstraint should be 2 if self-issued`() {
-            val certificate = issueGatewayCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val basicConstraints =
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
@@ -116,8 +116,8 @@ class PKITest {
                 issueGatewayCertificate(issuerKeyPair.public, issuerKeyPair.private, tomorrow)
 
             val certificate = issueGatewayCertificate(
-                keyPair.public,
-                keyPair.private,
+                identityKeyPair.public,
+                identityKeyPair.private,
                 tomorrow,
                 issuerCertificate = issuerCertificate
             )
@@ -132,34 +132,34 @@ class PKITest {
     inner class IssueEndpointCertificate {
         @Test
         fun `CommonName should be set to private address of gateway`() {
-            val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
         }
 
         @Test
         fun `Subject public key should be honored`() {
-            val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
-                keyPair.public.encoded.asList(),
+                identityKeyPair.public.encoded.asList(),
                 certificate.certificateHolder.subjectPublicKeyInfo.encoded.asList()
             )
         }
 
         @Test
         fun `Issuer private key should be honored`() {
-            val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val verifierProvider = JcaContentVerifierProviderBuilder()
                 .setProvider(BC_PROVIDER)
-                .build(keyPair.public)
+                .build(identityKeyPair.public)
             assertTrue(certificate.certificateHolder.isSignatureValid(verifierProvider))
         }
 
         @Test
         fun `Validity end date should be honored`() {
-            val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
                 tomorrow.toEpochSecond(),
@@ -171,8 +171,8 @@ class PKITest {
         fun `Validity start date should be honored if set`() {
             val startDate = ZonedDateTime.now().minusSeconds(30)
             val certificate = issueEndpointCertificate(
-                keyPair.public,
-                keyPair.private,
+                identityKeyPair.public,
+                identityKeyPair.private,
                 tomorrow,
                 validityStartDate = startDate
             )
@@ -190,8 +190,8 @@ class PKITest {
                 issueEndpointCertificate(issuerKeyPair.public, issuerKeyPair.private, tomorrow)
 
             val subjectCertificate = issueEndpointCertificate(
-                keyPair.public,
-                keyPair.private,
+                identityKeyPair.public,
+                identityKeyPair.private,
                 tomorrow,
                 issuerCertificate = issuerCertificate
             )
@@ -205,7 +205,7 @@ class PKITest {
 
         @Test
         fun `Subject should be marked as CA`() {
-            val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertTrue(
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).isCA
@@ -214,7 +214,7 @@ class PKITest {
 
         @Test
         fun `pathLenConstraint should be 0`() {
-            val certificate = issueEndpointCertificate(keyPair.public, keyPair.private, tomorrow)
+            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val basicConstraints =
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
@@ -231,7 +231,7 @@ class PKITest {
         @Test
         fun `Subject CommonName should be set to private address of subject`() {
             val certificate = issueDeliveryAuthorization(
-                keyPair.public,
+                identityKeyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
                 recipientCertificate
@@ -243,14 +243,14 @@ class PKITest {
         @Test
         fun `Subject public key should be honored`() {
             val certificate = issueDeliveryAuthorization(
-                keyPair.public,
+                identityKeyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
                 recipientCertificate
             )
 
             assertEquals(
-                keyPair.public.encoded.asList(),
+                identityKeyPair.public.encoded.asList(),
                 certificate.certificateHolder.subjectPublicKeyInfo.encoded.asList()
             )
         }
@@ -258,7 +258,7 @@ class PKITest {
         @Test
         fun `Issuer private key should be honored`() {
             val certificate = issueDeliveryAuthorization(
-                keyPair.public,
+                identityKeyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
                 recipientCertificate
@@ -273,7 +273,7 @@ class PKITest {
         @Test
         fun `Validity end date should be honored`() {
             val certificate = issueDeliveryAuthorization(
-                keyPair.public,
+                identityKeyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
                 recipientCertificate
@@ -289,7 +289,7 @@ class PKITest {
         fun `Validity start date should be honored if set`() {
             val startDate = ZonedDateTime.now().minusSeconds(30)
             val certificate = issueDeliveryAuthorization(
-                keyPair.public,
+                identityKeyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
                 recipientCertificate,
@@ -305,7 +305,7 @@ class PKITest {
         @Test
         fun `Subject should not be marked as CA`() {
             val certificate = issueDeliveryAuthorization(
-                keyPair.public,
+                identityKeyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
                 recipientCertificate
@@ -319,7 +319,7 @@ class PKITest {
         @Test
         fun `pathLenConstraint should be 0`() {
             val certificate = issueDeliveryAuthorization(
-                keyPair.public,
+                identityKeyPair.public,
                 recipientKeyPair.private,
                 tomorrow,
                 recipientCertificate
