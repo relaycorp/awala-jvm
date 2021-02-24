@@ -4,7 +4,10 @@ import org.bouncycastle.asn1.x500.style.BCStyle
 import org.bouncycastle.asn1.x509.BasicConstraints
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import kotlin.test.Test
@@ -13,21 +16,23 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PKITest {
-    val identityKeyPair = generateRSAKeyPair()
+    val identityKeyPair = KeyPairSet.PUBLIC_GW
     val tomorrow: ZonedDateTime = ZonedDateTime.now(UTC).plusDays(1)
 
     @Nested
     inner class IssueGatewayCertificate {
         @Test
-        fun `CommonName should be set to private address of gateway`() {
-            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+        fun `Subject CommonName should be set to private address of gateway`() {
+            val certificate =
+                issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
         }
 
         @Test
         fun `Subject public key should be honored`() {
-            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
                 identityKeyPair.public.encoded.asList(),
@@ -37,7 +42,8 @@ class PKITest {
 
         @Test
         fun `Issuer private key should be honored`() {
-            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val verifierProvider = JcaContentVerifierProviderBuilder()
                 .setProvider(BC_PROVIDER)
@@ -47,7 +53,8 @@ class PKITest {
 
         @Test
         fun `Validity end date should be honored`() {
-            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
                 tomorrow.toEpochSecond(),
@@ -93,7 +100,8 @@ class PKITest {
 
         @Test
         fun `Subject should be marked as CA`() {
-            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertTrue(
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).isCA
@@ -102,7 +110,8 @@ class PKITest {
 
         @Test
         fun `pathLenConstraint should be 2 if self-issued`() {
-            val certificate = issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val basicConstraints =
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
@@ -132,14 +141,16 @@ class PKITest {
     inner class IssueEndpointCertificate {
         @Test
         fun `CommonName should be set to private address of gateway`() {
-            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
         }
 
         @Test
         fun `Subject public key should be honored`() {
-            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
                 identityKeyPair.public.encoded.asList(),
@@ -149,7 +160,8 @@ class PKITest {
 
         @Test
         fun `Issuer private key should be honored`() {
-            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val verifierProvider = JcaContentVerifierProviderBuilder()
                 .setProvider(BC_PROVIDER)
@@ -159,7 +171,8 @@ class PKITest {
 
         @Test
         fun `Validity end date should be honored`() {
-            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertEquals(
                 tomorrow.toEpochSecond(),
@@ -205,7 +218,8 @@ class PKITest {
 
         @Test
         fun `Subject should be marked as CA`() {
-            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             assertTrue(
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).isCA
@@ -214,7 +228,8 @@ class PKITest {
 
         @Test
         fun `pathLenConstraint should be 0`() {
-            val certificate = issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
+            val certificate =
+                issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
             val basicConstraints =
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
@@ -328,6 +343,146 @@ class PKITest {
             val basicConstraints =
                 BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
             assertEquals(0, basicConstraints.pathLenConstraint.toInt())
+        }
+    }
+
+    @Nested
+    inner class IssueInitialDHKetCertificate {
+        private val nodeKeyPair = KeyPairSet.PRIVATE_ENDPOINT
+        private val nodeCertificate = PDACertPath.PRIVATE_ENDPOINT
+
+        private val dhKeyPair = generateECDHKeyPair()
+
+        @Test
+        fun `Subject CommonName should be that of the node`() {
+            val certificate = issueInitialDHKeyCertificate(
+                dhKeyPair.public,
+                nodeKeyPair.private,
+                nodeCertificate,
+                tomorrow
+            )
+
+            assertEquals(nodeCertificate.commonName, certificate.commonName)
+        }
+
+        @Test
+        fun `Subject key should be the one specified`() {
+            val certificate = issueInitialDHKeyCertificate(
+                dhKeyPair.public,
+                nodeKeyPair.private,
+                nodeCertificate,
+                tomorrow
+            )
+
+            assertEquals(
+                dhKeyPair.public.encoded.asList(),
+                certificate.subjectPublicKey.encoded.asList()
+            )
+        }
+
+        @Test
+        fun `Issuer private key should be that of the node`() {
+            val certificate = issueInitialDHKeyCertificate(
+                dhKeyPair.public,
+                nodeKeyPair.private,
+                nodeCertificate,
+                tomorrow
+            )
+
+            val verifierProvider = JcaContentVerifierProviderBuilder()
+                .setProvider(BC_PROVIDER)
+                .build(nodeKeyPair.public)
+            assertTrue(certificate.certificateHolder.isSignatureValid(verifierProvider))
+        }
+
+        @Test
+        fun `Subject should not be marked as CA in Basic Constraints extension`() {
+            val certificate = issueInitialDHKeyCertificate(
+                dhKeyPair.public,
+                nodeKeyPair.private,
+                nodeCertificate,
+                tomorrow
+            )
+
+            assertFalse(
+                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions).isCA
+            )
+        }
+
+        @Test
+        fun `pathLenConstraint should be set to 0`() {
+            val certificate = issueInitialDHKeyCertificate(
+                dhKeyPair.public,
+                nodeKeyPair.private,
+                nodeCertificate,
+                tomorrow
+            )
+
+            val basicConstraints =
+                BasicConstraints.fromExtensions(certificate.certificateHolder.extensions)
+            assertEquals(0, basicConstraints.pathLenConstraint.toInt())
+        }
+
+        @Nested
+        inner class ValidityDates {
+            @Test
+            fun `Start date should default to current date`() {
+                val certificate = issueInitialDHKeyCertificate(
+                    dhKeyPair.public,
+                    nodeKeyPair.private,
+                    nodeCertificate,
+                    tomorrow
+                )
+
+                assertDateIsAlmostNow(certificate.startDate)
+            }
+
+            @Test
+            fun `Custom start date should be honored`() {
+                val startDate = ZonedDateTime.now().minusMinutes(1).withNano(0)
+                val certificate = issueInitialDHKeyCertificate(
+                    dhKeyPair.public,
+                    nodeKeyPair.private,
+                    nodeCertificate,
+                    tomorrow,
+                    startDate
+                )
+
+                assertEquals(startDate, certificate.startDate)
+            }
+
+            @Test
+            fun `End date should be honored`() {
+                val startDate = ZonedDateTime.now()
+                val maxEndDate = startDate.plusDays(60).withNano(0)
+                val certificate = issueInitialDHKeyCertificate(
+                    dhKeyPair.public,
+                    nodeKeyPair.private,
+                    nodeCertificate,
+                    maxEndDate,
+                    startDate
+                )
+
+                assertEquals(maxEndDate, certificate.expiryDate)
+            }
+
+            @Test
+            fun `Certificate should not be valid for over 60 days`() {
+                val startDate = ZonedDateTime.now().withNano(0)
+                val invalidEndDate = startDate.plusDays(60).plusSeconds(1)
+
+                val exception = assertThrows<CertificateException> {
+                    issueInitialDHKeyCertificate(
+                        dhKeyPair.public,
+                        nodeKeyPair.private,
+                        nodeCertificate,
+                        invalidEndDate,
+                        startDate
+                    )
+                }
+
+                assertEquals("DH key may not be valid for more than 60 days", exception.message)
+            }
         }
     }
 }
