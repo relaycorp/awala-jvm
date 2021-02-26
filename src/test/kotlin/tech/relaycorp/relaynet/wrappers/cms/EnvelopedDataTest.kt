@@ -42,7 +42,8 @@ class EnvelopedDataTest {
     inner class Serialize {
         @Test
         fun `EnvelopedData value should be DER-encoded`() {
-            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+            val envelopedData =
+                SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
             val serialization = envelopedData.serialize()
 
@@ -100,7 +101,8 @@ class EnvelopedDataTest {
 
         @Test
         fun `SessionlessEnvelopedData should be returned if RecipientInfo uses key transport`() {
-            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+            val envelopedData =
+                SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
             val envelopedDataDeserialized = EnvelopedData.deserialize(envelopedData.serialize())
             assertTrue(envelopedDataDeserialized is SessionlessEnvelopedData)
@@ -139,14 +141,16 @@ class SessionlessEnvelopedDataTest {
         inner class RecipientInfo {
             @Test
             fun `There should be exactly one RecipientInfo`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 assertEquals(1, envelopedData.bcEnvelopedData.recipientInfos.size())
             }
 
             @Test
             fun `RecipientInfo should be of type KeyTransRecipientInfo`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
                 assertTrue(recipientInfo is KeyTransRecipientInformation)
@@ -154,7 +158,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `KeyTransRecipientInfo should use issuerAndSerialNumber choice`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -172,7 +177,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `KeyTransRecipientInfo should use RSA-OAEP`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -186,7 +192,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `RSA-OAEP should be used with SHA-256`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -202,7 +209,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `MGF should be MGF1 with SHA-256`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -222,7 +230,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `RSA-OAEP should be used with default P source algorithm`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -241,19 +250,21 @@ class SessionlessEnvelopedDataTest {
         inner class EncryptedContentInfo {
             @Test
             fun `Ciphertext corresponding to plaintext should be encapsulated`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
                 val recipientInfo = recipients.first() as KeyTransRecipientInformation
-                val recipient =
-                    JceKeyTransEnvelopedRecipient(KeyPairSet.PRIVATE_ENDPOINT.private).setProvider(BC_PROVIDER)
+                val recipient = JceKeyTransEnvelopedRecipient(KeyPairSet.PRIVATE_ENDPOINT.private)
+                    .setProvider(BC_PROVIDER)
                 val plaintext = recipientInfo.getContent(recipient)
                 assertEquals(PLAINTEXT.asList(), plaintext.asList())
             }
 
             @Test
             fun `AES-CBC-128 should be used by default`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 assertEquals(
                     PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS[SymmetricEncryption.AES_128],
@@ -349,7 +360,8 @@ class SessionlessEnvelopedDataTest {
     inner class GetRecipientKeyId {
         @Test
         fun `Key id should be returned`() {
-            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
+            val envelopedData =
+                SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
             val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
             assertEquals(
