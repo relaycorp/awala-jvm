@@ -20,7 +20,7 @@ val HASHING_ALGORITHM_OIDS = mapOf(
     HashingAlgorithm.SHA512 to NISTObjectIdentifiers.id_sha512
 )
 
-val PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS = mapOf(
+val PAYLOAD_SYMMETRIC_CIPHER_OIDS = mapOf(
     SymmetricEncryption.AES_128 to "2.16.840.1.101.3.4.1.2",
     SymmetricEncryption.AES_192 to "2.16.840.1.101.3.4.1.22",
     SymmetricEncryption.AES_256 to "2.16.840.1.101.3.4.1.42"

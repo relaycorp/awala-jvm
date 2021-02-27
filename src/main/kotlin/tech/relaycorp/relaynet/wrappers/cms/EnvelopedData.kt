@@ -10,14 +10,18 @@ import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
+import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter
 import tech.relaycorp.relaynet.BC_PROVIDER
+import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.math.BigInteger
+import java.security.KeyPair
 import java.security.PrivateKey
+import java.security.PublicKey
 import java.security.spec.MGF1ParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
@@ -27,6 +31,11 @@ private val cmsContentEncryptionAlgorithm = mapOf(
     SymmetricEncryption.AES_128 to CMSAlgorithm.AES128_CBC,
     SymmetricEncryption.AES_192 to CMSAlgorithm.AES192_CBC,
     SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_CBC
+)
+internal val KEY_WRAP_ALGORITHMS = mapOf(
+    SymmetricEncryption.AES_128 to CMSAlgorithm.AES128_WRAP,
+    SymmetricEncryption.AES_192 to CMSAlgorithm.AES192_WRAP,
+    SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_WRAP
 )
 
 internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
@@ -165,5 +174,83 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
                 "Required recipient key id to be IssuerAndSerialNumber (got SubjectKeyIdentifier)"
             )
         }
+    }
+}
+
+internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
+    EnvelopedData(bcEnvelopedData) {
+    companion object {
+        val ecdhAlgorithmByHashingAlgorithm = mapOf(
+            HashingAlgorithm.SHA256 to CMSAlgorithm.ECDH_SHA256KDF,
+            HashingAlgorithm.SHA384 to CMSAlgorithm.ECDH_SHA384KDF,
+            HashingAlgorithm.SHA512 to CMSAlgorithm.ECDH_SHA512KDF
+        )
+
+        fun encrypt(
+            plaintext: ByteArray,
+            recipientCertificate: Certificate,
+            originatorKeyPair: KeyPair,
+            symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
+            hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
+        ): SessionEnvelopedData {
+            // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
+            // CMSProcessableInputStream doesn't seem to be accessible here
+            val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
+
+            val recipientX509Certificate = JcaX509CertificateConverter()
+                .getCertificate(recipientCertificate.certificateHolder)
+            val recipientInfoGenerator = makeRecipientInfoGenerator(
+                originatorKeyPair,
+                symmetricEncryptionAlgorithm,
+                hashingAlgorithm
+            ).addRecipient(recipientX509Certificate)
+            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
+
+            val msg = CMSProcessableByteArray(plaintext)
+            val contentEncryptionAlgorithm =
+                cmsContentEncryptionAlgorithm[symmetricEncryptionAlgorithm]
+            val encryptorBuilder =
+                JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm).setProvider(BC_PROVIDER)
+            val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())
+            return SessionEnvelopedData(bcEnvelopedData)
+        }
+
+        fun encrypt(
+            _plaintext: ByteArray,
+            _recipientKeyId: ByteArray,
+            _recipientKey: PublicKey,
+            _originatorKeyPair: KeyPair,
+            _symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
+            hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
+        ): SessionEnvelopedData {
+            TODO()
+        }
+
+        private fun makeRecipientInfoGenerator(
+            originatorKeyPair: KeyPair,
+            symmetricEncryptionAlgorithm: SymmetricEncryption,
+            hashingAlgorithm: HashingAlgorithm
+        ): JceKeyAgreeRecipientInfoGenerator {
+            val ecdhAlgorithm = ecdhAlgorithmByHashingAlgorithm[hashingAlgorithm]
+            val keyWrapCipher = KEY_WRAP_ALGORITHMS[symmetricEncryptionAlgorithm]
+            return JceKeyAgreeRecipientInfoGenerator(
+                ecdhAlgorithm,
+                originatorKeyPair.private,
+                originatorKeyPair.public,
+                keyWrapCipher
+            ).setProvider(BC_PROVIDER)
+        }
+    }
+
+    override fun decrypt(privateKey: PrivateKey): ByteArray {
+        TODO("Not yet implemented")
+    }
+
+    override fun getRecipientKeyId(): BigInteger {
+        TODO("Not yet implemented")
+    }
+
+    override fun validate() {
+        TODO("Not yet implemented")
     }
 }

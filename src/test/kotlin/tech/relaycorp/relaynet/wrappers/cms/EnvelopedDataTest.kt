@@ -10,23 +10,30 @@ import org.bouncycastle.cms.CMSEnvelopedData
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator
 import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
+import org.bouncycastle.cms.KeyAgreeRecipientId
+import org.bouncycastle.cms.KeyAgreeRecipientInformation
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
 import org.bouncycastle.cms.jcajce.JceKEKRecipientInfoGenerator
+import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.crypto.DataLengthException
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.BC_PROVIDER
+import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.SymmetricEncryption
+import tech.relaycorp.relaynet.issueInitialDHKeyCertificate
 import tech.relaycorp.relaynet.sha256
+import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import javax.crypto.KeyGenerator
 import kotlin.test.assertEquals
@@ -34,6 +41,18 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 private val PLAINTEXT = "hello".toByteArray()
+
+interface RecipientInfoTest {
+    fun `There should be exactly one RecipientInfo`()
+}
+
+interface EncryptedContentInfoTest {
+    fun `Ciphertext corresponding to plaintext should be encapsulated`()
+    fun `AES-CBC-128 should be used by default`()
+    fun `Symmetric encryption algorithm may be specified explicitly`(
+        algorithm: SymmetricEncryption
+    )
+}
 
 class EnvelopedDataTest {
     @Nested
@@ -136,9 +155,9 @@ class SessionlessEnvelopedDataTest {
     @Nested
     inner class Encrypt {
         @Nested
-        inner class RecipientInfo {
+        inner class RecipientInfo : RecipientInfoTest {
             @Test
-            fun `There should be exactly one RecipientInfo`() {
+            override fun `There should be exactly one RecipientInfo`() {
                 val envelopedData =
                     SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
@@ -245,9 +264,9 @@ class SessionlessEnvelopedDataTest {
         }
 
         @Nested
-        inner class EncryptedContentInfo {
+        inner class EncryptedContentInfo : EncryptedContentInfoTest {
             @Test
-            fun `Ciphertext corresponding to plaintext should be encapsulated`() {
+            override fun `Ciphertext corresponding to plaintext should be encapsulated`() {
                 val envelopedData =
                     SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
@@ -260,19 +279,19 @@ class SessionlessEnvelopedDataTest {
             }
 
             @Test
-            fun `AES-CBC-128 should be used by default`() {
+            override fun `AES-CBC-128 should be used by default`() {
                 val envelopedData =
                     SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 assertEquals(
-                    PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS[SymmetricEncryption.AES_128],
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
 
             @ParameterizedTest(name = "{0} should be used if explicitly requested")
             @EnumSource
-            fun `Symmetric encryption algorithm may be specified explicitly`(
+            override fun `Symmetric encryption algorithm may be specified explicitly`(
                 algorithm: SymmetricEncryption
             ) {
                 val envelopedData = SessionlessEnvelopedData.encrypt(
@@ -282,7 +301,7 @@ class SessionlessEnvelopedDataTest {
                 )
 
                 assertEquals(
-                    PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS[algorithm],
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[algorithm],
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
@@ -366,6 +385,184 @@ class SessionlessEnvelopedDataTest {
                 (recipientInfo.rid as KeyTransRecipientId).serialNumber,
                 envelopedData.getRecipientKeyId()
             )
+        }
+    }
+}
+
+class SessionEnvelopedDataTest {
+    private val originatorKeyPair = generateECDHKeyPair()
+
+    private val recipientKeyPair = generateECDHKeyPair()
+    private val recipientCertificate = issueInitialDHKeyCertificate(
+        recipientKeyPair.public,
+        KeyPairSet.PRIVATE_ENDPOINT.private,
+        PDACertPath.PRIVATE_ENDPOINT,
+        PDACertPath.PRIVATE_ENDPOINT.expiryDate
+    )
+
+    @Nested
+    inner class Encrypt {
+        @Nested
+        inner class RecipientInfo : RecipientInfoTest {
+            @Test
+            override fun `There should be exactly one RecipientInfo`() {
+                val envelopedData =
+                    SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+                assertEquals(1, envelopedData.bcEnvelopedData.recipientInfos.size())
+            }
+
+            @Test
+            fun `RecipientInfo should be of type KeyAgreeRecipientInfo`() {
+                val envelopedData =
+                    SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
+                assertTrue(recipientInfo is KeyAgreeRecipientInformation)
+            }
+
+            @Test
+            fun `KeyAgreeRecipientInfo should use ECDH with SHA-256 and the X9_63 KDF`() {
+                val envelopedData =
+                    SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+
+                assertEquals(
+                    CMSAlgorithm.ECDH_SHA256KDF.id,
+                    recipientInfo.keyEncryptionAlgOID
+                )
+            }
+
+            @ParameterizedTest(name = "{0} should be used if explicitly requested")
+            @EnumSource
+            fun `Hashing algorithm may be specified explicitly`(
+                algorithm: HashingAlgorithm
+            ) {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    recipientCertificate,
+                    originatorKeyPair,
+                    hashingAlgorithm = algorithm
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+
+                val ecdhAlgorithmOID =
+                    SessionEnvelopedData.ecdhAlgorithmByHashingAlgorithm[algorithm]!!
+                assertEquals(
+                    ecdhAlgorithmOID.id,
+                    recipientInfo.keyEncryptionAlgOID
+                )
+            }
+
+            @Test
+            fun `Recipient key should be encrypted with AES-128 by default`() {
+                val envelopedData =
+                    SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                val keyCipher =
+                    recipientInfo.keyEncryptionAlgorithm.parameters as AlgorithmIdentifier
+                assertEquals(
+                    CMSAlgorithm.AES128_WRAP.id,
+                    keyCipher.algorithm.id
+                )
+            }
+
+            @ParameterizedTest(name = "{0}-KW should be used if explicitly requested")
+            @EnumSource
+            fun `Cipher for recipient key ciphertext may be specified explicitly`(
+                algorithm: SymmetricEncryption
+            ) {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    recipientCertificate,
+                    originatorKeyPair,
+                    symmetricEncryptionAlgorithm = algorithm
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                val keyCipher =
+                    recipientInfo.keyEncryptionAlgorithm.parameters as AlgorithmIdentifier
+                val expectedKeyCipher = KEY_WRAP_ALGORITHMS[algorithm]!!
+                assertEquals(expectedKeyCipher.id, keyCipher.algorithm.id)
+            }
+        }
+
+        @Nested
+        inner class RecipientInfoAsCertificate {
+            @Test
+            fun `KeyAgreeRecipientIdentifier should use IssuerAndSerialNumber`() {
+                val envelopedData =
+                    SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                assertTrue(recipientInfo.rid is KeyAgreeRecipientId)
+                val expectedKeyAgreeRecipientId = KeyAgreeRecipientId(
+                    recipientCertificate.certificateHolder.issuer,
+                    recipientCertificate.certificateHolder.serialNumber
+                )
+                assertEquals(expectedKeyAgreeRecipientId, recipientInfo.rid)
+            }
+        }
+
+        @Nested
+        inner class RecipientInfoAsPublicKey {
+            @Test
+            @Disabled
+            fun `KeyAgreeRecipientIdentifier should use RecipientKeyIdentifier`() {
+            }
+        }
+
+        @Nested
+        inner class EncryptedContentInfo : EncryptedContentInfoTest {
+            @Test
+            override fun `Ciphertext corresponding to plaintext should be encapsulated`() {
+                val envelopedData =
+                    SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+                val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
+                val recipientInfo = recipients.first() as KeyAgreeRecipientInformation
+                val recipient =
+                    JceKeyAgreeEnvelopedRecipient(recipientKeyPair.private).setProvider(BC_PROVIDER)
+                val plaintext = recipientInfo.getContent(recipient)
+                assertEquals(PLAINTEXT.asList(), plaintext.asList())
+            }
+
+            @Test
+            override fun `AES-CBC-128 should be used by default`() {
+                val envelopedData =
+                    SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+                assertEquals(
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
+                    envelopedData.bcEnvelopedData.encryptionAlgOID
+                )
+            }
+
+            @ParameterizedTest(name = "{0} should be used if explicitly requested")
+            @EnumSource
+            override fun `Symmetric encryption algorithm may be specified explicitly`(
+                algorithm: SymmetricEncryption
+            ) {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    recipientCertificate,
+                    originatorKeyPair,
+                    symmetricEncryptionAlgorithm = algorithm
+                )
+
+                assertEquals(
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[algorithm],
+                    envelopedData.bcEnvelopedData.encryptionAlgOID
+                )
+            }
         }
     }
 }
