@@ -9,6 +9,7 @@ import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
+import org.bouncycastle.cms.RecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
 import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
@@ -104,19 +105,12 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             recipientCertificate: Certificate,
             symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128
         ): SessionlessEnvelopedData {
-            // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
-            // CMSProcessableInputStream doesn't seem to be accessible here
-            val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
-
             val recipientInfoGenerator = makeRecipientInfoGenerator(recipientCertificate)
-            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
-
-            val msg = CMSProcessableByteArray(plaintext)
-            val contentEncryptionAlgorithm =
-                cmsContentEncryptionAlgorithm[symmetricEncryptionAlgorithm]
-            val encryptorBuilder =
-                JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm).setProvider(BC_PROVIDER)
-            val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())
+            val bcEnvelopedData = bcEncrypt(
+                plaintext,
+                symmetricEncryptionAlgorithm,
+                recipientInfoGenerator
+            )
             return SessionlessEnvelopedData(bcEnvelopedData)
         }
 
@@ -226,24 +220,18 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             hashingAlgorithm: HashingAlgorithm,
             recipientInfoAppender: JceKeyAgreeRecipientInfoGenerator.() -> Unit
         ): SessionEnvelopedData {
-            // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
-            // CMSProcessableInputStream doesn't seem to be accessible here
-            val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
-
             val recipientInfoGenerator = makeRecipientInfoGenerator(
                 originatorKeyPair,
                 symmetricEncryptionAlgorithm,
                 hashingAlgorithm
             )
             recipientInfoAppender(recipientInfoGenerator)
-            cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
 
-            val msg = CMSProcessableByteArray(plaintext)
-            val contentEncryptionAlgorithm =
-                cmsContentEncryptionAlgorithm[symmetricEncryptionAlgorithm]
-            val encryptorBuilder =
-                JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm).setProvider(BC_PROVIDER)
-            val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())
+            val bcEnvelopedData = bcEncrypt(
+                plaintext,
+                symmetricEncryptionAlgorithm,
+                recipientInfoGenerator
+            )
             return SessionEnvelopedData(bcEnvelopedData)
         }
 
@@ -274,4 +262,23 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     override fun validate() {
         TODO("Not yet implemented")
     }
+}
+
+internal fun bcEncrypt(
+    plaintext: ByteArray,
+    symmetricEncryptionAlgorithm: SymmetricEncryption,
+    recipientInfoGenerator: RecipientInfoGenerator
+): CMSEnvelopedData {
+    // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
+    // CMSProcessableInputStream doesn't seem to be accessible here
+    val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
+
+    cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
+
+    val msg = CMSProcessableByteArray(plaintext)
+    val contentEncryptionAlgorithm =
+        cmsContentEncryptionAlgorithm[symmetricEncryptionAlgorithm]
+    val encryptorBuilder =
+        JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm).setProvider(BC_PROVIDER)
+    return cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())
 }
