@@ -193,17 +193,49 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
             hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
         ): SessionEnvelopedData {
+            val recipientX509Certificate = JcaX509CertificateConverter()
+                .getCertificate(recipientCertificate.certificateHolder)
+            return encrypt(
+                plaintext,
+                originatorKeyPair,
+                symmetricEncryptionAlgorithm,
+                hashingAlgorithm
+            ) { addRecipient(recipientX509Certificate) }
+        }
+
+        fun encrypt(
+            plaintext: ByteArray,
+            recipientKeyId: ByteArray,
+            recipientKey: PublicKey,
+            originatorKeyPair: KeyPair,
+            symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
+            hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
+        ): SessionEnvelopedData {
+            return encrypt(
+                plaintext,
+                originatorKeyPair,
+                symmetricEncryptionAlgorithm,
+                hashingAlgorithm
+            ) { addRecipient(recipientKeyId, recipientKey) }
+        }
+
+        private fun encrypt(
+            plaintext: ByteArray,
+            originatorKeyPair: KeyPair,
+            symmetricEncryptionAlgorithm: SymmetricEncryption,
+            hashingAlgorithm: HashingAlgorithm,
+            recipientInfoAppender: JceKeyAgreeRecipientInfoGenerator.() -> Unit
+        ): SessionEnvelopedData {
             // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
             // CMSProcessableInputStream doesn't seem to be accessible here
             val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
 
-            val recipientX509Certificate = JcaX509CertificateConverter()
-                .getCertificate(recipientCertificate.certificateHolder)
             val recipientInfoGenerator = makeRecipientInfoGenerator(
                 originatorKeyPair,
                 symmetricEncryptionAlgorithm,
                 hashingAlgorithm
-            ).addRecipient(recipientX509Certificate)
+            )
+            recipientInfoAppender(recipientInfoGenerator)
             cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
 
             val msg = CMSProcessableByteArray(plaintext)
@@ -213,17 +245,6 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
                 JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm).setProvider(BC_PROVIDER)
             val bcEnvelopedData = cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())
             return SessionEnvelopedData(bcEnvelopedData)
-        }
-
-        fun encrypt(
-            _plaintext: ByteArray,
-            _recipientKeyId: ByteArray,
-            _recipientKey: PublicKey,
-            _originatorKeyPair: KeyPair,
-            _symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
-            hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
-        ): SessionEnvelopedData {
-            TODO()
         }
 
         private fun makeRecipientInfoGenerator(

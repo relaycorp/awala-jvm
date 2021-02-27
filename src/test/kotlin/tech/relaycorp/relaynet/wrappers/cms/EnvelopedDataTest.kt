@@ -20,7 +20,6 @@ import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.crypto.DataLengthException
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -497,7 +496,7 @@ class SessionEnvelopedDataTest {
         @Nested
         inner class RecipientInfoAsCertificate {
             @Test
-            fun `KeyAgreeRecipientIdentifier should use IssuerAndSerialNumber`() {
+            fun `KeyAgreeRecipientIdentifier may use IssuerAndSerialNumber`() {
                 val envelopedData =
                     SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
 
@@ -514,9 +513,39 @@ class SessionEnvelopedDataTest {
 
         @Nested
         inner class RecipientInfoAsPublicKey {
+            private val recipientKeyId = "the id".toByteArray()
+
             @Test
-            @Disabled
             fun `KeyAgreeRecipientIdentifier should use RecipientKeyIdentifier`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    recipientKeyId,
+                    recipientKeyPair.public,
+                    originatorKeyPair
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                assertTrue(recipientInfo.rid is KeyAgreeRecipientId)
+                val expectedKeyAgreeRecipientId = KeyAgreeRecipientId(recipientKeyId)
+                assertEquals(expectedKeyAgreeRecipientId, recipientInfo.rid)
+            }
+
+            @Test
+            fun `Recipient public key should be used`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    recipientKeyId,
+                    recipientKeyPair.public,
+                    originatorKeyPair
+                )
+
+                val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
+                val recipientInfo = recipients.first() as KeyAgreeRecipientInformation
+                val recipient =
+                    JceKeyAgreeEnvelopedRecipient(recipientKeyPair.private).setProvider(BC_PROVIDER)
+                val plaintext = recipientInfo.getContent(recipient)
+                assertEquals(PLAINTEXT.asList(), plaintext.asList())
             }
         }
 
