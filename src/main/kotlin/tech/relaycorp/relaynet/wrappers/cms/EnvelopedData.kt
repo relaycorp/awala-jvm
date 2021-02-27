@@ -7,10 +7,12 @@ import org.bouncycastle.cms.CMSEnvelopedData
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator
 import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
+import org.bouncycastle.cms.KeyAgreeRecipientInformation
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.RecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
+import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
@@ -252,7 +254,17 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     }
 
     override fun decrypt(privateKey: PrivateKey): ByteArray {
-        TODO("Not yet implemented")
+        val recipients = bcEnvelopedData.recipientInfos.recipients
+        val recipientInfo = recipients.first() as KeyAgreeRecipientInformation
+        val recipient = JceKeyAgreeEnvelopedRecipient(privateKey).setProvider(BC_PROVIDER)
+        return try {
+            recipientInfo.getContent(recipient)
+        } catch (exception: Exception) {
+            // BC usually throws CMSException when the key is invalid, but it occasionally
+            // throws DataLengthException. The latter isn't reproducible, so to avoid code
+            // coverage issues, we're handling all exceptions here. Yes, a name-your-poison thing.
+            throw EnvelopedDataException("Could not decrypt value", exception)
+        }
     }
 
     override fun getRecipientKeyId(): BigInteger {

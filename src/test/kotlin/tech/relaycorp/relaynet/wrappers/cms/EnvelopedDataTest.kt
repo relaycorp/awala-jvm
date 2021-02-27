@@ -53,6 +53,11 @@ interface EncryptedContentInfoTest {
     )
 }
 
+interface DecryptTest {
+    fun `Decryption with the right key should succeed`()
+    fun `Decryption with the wrong key should fail`()
+}
+
 class EnvelopedDataTest {
     @Nested
     inner class Serialize {
@@ -308,9 +313,9 @@ class SessionlessEnvelopedDataTest {
     }
 
     @Nested
-    inner class Decrypt {
+    inner class Decrypt : DecryptTest {
         @Test
-        fun `Decryption with the right key should succeed`() {
+        override fun `Decryption with the right key should succeed`() {
             val envelopedData = SessionlessEnvelopedData.encrypt(
                 PLAINTEXT,
                 PDACertPath.PRIVATE_ENDPOINT
@@ -322,7 +327,7 @@ class SessionlessEnvelopedDataTest {
         }
 
         @Test
-        fun `Decryption with the wrong key should fail`() {
+        override fun `Decryption with the wrong key should fail`() {
             val envelopedData = SessionlessEnvelopedData.encrypt(
                 PLAINTEXT,
                 PDACertPath.PRIVATE_ENDPOINT
@@ -592,6 +597,33 @@ class SessionEnvelopedDataTest {
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
+        }
+    }
+
+    @Nested
+    inner class Decrypt : DecryptTest {
+        @Test
+        override fun `Decryption with the right key should succeed`() {
+            val envelopedData =
+                SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+            val plaintext = envelopedData.decrypt(recipientKeyPair.private)
+
+            assertEquals(PLAINTEXT.asList(), plaintext.asList())
+        }
+
+        @Test
+        override fun `Decryption with the wrong key should fail`() {
+            val envelopedData =
+                SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+            val anotherKeyPair = generateECDHKeyPair()
+
+            val exception = assertThrows<EnvelopedDataException> {
+                envelopedData.decrypt(anotherKeyPair.private)
+            }
+
+            assertEquals("Could not decrypt value", exception.message)
+            assertTrue(exception.cause is CMSException || exception.cause is DataLengthException)
         }
     }
 }
