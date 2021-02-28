@@ -8,6 +8,7 @@ import org.bouncycastle.cms.CMSEnvelopedDataGenerator
 import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
 import org.bouncycastle.cms.KeyAgreeRecipientId
+import org.bouncycastle.cms.KeyAgreeRecipientInformation
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.RecipientInfoGenerator
@@ -61,14 +62,14 @@ internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
                 )
             }
 
-            val recipient = bcEnvelopedData.recipientInfos.first()
-            if (recipient !is KeyTransRecipientInformation) {
-                throw EnvelopedDataException(
+            val envelopedData = when (val recipient = bcEnvelopedData.recipientInfos.first()) {
+                is KeyTransRecipientInformation -> SessionlessEnvelopedData(bcEnvelopedData)
+                is KeyAgreeRecipientInformation -> SessionEnvelopedData(bcEnvelopedData)
+                else -> throw EnvelopedDataException(
                     "Unsupported RecipientInfo (got ${recipient::class.java.simpleName})"
                 )
             }
 
-            val envelopedData = SessionlessEnvelopedData(bcEnvelopedData)
             envelopedData.validate()
             return envelopedData
         }
