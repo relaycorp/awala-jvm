@@ -10,10 +10,13 @@ import org.bouncycastle.cms.CMSEnvelopedData
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator
 import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
+import org.bouncycastle.cms.KeyAgreeRecipientId
+import org.bouncycastle.cms.KeyAgreeRecipientInformation
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
 import org.bouncycastle.cms.jcajce.JceKEKRecipientInfoGenerator
+import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.crypto.DataLengthException
@@ -23,9 +26,13 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.BC_PROVIDER
+import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.KeyPairSet
+import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.SymmetricEncryption
-import tech.relaycorp.relaynet.issueStubCertificate
+import tech.relaycorp.relaynet.issueInitialDHKeyCertificate
 import tech.relaycorp.relaynet.sha256
+import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import javax.crypto.KeyGenerator
 import kotlin.test.assertEquals
@@ -33,15 +40,40 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 private val PLAINTEXT = "hello".toByteArray()
-private val KEYPAIR = generateRSAKeyPair()
-private val CERTIFICATE = issueStubCertificate(KEYPAIR.public, KEYPAIR.private)
+
+private val SESSION_SENDER_KEY_PAIR = generateECDHKeyPair()
+private val SESSION_RECIPIENT_KEY_PAIR = generateECDHKeyPair()
+private val SESSION_RECIPIENT_CERTIFICATE = issueInitialDHKeyCertificate(
+    SESSION_RECIPIENT_KEY_PAIR.public,
+    KeyPairSet.PRIVATE_ENDPOINT.private,
+    PDACertPath.PRIVATE_ENDPOINT,
+    PDACertPath.PRIVATE_ENDPOINT.expiryDate
+)
+
+interface RecipientInfoTest {
+    fun `There should be exactly one RecipientInfo`()
+}
+
+interface EncryptedContentInfoTest {
+    fun `Ciphertext corresponding to plaintext should be encapsulated`()
+    fun `AES-CBC-128 should be used by default`()
+    fun `Symmetric encryption algorithm may be specified explicitly`(
+        algorithm: SymmetricEncryption
+    )
+}
+
+interface DecryptTest {
+    fun `Decryption with the right key should succeed`()
+    fun `Decryption with the wrong key should fail`()
+}
 
 class EnvelopedDataTest {
     @Nested
     inner class Serialize {
         @Test
         fun `EnvelopedData value should be DER-encoded`() {
-            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+            val envelopedData =
+                SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
             val serialization = envelopedData.serialize()
 
@@ -78,7 +110,7 @@ class EnvelopedDataTest {
             val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
 
             val x509Certificate = JcaX509CertificateConverter()
-                .getCertificate(CERTIFICATE.certificateHolder)
+                .getCertificate(PDACertPath.PRIVATE_ENDPOINT.certificateHolder)
             val transKeyGen =
                 JceKeyTransRecipientInfoGenerator(x509Certificate).setProvider(BC_PROVIDER)
             // Add the same recipient twice
@@ -99,10 +131,23 @@ class EnvelopedDataTest {
 
         @Test
         fun `SessionlessEnvelopedData should be returned if RecipientInfo uses key transport`() {
-            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+            val envelopedData =
+                SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
             val envelopedDataDeserialized = EnvelopedData.deserialize(envelopedData.serialize())
             assertTrue(envelopedDataDeserialized is SessionlessEnvelopedData)
+        }
+
+        @Test
+        fun `SessionEnvelopedData should be returned if RecipientInfo uses key agreement`() {
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                SESSION_RECIPIENT_CERTIFICATE,
+                SESSION_SENDER_KEY_PAIR
+            )
+
+            val envelopedDataDeserialized = EnvelopedData.deserialize(envelopedData.serialize())
+            assertTrue(envelopedDataDeserialized is SessionEnvelopedData)
         }
 
         @Test
@@ -135,17 +180,19 @@ class SessionlessEnvelopedDataTest {
     @Nested
     inner class Encrypt {
         @Nested
-        inner class RecipientInfo {
+        inner class RecipientInfo : RecipientInfoTest {
             @Test
-            fun `There should be exactly one RecipientInfo`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+            override fun `There should be exactly one RecipientInfo`() {
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 assertEquals(1, envelopedData.bcEnvelopedData.recipientInfos.size())
             }
 
             @Test
             fun `RecipientInfo should be of type KeyTransRecipientInfo`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
                 assertTrue(recipientInfo is KeyTransRecipientInformation)
@@ -153,25 +200,27 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `KeyTransRecipientInfo should use issuerAndSerialNumber choice`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
                         KeyTransRecipientInformation
                 assertTrue(recipientInfo.rid is KeyTransRecipientId)
                 assertEquals(
-                    CERTIFICATE.certificateHolder.issuer,
+                    PDACertPath.PRIVATE_ENDPOINT.certificateHolder.issuer,
                     (recipientInfo.rid as KeyTransRecipientId).issuer
                 )
                 assertEquals(
-                    CERTIFICATE.certificateHolder.serialNumber,
+                    PDACertPath.PRIVATE_ENDPOINT.certificateHolder.serialNumber,
                     (recipientInfo.rid as KeyTransRecipientId).serialNumber
                 )
             }
 
             @Test
             fun `KeyTransRecipientInfo should use RSA-OAEP`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -185,7 +234,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `RSA-OAEP should be used with SHA-256`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -201,7 +251,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `MGF should be MGF1 with SHA-256`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -221,7 +272,8 @@ class SessionlessEnvelopedDataTest {
 
             @Test
             fun `RSA-OAEP should be used with default P source algorithm`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipientInfo =
                     envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -237,42 +289,44 @@ class SessionlessEnvelopedDataTest {
         }
 
         @Nested
-        inner class EncryptedContentInfo {
+        inner class EncryptedContentInfo : EncryptedContentInfoTest {
             @Test
-            fun `Ciphertext corresponding to plaintext should be encapsulated`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+            override fun `Ciphertext corresponding to plaintext should be encapsulated`() {
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
                 val recipientInfo = recipients.first() as KeyTransRecipientInformation
-                val recipient =
-                    JceKeyTransEnvelopedRecipient(KEYPAIR.private).setProvider(BC_PROVIDER)
+                val recipient = JceKeyTransEnvelopedRecipient(KeyPairSet.PRIVATE_ENDPOINT.private)
+                    .setProvider(BC_PROVIDER)
                 val plaintext = recipientInfo.getContent(recipient)
                 assertEquals(PLAINTEXT.asList(), plaintext.asList())
             }
 
             @Test
-            fun `AES-CBC-128 should be used by default`() {
-                val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+            override fun `AES-CBC-128 should be used by default`() {
+                val envelopedData =
+                    SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 assertEquals(
-                    PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS[SymmetricEncryption.AES_128],
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
 
             @ParameterizedTest(name = "{0} should be used if explicitly requested")
             @EnumSource
-            fun `Symmetric encryption algorithm may be specified explicitly`(
+            override fun `Symmetric encryption algorithm may be specified explicitly`(
                 algorithm: SymmetricEncryption
             ) {
                 val envelopedData = SessionlessEnvelopedData.encrypt(
                     PLAINTEXT,
-                    CERTIFICATE,
+                    PDACertPath.PRIVATE_ENDPOINT,
                     symmetricEncryptionAlgorithm = algorithm
                 )
 
                 assertEquals(
-                    PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS[algorithm],
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[algorithm],
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
@@ -280,24 +334,24 @@ class SessionlessEnvelopedDataTest {
     }
 
     @Nested
-    inner class Decrypt {
+    inner class Decrypt : DecryptTest {
         @Test
-        fun `Decryption with the right key should succeed`() {
+        override fun `Decryption with the right key should succeed`() {
             val envelopedData = SessionlessEnvelopedData.encrypt(
                 PLAINTEXT,
-                CERTIFICATE
+                PDACertPath.PRIVATE_ENDPOINT
             )
 
-            val plaintext = envelopedData.decrypt(KEYPAIR.private)
+            val plaintext = envelopedData.decrypt(KeyPairSet.PRIVATE_ENDPOINT.private)
 
             assertEquals(PLAINTEXT.asList(), plaintext.asList())
         }
 
         @Test
-        fun `Decryption with the wrong key should fail`() {
+        override fun `Decryption with the wrong key should fail`() {
             val envelopedData = SessionlessEnvelopedData.encrypt(
                 PLAINTEXT,
-                CERTIFICATE
+                PDACertPath.PRIVATE_ENDPOINT
             )
             val anotherKeyPair = generateRSAKeyPair()
 
@@ -311,7 +365,7 @@ class SessionlessEnvelopedDataTest {
     }
 
     @Nested
-    inner class PostDeserializationValidation {
+    inner class Validation {
         @Nested
         inner class RecipientKeyId {
             @Test
@@ -319,8 +373,8 @@ class SessionlessEnvelopedDataTest {
                 val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
 
                 val transKeyGen = JceKeyTransRecipientInfoGenerator(
-                    sha256(KEYPAIR.public.encoded),
-                    KEYPAIR.public
+                    sha256(KeyPairSet.PRIVATE_ENDPOINT.public.encoded),
+                    KeyPairSet.PRIVATE_ENDPOINT.public
                 ).setProvider(BC_PROVIDER)
                 cmsEnvelopedDataGenerator.addRecipientInfoGenerator(transKeyGen)
 
@@ -348,13 +402,314 @@ class SessionlessEnvelopedDataTest {
     inner class GetRecipientKeyId {
         @Test
         fun `Key id should be returned`() {
-            val envelopedData = SessionlessEnvelopedData.encrypt(PLAINTEXT, CERTIFICATE)
+            val envelopedData =
+                SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
-            val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
             assertEquals(
-                (recipientInfo.rid as KeyTransRecipientId).serialNumber,
-                envelopedData.getRecipientKeyId()
+                PDACertPath.PRIVATE_ENDPOINT.certificateHolder.serialNumber,
+                (envelopedData.getRecipientKeyId() as RecipientSerialNumber).subjectSerialNumber
             )
+        }
+    }
+}
+
+class SessionEnvelopedDataTest {
+    @Nested
+    inner class Encrypt {
+        @Nested
+        inner class RecipientInfo : RecipientInfoTest {
+            @Test
+            override fun `There should be exactly one RecipientInfo`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                assertEquals(1, envelopedData.bcEnvelopedData.recipientInfos.size())
+            }
+
+            @Test
+            fun `RecipientInfo should be of type KeyAgreeRecipientInfo`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
+                assertTrue(recipientInfo is KeyAgreeRecipientInformation)
+            }
+
+            @Test
+            fun `KeyAgreeRecipientInfo should use ECDH with SHA-256 and the X9_63 KDF`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+
+                assertEquals(
+                    CMSAlgorithm.ECDH_SHA256KDF.id,
+                    recipientInfo.keyEncryptionAlgOID
+                )
+            }
+
+            @ParameterizedTest(name = "{0} should be used if explicitly requested")
+            @EnumSource
+            fun `Hashing algorithm may be specified explicitly`(
+                algorithm: HashingAlgorithm
+            ) {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR,
+                    hashingAlgorithm = algorithm
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+
+                val ecdhAlgorithmOID =
+                    SessionEnvelopedData.ecdhAlgorithmByHashingAlgorithm[algorithm]!!
+                assertEquals(
+                    ecdhAlgorithmOID.id,
+                    recipientInfo.keyEncryptionAlgOID
+                )
+            }
+
+            @Test
+            fun `Recipient key should be encrypted with AES-128 by default`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                val keyCipher =
+                    recipientInfo.keyEncryptionAlgorithm.parameters as AlgorithmIdentifier
+                assertEquals(
+                    CMSAlgorithm.AES128_WRAP.id,
+                    keyCipher.algorithm.id
+                )
+            }
+
+            @ParameterizedTest(name = "{0}-KW should be used if explicitly requested")
+            @EnumSource
+            fun `Cipher for recipient key ciphertext may be specified explicitly`(
+                algorithm: SymmetricEncryption
+            ) {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR,
+                    symmetricEncryptionAlgorithm = algorithm
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                val keyCipher =
+                    recipientInfo.keyEncryptionAlgorithm.parameters as AlgorithmIdentifier
+                val expectedKeyCipher = KEY_WRAP_ALGORITHMS[algorithm]!!
+                assertEquals(expectedKeyCipher.id, keyCipher.algorithm.id)
+            }
+        }
+
+        @Nested
+        inner class RecipientInfoAsCertificate {
+            @Test
+            fun `KeyAgreeRecipientIdentifier may use IssuerAndSerialNumber`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                assertTrue(recipientInfo.rid is KeyAgreeRecipientId)
+                val expectedKeyAgreeRecipientId = KeyAgreeRecipientId(
+                    SESSION_RECIPIENT_CERTIFICATE.certificateHolder.issuer,
+                    SESSION_RECIPIENT_CERTIFICATE.certificateHolder.serialNumber
+                )
+                assertEquals(expectedKeyAgreeRecipientId, recipientInfo.rid)
+            }
+        }
+
+        @Nested
+        inner class RecipientInfoAsPublicKey {
+            private val recipientKeyId = "the id".toByteArray()
+
+            @Test
+            fun `KeyAgreeRecipientIdentifier should use RecipientKeyIdentifier`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    recipientKeyId,
+                    SESSION_RECIPIENT_KEY_PAIR.public,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
+                assertTrue(recipientInfo.rid is KeyAgreeRecipientId)
+                val expectedKeyAgreeRecipientId = KeyAgreeRecipientId(recipientKeyId)
+                assertEquals(expectedKeyAgreeRecipientId, recipientInfo.rid)
+            }
+
+            @Test
+            fun `Recipient public key should be used`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    recipientKeyId,
+                    SESSION_RECIPIENT_KEY_PAIR.public,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
+                val recipientInfo = recipients.first() as KeyAgreeRecipientInformation
+                val recipient = JceKeyAgreeEnvelopedRecipient(SESSION_RECIPIENT_KEY_PAIR.private)
+                    .setProvider(BC_PROVIDER)
+                val plaintext = recipientInfo.getContent(recipient)
+                assertEquals(PLAINTEXT.asList(), plaintext.asList())
+            }
+        }
+
+        @Nested
+        inner class EncryptedContentInfo : EncryptedContentInfoTest {
+            @Test
+            override fun `Ciphertext corresponding to plaintext should be encapsulated`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
+                val recipientInfo = recipients.first() as KeyAgreeRecipientInformation
+                val recipient = JceKeyAgreeEnvelopedRecipient(SESSION_RECIPIENT_KEY_PAIR.private)
+                    .setProvider(BC_PROVIDER)
+                val plaintext = recipientInfo.getContent(recipient)
+                assertEquals(PLAINTEXT.asList(), plaintext.asList())
+            }
+
+            @Test
+            override fun `AES-CBC-128 should be used by default`() {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR
+                )
+
+                assertEquals(
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
+                    envelopedData.bcEnvelopedData.encryptionAlgOID
+                )
+            }
+
+            @ParameterizedTest(name = "{0} should be used if explicitly requested")
+            @EnumSource
+            override fun `Symmetric encryption algorithm may be specified explicitly`(
+                algorithm: SymmetricEncryption
+            ) {
+                val envelopedData = SessionEnvelopedData.encrypt(
+                    PLAINTEXT,
+                    SESSION_RECIPIENT_CERTIFICATE,
+                    SESSION_SENDER_KEY_PAIR,
+                    symmetricEncryptionAlgorithm = algorithm
+                )
+
+                assertEquals(
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[algorithm],
+                    envelopedData.bcEnvelopedData.encryptionAlgOID
+                )
+            }
+        }
+    }
+
+    @Nested
+    inner class Decrypt : DecryptTest {
+        @Test
+        override fun `Decryption with the right key should succeed`() {
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                SESSION_RECIPIENT_CERTIFICATE,
+                SESSION_SENDER_KEY_PAIR
+            )
+
+            val plaintext = envelopedData.decrypt(SESSION_RECIPIENT_KEY_PAIR.private)
+
+            assertEquals(PLAINTEXT.asList(), plaintext.asList())
+        }
+
+        @Test
+        override fun `Decryption with the wrong key should fail`() {
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                SESSION_RECIPIENT_CERTIFICATE,
+                SESSION_SENDER_KEY_PAIR
+            )
+            val anotherKeyPair = generateECDHKeyPair()
+
+            val exception = assertThrows<EnvelopedDataException> {
+                envelopedData.decrypt(anotherKeyPair.private)
+            }
+
+            assertEquals("Could not decrypt value", exception.message)
+            assertTrue(exception.cause is CMSException || exception.cause is DataLengthException)
+        }
+    }
+
+    @Nested
+    inner class GetRecipientKeyId {
+        @Test
+        fun `Serial number should be returned if recipient uses IssuerAndSerialNumber`() {
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                SESSION_RECIPIENT_CERTIFICATE,
+                SESSION_SENDER_KEY_PAIR
+            )
+
+            val recipientKeyId = envelopedData.getRecipientKeyId()
+            assertTrue(recipientKeyId is RecipientSerialNumber)
+            assertEquals(
+                SESSION_RECIPIENT_CERTIFICATE.certificateHolder.serialNumber,
+                recipientKeyId.subjectSerialNumber
+            )
+        }
+
+        @Test
+        fun `Key identifier should be returned if recipient uses RecipientKeyIdentifier`() {
+            val recipientKeyId = "the id".toByteArray()
+
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                recipientKeyId,
+                SESSION_RECIPIENT_KEY_PAIR.public,
+                SESSION_SENDER_KEY_PAIR
+            )
+
+            val actualRecipientKeyId = envelopedData.getRecipientKeyId()
+            assertTrue(actualRecipientKeyId is RecipientKeyIdentifier)
+            assertEquals(recipientKeyId.asList(), actualRecipientKeyId.id.asList())
+        }
+    }
+
+    @Nested
+    inner class Validation {
+        @Test
+        fun `Validate method should do nothing`() {
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                SESSION_RECIPIENT_CERTIFICATE,
+                SESSION_SENDER_KEY_PAIR
+            )
+
+            envelopedData.validate()
         }
     }
 }

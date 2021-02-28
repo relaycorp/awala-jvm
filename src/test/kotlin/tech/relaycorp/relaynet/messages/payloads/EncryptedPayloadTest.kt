@@ -7,7 +7,7 @@ import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.KEY_PAIR
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
-import tech.relaycorp.relaynet.wrappers.cms.PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS
+import tech.relaycorp.relaynet.wrappers.cms.PAYLOAD_SYMMETRIC_CIPHER_OIDS
 import java.nio.charset.Charset
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,7 +36,7 @@ internal class EncryptedPayloadTest {
 
             val payloadCmsEnvelopedData = EnvelopedData.deserialize(payloadSerialized)
             assertEquals(
-                PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS[SymmetricEncryption.AES_128],
+                PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
                 payloadCmsEnvelopedData.bcEnvelopedData.encryptionAlgOID
             )
         }
@@ -50,7 +50,7 @@ internal class EncryptedPayloadTest {
 
             val payloadCmsEnvelopedData = EnvelopedData.deserialize(payloadSerialized)
             assertEquals(
-                PAYLOAD_SYMMETRIC_ENC_ALGO_OIDS[algorithm],
+                PAYLOAD_SYMMETRIC_CIPHER_OIDS[algorithm],
                 payloadCmsEnvelopedData.bcEnvelopedData.encryptionAlgOID
             )
         }
