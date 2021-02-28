@@ -258,7 +258,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     }
 
     override fun validate() {
-        TODO("Not yet implemented")
+        // No validation needed.
     }
 }
 

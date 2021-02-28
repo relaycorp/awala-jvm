@@ -344,7 +344,7 @@ class SessionlessEnvelopedDataTest {
     }
 
     @Nested
-    inner class PostDeserializationValidation {
+    inner class Validation {
         @Nested
         inner class RecipientKeyId {
             @Test
@@ -655,6 +655,17 @@ class SessionEnvelopedDataTest {
             val actualRecipientKeyId = envelopedData.getRecipientKeyId()
             assertTrue(actualRecipientKeyId is RecipientKeyIdentifier)
             assertEquals(recipientKeyId.asList(), actualRecipientKeyId.id.asList())
+        }
+    }
+
+    @Nested
+    inner class Validation {
+        @Test
+        fun `Validate method should do nothing`() {
+            val envelopedData =
+                SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+            envelopedData.validate()
         }
     }
 }
