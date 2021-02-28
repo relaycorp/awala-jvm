@@ -7,6 +7,7 @@ import org.bouncycastle.cms.CMSEnvelopedData
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator
 import org.bouncycastle.cms.CMSException
 import org.bouncycastle.cms.CMSProcessableByteArray
+import org.bouncycastle.cms.KeyAgreeRecipientId
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
 import org.bouncycastle.cms.RecipientInfoGenerator
@@ -20,7 +21,6 @@ import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.math.BigInteger
 import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -99,14 +99,8 @@ internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
 
     /**
      * Return the id of the recipient's key used to encrypt the content.
-     *
-     * This id will often be the recipient's certificate's serial number, in which case the issuer
-     * will be ignored: This method is meant to be used by the recipient so it can look up the
-     * corresponding private key to decrypt the content. We could certainly extract the issuer to
-     * verify it matches the expected one, but if the id doesn't match any key decryption
-     * won't even be attempted, so there's really no risk from ignoring the issuer.
      */
-    abstract fun getRecipientKeyId(): BigInteger
+    abstract fun getRecipientKeyId(): RecipientIdentifier
 
     /**
      * Validate EnvelopedData value, post-deserialization.
@@ -153,9 +147,9 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         }
     }
 
-    override fun getRecipientKeyId(): BigInteger {
+    override fun getRecipientKeyId(): RecipientIdentifier {
         val rid = bcEnvelopedData.recipientInfos.first().rid as KeyTransRecipientId
-        return rid.serialNumber
+        return RecipientSerialNumber(rid.serialNumber)
     }
 
     @Throws(EnvelopedDataException::class)
@@ -254,8 +248,13 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         }
     }
 
-    override fun getRecipientKeyId(): BigInteger {
-        TODO("Not yet implemented")
+    override fun getRecipientKeyId(): RecipientIdentifier {
+        val rid = bcEnvelopedData.recipientInfos.first().rid as KeyAgreeRecipientId
+        return if (rid.serialNumber == null) {
+            RecipientKeyIdentifier(rid.subjectKeyIdentifier)
+        } else {
+            RecipientSerialNumber(rid.serialNumber)
+        }
     }
 
     override fun validate() {

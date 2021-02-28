@@ -384,10 +384,9 @@ class SessionlessEnvelopedDataTest {
             val envelopedData =
                 SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
-            val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
             assertEquals(
-                (recipientInfo.rid as KeyTransRecipientId).serialNumber,
-                envelopedData.getRecipientKeyId()
+                PDACertPath.PRIVATE_ENDPOINT.certificateHolder.serialNumber,
+                (envelopedData.getRecipientKeyId() as RecipientSerialNumber).subjectSerialNumber
             )
         }
     }
@@ -624,6 +623,38 @@ class SessionEnvelopedDataTest {
 
             assertEquals("Could not decrypt value", exception.message)
             assertTrue(exception.cause is CMSException || exception.cause is DataLengthException)
+        }
+    }
+
+    @Nested
+    inner class GetRecipientKeyId {
+        @Test
+        fun `Serial number should be returned if recipient uses IssuerAndSerialNumber`() {
+            val envelopedData =
+                SessionEnvelopedData.encrypt(PLAINTEXT, recipientCertificate, originatorKeyPair)
+
+            val recipientKeyId = envelopedData.getRecipientKeyId()
+            assertTrue(recipientKeyId is RecipientSerialNumber)
+            assertEquals(
+                recipientCertificate.certificateHolder.serialNumber,
+                recipientKeyId.subjectSerialNumber
+            )
+        }
+
+        @Test
+        fun `Key identifier should be returned if recipient uses RecipientKeyIdentifier`() {
+            val recipientKeyId = "the id".toByteArray()
+
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                recipientKeyId,
+                recipientKeyPair.public,
+                originatorKeyPair
+            )
+
+            val actualRecipientKeyId = envelopedData.getRecipientKeyId()
+            assertTrue(actualRecipientKeyId is RecipientKeyIdentifier)
+            assertEquals(recipientKeyId.asList(), actualRecipientKeyId.id.asList())
         }
     }
 }
