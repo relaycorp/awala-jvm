@@ -9,8 +9,11 @@ import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.PublicKey
+import java.security.interfaces.RSAPrivateCrtKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.InvalidKeySpecException
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.RSAPublicKeySpec
 import java.security.spec.X509EncodedKeySpec
 
 private const val DEFAULT_RSA_KEY_MODULUS = 2048
@@ -36,6 +39,22 @@ fun generateRSAKeyPair(modulus: Int = DEFAULT_RSA_KEY_MODULUS): KeyPair {
     val keyGen = KeyPairGenerator.getInstance("RSA", BC_PROVIDER)
     keyGen.initialize(modulus)
     return keyGen.generateKeyPair()
+}
+
+/**
+ * Deserialize the RSA key pair from a private key serialization.
+ */
+fun ByteArray.deserializeRSAKeyPair(): KeyPair {
+    val privateKeySpec = PKCS8EncodedKeySpec(this)
+    val keyFactory = KeyFactory.getInstance("RSA", BC_PROVIDER)
+    val privateKey = try {
+        keyFactory.generatePrivate(privateKeySpec) as RSAPrivateCrtKey
+    } catch (exc: InvalidKeySpecException) {
+        throw KeyException("Value is not a valid RSA private key", exc)
+    }
+    val publicKeySpec = RSAPublicKeySpec(privateKey.modulus, privateKey.publicExponent)
+    val publicKey = keyFactory.generatePublic(publicKeySpec)
+    return KeyPair(publicKey, privateKey)
 }
 
 fun ByteArray.deserializeRSAPublicKey() = deserializePublicKey("RSA")
