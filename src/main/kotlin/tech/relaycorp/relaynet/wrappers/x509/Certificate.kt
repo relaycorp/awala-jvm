@@ -39,7 +39,7 @@ import java.util.Date
  *
  * @param certificateHolder Bouncy Castle representation of the X.509 certificate
  */
-class Certificate constructor(val certificateHolder: X509CertificateHolder) {
+class Certificate constructor(internal val certificateHolder: X509CertificateHolder) {
     companion object {
         private val bcToJavaCertificateConverter: JcaX509CertificateConverter =
             JcaX509CertificateConverter().setProvider(BC_PROVIDER)
