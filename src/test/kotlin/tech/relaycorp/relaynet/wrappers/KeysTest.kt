@@ -62,7 +62,7 @@ class KeysTest {
     }
 
     @Nested
-    inner class DeserializeRSAPrivateKey {
+    inner class DeserializeRSAKeyPair {
         @Test
         fun `Deserialize invalid key`() {
             val exception =
@@ -130,6 +130,46 @@ class KeysTest {
             val publicKeyDeserialized = publicKeySerialized.deserializeRSAPublicKey()
 
             assertTrue(publicKeyDeserialized is BCRSAPublicKey)
+        }
+    }
+
+    @Nested
+    inner class DeserializeECKeyPair {
+        @Test
+        fun `Deserialize invalid key`() {
+            val exception =
+                assertThrows<KeyException> { "s".toByteArray().deserializeECKeyPair() }
+
+            assertEquals("Value is not a valid EC private key", exception.message)
+            assertTrue(exception.cause is InvalidKeySpecException)
+        }
+
+        @Test
+        fun `Deserialize valid private key`() {
+            val keyPair = generateECDHKeyPair()
+            val privateKeySerialized = keyPair.private.encoded
+
+            val keyPairDeserialized = privateKeySerialized.deserializeECKeyPair()
+
+            assertEquals(
+                keyPair.private.encoded.asList(),
+                keyPairDeserialized.private.encoded.asList()
+            )
+            assertEquals(
+                keyPair.public.encoded.asList(),
+                keyPairDeserialized.public.encoded.asList()
+            )
+        }
+
+        @Test
+        fun `BouncyCastle provider should be used`() {
+            val keyPair = generateECDHKeyPair()
+            val privateKeySerialized = keyPair.private.encoded
+
+            val keyPairDeserialized = privateKeySerialized.deserializeECKeyPair()
+
+            assertTrue(keyPairDeserialized.public is ECPublicKey)
+            assertTrue(keyPairDeserialized.private is ECPrivateKey)
         }
     }
 
