@@ -42,7 +42,7 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
     }
 
     @Throws(RAMFException::class)
-    internal abstract fun deserializePayload(payloadPlaintext: ByteArray): P
+    protected abstract fun deserializePayload(payloadPlaintext: ByteArray): P
 
     companion object {
         // Per the RAMF spec

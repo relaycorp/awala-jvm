@@ -32,9 +32,8 @@ class Parcel(
     ttl,
     senderCertificateChain
 ) {
-    override fun deserializePayload(payloadPlaintext: ByteArray): ServiceMessage {
-        TODO("Not yet implemented")
-    }
+    override fun deserializePayload(payloadPlaintext: ByteArray) =
+        ServiceMessage.deserialize(payloadPlaintext)
 
     companion object : RAMFMessageCompanion<Parcel> {
         /**

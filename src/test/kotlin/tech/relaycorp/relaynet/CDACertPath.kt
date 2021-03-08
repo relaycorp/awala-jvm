@@ -10,7 +10,7 @@ object CDACertPath {
     private val twoSecondsAgo = now.minusSeconds(2)
     private val tomorrow = now.plusDays(1)
 
-    private val PRIVATE_GW = issueGatewayCertificate(
+    val PRIVATE_GW = issueGatewayCertificate(
         KeyPairSet.PRIVATE_GW.public,
         KeyPairSet.PUBLIC_GW.private,
         tomorrow,
