@@ -8,6 +8,6 @@ import org.junit.jupiter.api.Test
 class ContentTypesTest {
     @Test
     fun `Value should be output`() {
-        assertEquals("application/vnd.relaynet.parcel", ContentTypes.PARCEL.value)
+        assertEquals("application/vnd.awala.parcel", ContentTypes.PARCEL.value)
     }
 }
