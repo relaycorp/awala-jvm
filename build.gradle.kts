@@ -18,7 +18,7 @@ plugins {
 
     `maven-publish`
 
-    id("com.diffplug.spotless") version "5.1.1"
+    id("com.diffplug.spotless") version "5.11.1"
 
     jacoco
 }
