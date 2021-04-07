@@ -21,6 +21,8 @@ plugins {
     id("com.diffplug.spotless") version "5.11.1"
 
     jacoco
+
+    signing
 }
 
 repositories {
@@ -114,6 +116,12 @@ tasks.dokka {
     outputDirectory = "$buildDir/docs/api"
 }
 
+signing {
+    val signingKey: String? by project
+    val signingPassword: String? by project
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(configurations.archives.get())
+}
 publishing {
     publications {
         create<MavenPublication>("default") {
@@ -145,13 +153,10 @@ publishing {
     }
     repositories {
         maven {
-            // publish=1 automatically publishes the version
-            url = uri(
-                "https://api.bintray.com/maven/relaycorp/maven/tech.relaycorp.relaynet/;publish=1"
-            )
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
-                username = System.getenv("BINTRAY_USERNAME")
-                password = System.getenv("BINTRAY_KEY")
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }
