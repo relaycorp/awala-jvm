@@ -29,13 +29,13 @@
 <meta name="generator" content="Jekyll v3.9.0" />
 <meta property="og:title" content="Implementing a courier" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="JVM library for the core of Relaynet" />
-<meta property="og:description" content="JVM library for the core of Relaynet" />
+<meta name="description" content="JVM library for the core of Awala (fka Relaynet)" />
+<meta property="og:description" content="JVM library for the core of Awala (fka Relaynet)" />
 <meta property="og:site_name" content="Relaynet JVM" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="Implementing a courier" />
 <script type="application/ld+json">
-{"@type":"WebPage","url":"/awala-jvm/couriers","description":"JVM library for the core of Relaynet","headline":"Implementing a courier","@context":"https://schema.org"}</script>
+{"@type":"WebPage","url":"/awala-jvm/couriers","description":"JVM library for the core of Awala (fka Relaynet)","headline":"Implementing a courier","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -101,7 +101,7 @@
         
       </h2>
 
-<p>You’ll need the <a href="/relaynet-jvm/api/relaynet/tech.relaycorp.relaynet.messages/-cargo/"><code class="language-plaintext highlighter-rouge">Cargo</code></a> and <a href="/relaynet-jvm/api/relaynet/tech.relaycorp.relaynet.messages/-cargo-collection-authorization/"><code class="language-plaintext highlighter-rouge">CargoCollectionAuthorization</code></a> (CCA) classes to deserialize and inspect their corresponding RAMF messages.</p>
+<p>You’ll need the <a href="/awala-jvm/api/relaynet/tech.relaycorp.relaynet.messages/-cargo/"><code class="language-plaintext highlighter-rouge">Cargo</code></a> and <a href="/awala-jvm/api/relaynet/tech.relaycorp.relaynet.messages/-cargo-collection-authorization/"><code class="language-plaintext highlighter-rouge">CargoCollectionAuthorization</code></a> (CCA) classes to deserialize and inspect their corresponding RAMF messages.</p>
 
 <p>It is important to call the <code class="language-plaintext highlighter-rouge">validate()</code> method on any RAMF message received from any external source. Deserializing RAMF messages only proves that they are syntactically valid, but they may still be invalid (e.g., the message might’ve been created after the sender’s certificate expired).</p>
     
@@ -113,7 +113,7 @@
         
       </h2>
 
-<p>When delivering cargo to a public gateway via a cargo relay implementation (e.g., CogRPC), you’ll need to pass <a href="/relaynet-jvm/api/relaynet/tech.relaycorp.relaynet/-cargo-delivery-request/"><code class="language-plaintext highlighter-rouge">CargoRelayRequest</code></a> instances to it so that you can track and delete cargo as it’s safely delivered to the gateway.</p>
+<p>When delivering cargo to a public gateway via a cargo relay implementation (e.g., CogRPC), you’ll need to pass <a href="/awala-jvm/api/relaynet/tech.relaycorp.relaynet/-cargo-delivery-request/"><code class="language-plaintext highlighter-rouge">CargoRelayRequest</code></a> instances to it so that you can track and delete cargo as it’s safely delivered to the gateway.</p>
 
 <p>The actual way to pass such instances will depend entirely on the cargo relay library, so make sure it read its documentation.</p>
     
