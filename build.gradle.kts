@@ -42,7 +42,7 @@ dependencies {
     implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
 
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
-    // https://github.com/relaycorp/relaynet-jvm/issues/25
+    // https://github.com/relaycorp/awala-jvm/issues/25
     implementation("com.beanit:jasn1:1.11.3")
     implementation("org.bouncycastle:bcprov-jdk15on:1.66")
 
@@ -122,7 +122,7 @@ publishing {
             pom {
                 name.set(rootProject.name)
                 description.set("Relaynet JVM library")
-                url.set("https://github.com/relaycorp/relaynet-jvm")
+                url.set("https://github.com/relaycorp/awala-jvm")
                 developers {
                     developer {
                         id.set("relaycorp")
@@ -136,9 +136,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:https://github.com/relaycorp/relaynet-jvm.git")
-                    developerConnection.set("scm:git:https://github.com/relaycorp/relaynet-jvm.git")
-                    url.set("https://github.com/relaycorp/relaynet-jvm")
+                    connection.set("scm:git:https://github.com/relaycorp/awala-jvm.git")
+                    developerConnection.set("scm:git:https://github.com/relaycorp/awala-jvm.git")
+                    url.set("https://github.com/relaycorp/awala-jvm")
                 }
             }
         }

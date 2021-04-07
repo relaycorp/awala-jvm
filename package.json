@@ -1,5 +1,5 @@
 {
-  "name": "relaynet-jvm",
+  "name": "awala-jvm",
   "devDependencies": {
     "@relaycorp/shared-config": "^1.4.13",
     "gradle-semantic-release-plugin": "^1.4.1"

@@ -43,8 +43,8 @@ This library supports the following Relaynet specs:
 
 ## Support
 
-If you have any questions or comments, [create an issue on the GitHub project](https://github.com/relaycorp/relaynet-jvm/issues/new/choose).
+If you have any questions or comments, [create an issue on the GitHub project](https://github.com/relaycorp/awala-jvm/issues/new/choose).
 
 ## Updates
 
-Releases are automatically published on GitHub and JCenter, and the [changelog can be found on GitHub](https://github.com/relaycorp/relaynet-jvm/releases). This project uses [semantic versioning](https://semver.org/).
+Releases are automatically published on GitHub and JCenter, and the [changelog can be found on GitHub](https://github.com/relaycorp/awala-jvm/releases). This project uses [semantic versioning](https://semver.org/).
