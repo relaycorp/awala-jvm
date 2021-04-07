@@ -18,7 +18,7 @@ plugins {
 
     `maven-publish`
 
-    id("com.diffplug.spotless") version "5.1.1"
+    id("com.diffplug.spotless") version "5.11.1"
 
     jacoco
 }
@@ -43,12 +43,12 @@ dependencies {
 
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
     // https://github.com/relaycorp/relaynet-jvm/issues/25
-    implementation("com.beanit:jasn1:1.11.2")
+    implementation("com.beanit:jasn1:1.11.3")
     implementation("org.bouncycastle:bcprov-jdk15on:1.66")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
 }
