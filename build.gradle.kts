@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    val kotlinCoroutinesVersion = "1.3.8"
+    val kotlinCoroutinesVersion = "1.4.2-native-mt"
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
