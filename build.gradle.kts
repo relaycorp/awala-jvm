@@ -39,7 +39,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     // Bouncy Castle
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.67")
 
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
     // https://github.com/relaycorp/awala-jvm/issues/25
