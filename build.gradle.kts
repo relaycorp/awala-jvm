@@ -18,7 +18,7 @@ plugins {
 
     `maven-publish`
 
-    id("com.diffplug.spotless") version "5.1.1"
+    id("com.diffplug.spotless") version "5.11.1"
 
     jacoco
 }
@@ -47,7 +47,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.66")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
