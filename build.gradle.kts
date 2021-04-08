@@ -132,7 +132,7 @@ publishing {
 
             pom {
                 name.set(rootProject.name)
-                description.set("Relaynet JVM library")
+                description.set("Awala JVM library")
                 url.set("https://github.com/relaycorp/awala-jvm")
                 developers {
                     developer {
