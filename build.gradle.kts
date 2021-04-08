@@ -123,7 +123,7 @@ signing {
     val signingKey: String? by project
     val signingPassword: String? by project
     useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(configurations.archives.get())
+    sign(publishing.publications)
 }
 publishing {
     publications {
