@@ -16,13 +16,12 @@ plugins {
 
     id("org.jetbrains.dokka") version "0.10.1"
 
-    `maven-publish`
-
     id("com.diffplug.spotless") version "5.11.1"
-
     jacoco
 
     signing
+    `maven-publish`
+    id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
 }
 
 repositories {
@@ -165,6 +164,19 @@ publishing {
             }
         }
     }
+}
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username.set(System.getenv("MAVEN_USERNAME"))
+            password.set(System.getenv("MAVEN_PASSWORD"))
+        }
+    }
+}
+tasks.publish {
+    finalizedBy("closeAndReleaseSonatypeStagingRepository")
 }
 
 spotless {
