@@ -1,0 +1,73 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CargoMessageSet - awala</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">awala</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.messages.payloads</a>&nbsp;/&nbsp;<a href="./index.html">CargoMessageSet</a><br/>
+<br/>
+<h1>CargoMessageSet</h1>
+<code><span class="keyword">class </span><span class="identifier">CargoMessageSet</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-encrypted-payload/index.html"><span class="identifier">EncryptedPayload</span></a></code>
+<p>Cargo message set.</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<p>Cargo message set.</p>
+<code><span class="identifier">CargoMessageSet</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.messages.payloads.CargoMessageSet$<init>(kotlin.Array((kotlin.ByteArray)))/messages">messages</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">&gt;</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="messages.html">messages</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">messages</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="classify-messages.html">classifyMessages</a></h4>
+</td>
+<td>
+<p>Return the encapsulated messages, classified by type.</p>
+<code><span class="keyword">fun </span><span class="identifier">classifyMessages</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.sequences/-sequence/index.html"><span class="identifier">Sequence</span></a><span class="symbol">&lt;</span><a href="../-cargo-message/index.html"><span class="identifier">CargoMessage</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="serialize-plaintext.html">serializePlaintext</a></h4>
+</td>
+<td>
+<p>Serialize cargo message set.</p>
+<code><span class="keyword">fun </span><span class="identifier">serializePlaintext</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="deserialize.html">deserialize</a></h4>
+</td>
+<td>
+<p>Deserialize a cargo message set.</p>
+<code><span class="keyword">fun </span><span class="identifier">deserialize</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.messages.payloads.CargoMessageSet.Companion$deserialize(kotlin.ByteArray)/serialization">serialization</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">CargoMessageSet</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

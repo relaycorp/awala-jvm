@@ -1,0 +1,76 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>ParcelCollection - awala</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">awala</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.bindings.pdc</a>&nbsp;/&nbsp;<a href="./index.html">ParcelCollection</a><br/>
+<br/>
+<h1>ParcelCollection</h1>
+<code><span class="keyword">class </span><span class="identifier">ParcelCollection</span></code>
+<p>Collection of a single parcel.</p>
+<h3>Parameters</h3>
+<p><a name="parcelSerialized"></a>
+<code>parcelSerialized</code> - The serialization of the parcel</p>
+<p><a name="trustedCertificates"></a>
+<code>trustedCertificates</code> - The collection of certificates regarded trusted</p>
+<p><a name="ack"></a>
+<code>ack</code> - The callback to execute when the collection is acknowledged</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<p>Collection of a single parcel.</p>
+<code><span class="identifier">ParcelCollection</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ParcelCollection$<init>(kotlin.ByteArray, kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.coroutines.SuspendFunction0((kotlin.Unit)))/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ParcelCollection$<init>(kotlin.ByteArray, kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.coroutines.SuspendFunction0((kotlin.Unit)))/trustedCertificates">trustedCertificates</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ParcelCollection$<init>(kotlin.ByteArray, kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.coroutines.SuspendFunction0((kotlin.Unit)))/ack">ack</span><span class="symbol">:</span>&nbsp;<span class="keyword">suspend </span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="ack.html">ack</a></h4>
+</td>
+<td>
+<p>The callback to execute when the collection is acknowledged</p>
+<code><span class="keyword">val </span><span class="identifier">ack</span><span class="symbol">: </span><span class="keyword">suspend </span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="parcel-serialized.html">parcelSerialized</a></h4>
+</td>
+<td>
+<p>The serialization of the parcel</p>
+<code><span class="keyword">val </span><span class="identifier">parcelSerialized</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="trusted-certificates.html">trustedCertificates</a></h4>
+</td>
+<td>
+<p>The collection of certificates regarded trusted</p>
+<code><span class="keyword">val </span><span class="identifier">trustedCertificates</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="deserialize-and-validate-parcel.html">deserializeAndValidateParcel</a></h4>
+</td>
+<td>
+<p>Deserialize and validate the parcel being collected.</p>
+<code><span class="keyword">fun </span><span class="identifier">deserializeAndValidateParcel</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../../tech.relaycorp.relaynet.messages/-parcel/index.html"><span class="identifier">Parcel</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

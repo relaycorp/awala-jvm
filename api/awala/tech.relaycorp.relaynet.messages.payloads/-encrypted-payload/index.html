@@ -1,0 +1,64 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>EncryptedPayload - awala</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">awala</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.messages.payloads</a>&nbsp;/&nbsp;<a href="./index.html">EncryptedPayload</a><br/>
+<br/>
+<h1>EncryptedPayload</h1>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">EncryptedPayload</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-payload/index.html"><span class="identifier">Payload</span></a></code>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<code><span class="identifier">EncryptedPayload</span><span class="symbol">(</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="encrypt.html">encrypt</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">encrypt</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.messages.payloads.EncryptedPayload$encrypt(tech.relaycorp.relaynet.wrappers.x509.Certificate, tech.relaycorp.relaynet.SymmetricEncryption)/recipientCertificate">recipientCertificate</span><span class="symbol">:</span>&nbsp;<a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.messages.payloads.EncryptedPayload$encrypt(tech.relaycorp.relaynet.wrappers.x509.Certificate, tech.relaycorp.relaynet.SymmetricEncryption)/symmetricEncryptionAlgorithm">symmetricEncryptionAlgorithm</span><span class="symbol">:</span>&nbsp;<a href="../../tech.relaycorp.relaynet/-symmetric-encryption/index.html"><span class="identifier">SymmetricEncryption</span></a>&nbsp;<span class="symbol">=</span>&nbsp;SymmetricEncryption.AES_128<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../-cargo-collection-request/index.html">CargoCollectionRequest</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">CargoCollectionRequest</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">EncryptedPayload</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../-cargo-message-set/index.html">CargoMessageSet</a></h4>
+</td>
+<td>
+<p>Cargo message set.</p>
+<code><span class="keyword">class </span><span class="identifier">CargoMessageSet</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">EncryptedPayload</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../-service-message/index.html">ServiceMessage</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">ServiceMessage</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">EncryptedPayload</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
