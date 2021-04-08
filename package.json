@@ -2,7 +2,6 @@
   "name": "awala-jvm",
   "devDependencies": {
     "@relaycorp/shared-config": "^1.4.13",
-    "@semantic-release/exec": "^5.0.0",
     "gradle-semantic-release-plugin": "^1.4.1"
   }
 }
