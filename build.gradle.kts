@@ -16,13 +16,12 @@ plugins {
 
     id("org.jetbrains.dokka") version "0.10.1"
 
-    `maven-publish`
-
     id("com.diffplug.spotless") version "5.11.1"
-
     jacoco
 
     signing
+    `maven-publish`
+    id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
 }
 
 repositories {
@@ -41,7 +40,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     // Bouncy Castle
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.67")
 
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
     // https://github.com/relaycorp/awala-jvm/issues/25
@@ -117,13 +116,15 @@ tasks.dokka {
 }
 
 signing {
+    useGpgCmd()
     setRequired {
         gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
     }
+    val signingKeyId: String? by project
     val signingKey: String? by project
     val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(configurations.archives.get())
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    sign(publishing.publications)
 }
 publishing {
     publications {
@@ -132,7 +133,7 @@ publishing {
 
             pom {
                 name.set(rootProject.name)
-                description.set("Relaynet JVM library")
+                description.set("Awala JVM library")
                 url.set("https://github.com/relaycorp/awala-jvm")
                 developers {
                     developer {
@@ -163,6 +164,21 @@ publishing {
             }
         }
     }
+}
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            )
+            username.set(System.getenv("MAVEN_USERNAME"))
+            password.set(System.getenv("MAVEN_PASSWORD"))
+        }
+    }
+}
+tasks.publish {
+    finalizedBy("closeAndReleaseSonatypeStagingRepository")
 }
 
 spotless {
