@@ -1,6 +1,6 @@
 # Relaynet JVM Library
 
-JVM library for the core of Relaynet. [Read documentation online](https://docs.relaycorp.tech/relaynet-jvm/).
+JVM library for the core of Relaynet. [Read documentation online](https://docs.relaycorp.tech/awala-jvm/).
 
 ## Development
 

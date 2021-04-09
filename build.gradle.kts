@@ -16,15 +16,16 @@ plugins {
 
     id("org.jetbrains.dokka") version "0.10.1"
 
-    `maven-publish`
-
     id("com.diffplug.spotless") version "5.11.1"
-
     jacoco
+
+    signing
+    `maven-publish`
+    id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -39,12 +40,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     // Bouncy Castle
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.67")
 
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
-    // https://github.com/relaycorp/relaynet-jvm/issues/25
+    // https://github.com/relaycorp/awala-jvm/issues/25
     implementation("com.beanit:jasn1:1.11.3")
-    implementation("org.bouncycastle:bcprov-jdk15on:1.66")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.67")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
@@ -114,6 +115,17 @@ tasks.dokka {
     outputDirectory = "$buildDir/docs/api"
 }
 
+signing {
+    useGpgCmd()
+    setRequired {
+        gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
+    }
+    val signingKeyId: String? by project
+    val signingKey: String? by project
+    val signingPassword: String? by project
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    sign(publishing.publications)
+}
 publishing {
     publications {
         create<MavenPublication>("default") {
@@ -121,8 +133,8 @@ publishing {
 
             pom {
                 name.set(rootProject.name)
-                description.set("Relaynet JVM library")
-                url.set("https://github.com/relaycorp/relaynet-jvm")
+                description.set("Awala JVM library")
+                url.set("https://github.com/relaycorp/awala-jvm")
                 developers {
                     developer {
                         id.set("relaycorp")
@@ -136,25 +148,37 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:https://github.com/relaycorp/relaynet-jvm.git")
-                    developerConnection.set("scm:git:https://github.com/relaycorp/relaynet-jvm.git")
-                    url.set("https://github.com/relaycorp/relaynet-jvm")
+                    connection.set("scm:git:https://github.com/relaycorp/awala-jvm.git")
+                    developerConnection.set("scm:git:https://github.com/relaycorp/awala-jvm.git")
+                    url.set("https://github.com/relaycorp/awala-jvm")
                 }
             }
         }
     }
     repositories {
         maven {
-            // publish=1 automatically publishes the version
-            url = uri(
-                "https://api.bintray.com/maven/relaycorp/maven/tech.relaycorp.relaynet/;publish=1"
-            )
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
-                username = System.getenv("BINTRAY_USERNAME")
-                password = System.getenv("BINTRAY_KEY")
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }
+}
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            )
+            username.set(System.getenv("MAVEN_USERNAME"))
+            password.set(System.getenv("MAVEN_PASSWORD"))
+        }
+    }
+}
+tasks.publish {
+    finalizedBy("closeAndReleaseSonatypeStagingRepository")
 }
 
 spotless {
