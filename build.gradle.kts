@@ -16,12 +16,12 @@ plugins {
 
     id("org.jetbrains.dokka") version "0.10.1"
 
-    id("com.diffplug.spotless") version "5.12.0"
+    id("com.diffplug.spotless") version "5.12.4"
     jacoco
 
     signing
     `maven-publish`
-    id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 
 repositories {
