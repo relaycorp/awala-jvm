@@ -7,19 +7,6 @@ updates:
     time: "08:00"
     timezone: Etc/UCT
   open-pull-requests-limit: 99
-  ignore:
-  - dependency-name: com.diffplug.spotless
-    versions:
-    - 5.12.1
-  - dependency-name: org.jetbrains.dokka
-    versions:
-    - 1.4.30
-  - dependency-name: org.jetbrains.kotlinx:kotlinx-coroutines-test
-    versions:
-    - 1.4.2-native-mt
-  - dependency-name: org.jetbrains.kotlinx:kotlinx-coroutines-core
-    versions:
-    - 1.4.2-native-mt
 - package-ecosystem: npm
   directory: "/"
   schedule:
