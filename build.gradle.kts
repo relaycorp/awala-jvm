@@ -49,7 +49,7 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
 }
