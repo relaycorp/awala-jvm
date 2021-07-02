@@ -9,7 +9,7 @@ group = "tech.relaycorp"
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    id("org.jetbrains.kotlin.jvm") version "1.5.20"
 
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
@@ -60,7 +60,7 @@ java {
 }
 
 jacoco {
-    toolVersion = "0.8.5"
+    toolVersion = "0.8.7"
 }
 
 tasks.jacocoTestReport {
