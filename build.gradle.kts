@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    val kotlinCoroutinesVersion = "1.4.3"
+    val kotlinCoroutinesVersion = "1.5.0"
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -45,7 +45,7 @@ dependencies {
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
     // https://github.com/relaycorp/awala-jvm/issues/25
     implementation("com.beanit:jasn1:1.11.3")
-    implementation("org.bouncycastle:bcprov-jdk15on:1.68")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.69")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
