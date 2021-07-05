@@ -8,7 +8,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 
   
-    <title>Relaynet JVM - Relaynet JVM</title>
+    <title>Awala JVM - Awala JVM</title>
 
     
   
@@ -25,17 +25,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Begin Jekyll SEO tag v2.7.1 -->
-<title>Relaynet JVM | JVM library for the core of Awala (fka Relaynet)</title>
+<title>Awala JVM | JVM library for the core of Awala (fka Relaynet)</title>
 <meta name="generator" content="Jekyll v3.9.0" />
-<meta property="og:title" content="Relaynet JVM" />
+<meta property="og:title" content="Awala JVM" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="JVM library for the core of Awala (fka Relaynet)" />
 <meta property="og:description" content="JVM library for the core of Awala (fka Relaynet)" />
-<meta property="og:site_name" content="Relaynet JVM" />
+<meta property="og:site_name" content="Awala JVM" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Relaynet JVM" />
+<meta property="twitter:title" content="Awala JVM" />
 <script type="application/ld+json">
-{"@type":"WebSite","url":"/awala-jvm/","headline":"Relaynet JVM","name":"Relaynet JVM","description":"JVM library for the core of Awala (fka Relaynet)","@context":"https://schema.org"}</script>
+{"@type":"WebSite","url":"/awala-jvm/","headline":"Awala JVM","name":"Awala JVM","description":"JVM library for the core of Awala (fka Relaynet)","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -55,7 +55,7 @@
     <div class="side-bar">
       <div class="site-header">
         <a href="/awala-jvm" class="site-title lh-tight">
-  Relaynet JVM
+  Awala JVM
 
 </a>
         <button class="menu-button fs-3 js-main-nav-trigger" data-text-toggle="Hide" type="button">Menu</button>
@@ -63,7 +63,7 @@
 
       <div class="navigation main-nav js-main-nav">
         <nav role="navigation" aria-label="Main navigation">
-  <ul class="navigation-list"><li class="navigation-list-item active"><a href="/awala-jvm/" class="navigation-list-link active">Relaynet JVM</a></li><li class="navigation-list-item"><a href="/awala-jvm/howto-service.html" class="navigation-list-link">Implementing a service</a></li><li class="navigation-list-item"><a href="/awala-jvm/couriers" class="navigation-list-link">Implementing a courier</a></li><li class="navigation-list-item"><a href="/awala-jvm/howto-gateway.html" class="navigation-list-link">Implementing a gateway</a></li></ul>
+  <ul class="navigation-list"><li class="navigation-list-item active"><a href="/awala-jvm/" class="navigation-list-link active">Awala JVM</a></li><li class="navigation-list-item"><a href="/awala-jvm/howto-service.html" class="navigation-list-link">Implementing a service</a></li><li class="navigation-list-item"><a href="/awala-jvm/couriers" class="navigation-list-link">Implementing a courier</a></li><li class="navigation-list-item"><a href="/awala-jvm/howto-gateway.html" class="navigation-list-link">Implementing a gateway</a></li></ul>
 </nav>
 
       </div>
@@ -81,17 +81,17 @@
           
           <div id="main-content" class="page-content" role="main">
             
-              <h1 id="relaynet-jvm-library">
+              <h1 id="awala-jvm-library">
         
         
-          <a href="#relaynet-jvm-library" class="anchor-heading"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#link"></use></svg></a> Relaynet JVM Library
+          <a href="#awala-jvm-library" class="anchor-heading"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#link"></use></svg></a> Awala JVM Library
         
         
       </h1>
 
-<p>This library implements the core of <a href="https://relaynet.network/">Relaynet</a> and is meant to be used in any software using the network on the JVM – including Android and server-side apps.</p>
+<p>This library implements the core of <a href="https://awala.network/">Awala</a> (fka <em>Relaynet</em>) and is meant to be used in any software using the network on the JVM – including Android and server-side apps.</p>
 
-<p>Please note that this documentation is mostly incomplete because the interface exposed by this library is changing rapidly as of this writing. Also note that the examples in this documentation won’t work until a gateway (e.g., <a href="https://github.com/relaycorp/relaynet-gateway-android">the Android Gateway</a>) has been implemented. We expect the library to reach a stable status and its documentation to be completed by the end of Q1 2020.</p>
+<p>Please note that this documentation is mostly incomplete because the interface exposed by this library is changing rapidly as of this writing. Also note that the examples in this documentation won’t work until a gateway (e.g., <a href="https://github.com/relaycorp/relaynet-gateway-android">the Android Gateway</a>) has been implemented.</p>
     
       <h2 id="install">
         
@@ -101,9 +101,9 @@
         
       </h2>
 
-<p>This library runs on Java 8+ and is available on <a href="https://bintray.com/bintray/jcenter?filterByPkgName=tech.relaycorp.relaynet">JCenter</a>. To install it via Gradle, use:</p>
+<p>This library runs on Java 8+ and is available on <a href="https://search.maven.org/artifact/tech.relaycorp/awala">Maven Central</a>. To install it via Gradle, use:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>implementation 'tech.relaycorp:relaynet:1.+'
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>implementation 'tech.relaycorp:awala:1.+'
 </code></pre></div></div>
     
       <h2 id="use">
@@ -116,7 +116,7 @@
 
 <p>This library can be used for different purposes, so please refer to the documentation for your specific use case:</p>
 
-<p>Most people will be interested in <a href="/awala-jvm/howto-service.html">adding Relaynet support to their app</a>, whether the app is pre-existing or is being built from scratch.</p>
+<p>Most people will be interested in <a href="/awala-jvm/howto-service.html">adding Awala support to their app</a>, whether the app is pre-existing or is being built from scratch.</p>
 
 <p>Relaycorp provides implementations for gateways and couriers, so if you’re contributing to those implementations or for whatever reason you’d like to build your own, please refer to the follow documents:</p>
 
@@ -125,7 +125,7 @@
   <li><a href="/awala-jvm/couriers">Implementing a courier</a>.</li>
 </ul>
 
-<p><a href="./api/relaynet/">Read API documentation</a>.</p>
+<p><a href="./api/awala/">Read API documentation</a>.</p>
     
       <h2 id="specs-supported">
         
@@ -135,14 +135,14 @@
         
       </h2>
 
-<p>This library supports the following Relaynet specs:</p>
+<p>This library supports the following Awala specs:</p>
 
 <ul>
-  <li><a href="https://specs.relaynet.link/RS-000">RS-000 (Relaynet Core)</a>.</li>
-  <li><a href="https://specs.relaynet.link/RS-001">RS-001 (RAMF v1)</a>.</li>
-  <li><a href="https://specs.relaynet.link/RS-002">RS-002 (Relaynet PKI)</a>.</li>
-  <li><a href="https://specs.relaynet.link/RS-003">RS-003 (Relaynet Channel Session Protocol)</a>.</li>
-  <li><a href="https://specs.relaynet.link/RS-018">RS-018 (Relaynet Cryptographic Algorithms, Version 1)</a>. In addition to the required algorithms, the following are supported:
+  <li><a href="https://specs.awala.network/RS-000">RS-000 (Awala Core)</a>.</li>
+  <li><a href="https://specs.awala.network/RS-001">RS-001 (RAMF v1)</a>.</li>
+  <li><a href="https://specs.awala.network/RS-002">RS-002 (Awala PKI)</a>.</li>
+  <li><a href="https://specs.awala.network/RS-003">RS-003 (Awala Channel Session Protocol)</a>.</li>
+  <li><a href="https://specs.awala.network/RS-018">RS-018 (Awala Cryptographic Algorithms, Version 1)</a>. In addition to the required algorithms, the following are supported:
     <ul>
       <li>Hashing functions: SHA-384 and SHA-512.</li>
       <li>Ciphers: AES-192 and AES-256.</li>
