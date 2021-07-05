@@ -1,26 +1,26 @@
 ---
 layout: page
-title: Relaynet JVM
+title: Awala JVM
 ---
-# Relaynet JVM Library
+# Awala JVM Library
 
-This library implements the core of [Relaynet](https://relaynet.network/) and is meant to be used in any software using the network on the JVM -- including Android and server-side apps.
+This library implements the core of [Awala](https://awala.network/) (fka _Relaynet_) and is meant to be used in any software using the network on the JVM -- including Android and server-side apps.
 
-Please note that this documentation is mostly incomplete because the interface exposed by this library is changing rapidly as of this writing. Also note that the examples in this documentation won't work until a gateway (e.g., [the Android Gateway](https://github.com/relaycorp/relaynet-gateway-android)) has been implemented. We expect the library to reach a stable status and its documentation to be completed by the end of Q1 2020.
+Please note that this documentation is mostly incomplete because the interface exposed by this library is changing rapidly as of this writing. Also note that the examples in this documentation won't work until a gateway (e.g., [the Android Gateway](https://github.com/relaycorp/relaynet-gateway-android)) has been implemented.
 
 ## Install
 
-This library runs on Java 8+ and is available on [JCenter](https://bintray.com/bintray/jcenter?filterByPkgName=tech.relaycorp.relaynet). To install it via Gradle, use:
+This library runs on Java 8+ and is available on [Maven Central](https://search.maven.org/artifact/tech.relaycorp/awala). To install it via Gradle, use:
 
 ```
-implementation 'tech.relaycorp:relaynet:1.+'
+implementation 'tech.relaycorp:awala:1.+'
 ```
 
 ## Use
 
 This library can be used for different purposes, so please refer to the documentation for your specific use case:
 
-Most people will be interested in [adding Relaynet support to their app](howto-service.md), whether the app is pre-existing or is being built from scratch.
+Most people will be interested in [adding Awala support to their app](howto-service.md), whether the app is pre-existing or is being built from scratch.
 
 Relaycorp provides implementations for gateways and couriers, so if you're contributing to those implementations or for whatever reason you'd like to build your own, please refer to the follow documents:
 
@@ -31,13 +31,13 @@ Relaycorp provides implementations for gateways and couriers, so if you're contr
 
 ## Specs supported
 
-This library supports the following Relaynet specs:
+This library supports the following Awala specs:
 
-- [RS-000 (Relaynet Core)](https://specs.relaynet.link/RS-000).
-- [RS-001 (RAMF v1)](https://specs.relaynet.link/RS-001).
-- [RS-002 (Relaynet PKI)](https://specs.relaynet.link/RS-002).
-- [RS-003 (Relaynet Channel Session Protocol)](https://specs.relaynet.link/RS-003).
-- [RS-018 (Relaynet Cryptographic Algorithms, Version 1)](https://specs.relaynet.link/RS-018). In addition to the required algorithms, the following are supported:
+- [RS-000 (Awala Core)](https://specs.awala.network/RS-000).
+- [RS-001 (RAMF v1)](https://specs.awala.network/RS-001).
+- [RS-002 (Awala PKI)](https://specs.awala.network/RS-002).
+- [RS-003 (Awala Channel Session Protocol)](https://specs.awala.network/RS-003).
+- [RS-018 (Awala Cryptographic Algorithms, Version 1)](https://specs.awala.network/RS-018). In addition to the required algorithms, the following are supported:
   - Hashing functions: SHA-384 and SHA-512.
   - Ciphers: AES-192 and AES-256.
 

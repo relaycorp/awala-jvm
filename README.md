@@ -1,6 +1,6 @@
-# Relaynet JVM Library
+# Awala JVM Library
 
-JVM library for the core of Relaynet. [Read documentation online](https://docs.relaycorp.tech/awala-jvm/).
+JVM library for the core of Awala. [Read documentation online](https://docs.relaycorp.tech/awala-jvm/).
 
 ## Development
 
@@ -9,5 +9,5 @@ This project uses [Gradle](https://gradle.org/), so the only system dependency i
 Additional Gradle tasks include:
 
 - `test`: Runs the unit test suite.
-- `dokka`: Generates the API documentation.
+- `dokkaHtml`: Generates the API documentation.
 - `publish`: Publishes the library to the local Maven repository on `build/repository`.
