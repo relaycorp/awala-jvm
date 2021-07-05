@@ -1,76 +1,117 @@
-<HTML>
-<HEAD>
-<meta charset="UTF-8">
-<title>ParcelCollection - awala</title>
-<link rel="stylesheet" href="../../../style.css">
-</HEAD>
-<BODY>
-<a href="../../index.html">awala</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.bindings.pdc</a>&nbsp;/&nbsp;<a href="./index.html">ParcelCollection</a><br/>
-<br/>
-<h1>ParcelCollection</h1>
-<code><span class="keyword">class </span><span class="identifier">ParcelCollection</span></code>
-<p>Collection of a single parcel.</p>
-<h3>Parameters</h3>
-<p><a name="parcelSerialized"></a>
-<code>parcelSerialized</code> - The serialization of the parcel</p>
-<p><a name="trustedCertificates"></a>
-<code>trustedCertificates</code> - The collection of certificates regarded trusted</p>
-<p><a name="ack"></a>
-<code>ack</code> - The callback to execute when the collection is acknowledged</p>
-<h3>Constructors</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="-init-.html">&lt;init&gt;</a></h4>
-</td>
-<td>
-<p>Collection of a single parcel.</p>
-<code><span class="identifier">ParcelCollection</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ParcelCollection$<init>(kotlin.ByteArray, kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.coroutines.SuspendFunction0((kotlin.Unit)))/parcelSerialized">parcelSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ParcelCollection$<init>(kotlin.ByteArray, kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.coroutines.SuspendFunction0((kotlin.Unit)))/trustedCertificates">trustedCertificates</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.bindings.pdc.ParcelCollection$<init>(kotlin.ByteArray, kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.coroutines.SuspendFunction0((kotlin.Unit)))/ack">ack</span><span class="symbol">:</span>&nbsp;<span class="keyword">suspend </span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">)</span></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Properties</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="ack.html">ack</a></h4>
-</td>
-<td>
-<p>The callback to execute when the collection is acknowledged</p>
-<code><span class="keyword">val </span><span class="identifier">ack</span><span class="symbol">: </span><span class="keyword">suspend </span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="parcel-serialized.html">parcelSerialized</a></h4>
-</td>
-<td>
-<p>The serialization of the parcel</p>
-<code><span class="keyword">val </span><span class="identifier">parcelSerialized</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="trusted-certificates.html">trustedCertificates</a></h4>
-</td>
-<td>
-<p>The collection of certificates regarded trusted</p>
-<code><span class="keyword">val </span><span class="identifier">trustedCertificates</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Functions</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="deserialize-and-validate-parcel.html">deserializeAndValidateParcel</a></h4>
-</td>
-<td>
-<p>Deserialize and validate the parcel being collected.</p>
-<code><span class="keyword">fun </span><span class="identifier">deserializeAndValidateParcel</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../../tech.relaycorp.relaynet.messages/-parcel/index.html"><span class="identifier">Parcel</span></a></code></td>
-</tr>
-</tbody>
-</table>
-</BODY>
-</HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ParcelCollection</title>
+<link href="../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script><script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../styles/style.css" rel="Stylesheet"><link href="../../styles/logo-styles.css" rel="Stylesheet"><link href="../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../styles/main.css" rel="Stylesheet"><script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../scripts/main.js" async="async"></script>  </head>
+  <body>
+    <div id="container">
+      <div id="leftColumn"><a href="../../../index.html">
+          <div id="logo"></div>
+        </a>
+        <div id="paneSearch"></div>
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div id="leftToggler"><span class="icon-toggler"></span></div>
+<script type="text/javascript" src="../../scripts/main.js"></script>        <div class="main-content" id="content" pageIds="awala::tech.relaycorp.relaynet.bindings.pdc/ParcelCollection///PointingToDeclaration//769193423">
+          <div class="navigation-wrapper" id="navigation-wrapper">
+            <div class="breadcrumbs"><a href="../../../index.html">awala</a>/<a href="../index.html">tech.relaycorp.relaynet.bindings.pdc</a>/<a href="index.html">ParcelCollection</a></div>
+            <div class="pull-right d-flex">
+              <div id="searchBar"></div>
+            </div>
+          </div>
+          <div class="cover ">
+            <h1 class="cover"><span>Parcel</span><wbr></wbr><span>Collection</span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">class <a href="index.html">ParcelCollection</a>(parcelSerialized: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>, trustedCertificates: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;<a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html">Certificate</a>&gt;, ack: suspend () -&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Collection of a single parcel.</p></div></div>
+          </div>
+          <div class="tabbedcontent">
+            <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button><button class="section-tab" data-togglable="Properties">Properties</button><button class="section-tab" data-togglable="Parameters">Parameters</button></div>
+            <div class="tabs-section-body">
+              <h2 class="">Parameters</h2>
+              <div data-togglable="Parameters">
+                <div class="platform-hinted WithExtraAttributes" data-platform-hinted="data-platform-hinted" data-togglable="Parameters"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div data-togglable="Parameters"><div class="table" data-togglable="Parameters"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">parcelSerialized</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">The serialization of the parcel</p></div></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">trustedCertificates</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">The collection of certificates regarded trusted</p></div></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">ack</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">The callback to execute when the collection is acknowledged</p></div></div></div></div></div></div></div></div></div>
+              </div>
+              <h2 class="tabbedcontent">Constructors</h2>
+              <div class="table" data-togglable="Constructors"><a data-name="-1061273860%2FConstructors%2F769193423" anchor-label="ParcelCollection" id="-1061273860%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue TabbedContent">
+                    <div class=""><span class="inline-flex"><a href="-parcel-collection.html">ParcelCollection</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1061273860%2FConstructors%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">fun <a href="-parcel-collection.html">ParcelCollection</a>(parcelSerialized: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>, trustedCertificates: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;<a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html">Certificate</a>&gt;, ack: suspend () -&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief ">The serialization of the parcel</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Functions</h2>
+              <div class="table" data-togglable="Functions"><a data-name="606566695%2FFunctions%2F769193423" anchor-label="deserializeAndValidateParcel" id="606566695%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="deserialize-and-validate-parcel.html">deserializeAndValidateParcel</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="606566695%2FFunctions%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">fun <a href="deserialize-and-validate-parcel.html">deserializeAndValidateParcel</a>(): <a href="../../tech.relaycorp.relaynet.messages/-parcel/index.html">Parcel</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="606566695%2FFunctions%2F769193423" anchor-label="deserializeAndValidateParcel" id="606566695%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="brief "><a data-name="606566695%2FFunctions%2F769193423" anchor-label="deserializeAndValidateParcel" id="606566695%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Deserialize and validate the parcel being collected.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Properties</h2>
+              <div class="table" data-togglable="Properties"><a data-name="1411026419%2FProperties%2F769193423" anchor-label="ack" id="1411026419%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="ack.html">ack</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1411026419%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="1411026419%2FProperties%2F769193423" anchor-label="ack" id="1411026419%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="ack.html">ack</a>: suspend () -&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="1411026419%2FProperties%2F769193423" anchor-label="ack" id="1411026419%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>The callback to execute when the collection is acknowledged</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="585417137%2FProperties%2F769193423" anchor-label="parcelSerialized" id="585417137%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="parcel-serialized.html">parcelSerialized</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="585417137%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="585417137%2FProperties%2F769193423" anchor-label="parcelSerialized" id="585417137%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="parcel-serialized.html">parcelSerialized</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="585417137%2FProperties%2F769193423" anchor-label="parcelSerialized" id="585417137%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>The serialization of the parcel</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="1873985385%2FProperties%2F769193423" anchor-label="trustedCertificates" id="1873985385%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="trusted-certificates.html">trustedCertificates</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1873985385%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="1873985385%2FProperties%2F769193423" anchor-label="trustedCertificates" id="1873985385%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="trusted-certificates.html">trustedCertificates</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;<a href="../../tech.relaycorp.relaynet.wrappers.x509/-certificate/index.html">Certificate</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="1873985385%2FProperties%2F769193423" anchor-label="trustedCertificates" id="1873985385%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>The collection of certificates regarded trusted</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content"></a></span><span>© 2021 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  </body>
+</html>
+

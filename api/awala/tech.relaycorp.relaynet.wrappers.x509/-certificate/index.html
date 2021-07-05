@@ -1,142 +1,243 @@
-<HTML>
-<HEAD>
-<meta charset="UTF-8">
-<title>Certificate - awala</title>
-<link rel="stylesheet" href="../../../style.css">
-</HEAD>
-<BODY>
-<a href="../../index.html">awala</a>&nbsp;/&nbsp;<a href="../index.html">tech.relaycorp.relaynet.wrappers.x509</a>&nbsp;/&nbsp;<a href="./index.html">Certificate</a><br/>
-<br/>
-<h1>Certificate</h1>
-<code><span class="keyword">class </span><span class="identifier">Certificate</span></code>
-<p>Relaynet PKI Certificate.</p>
-<h3>Parameters</h3>
-<p><a name="certificateHolder"></a>
-<code>certificateHolder</code> - Bouncy Castle representation of the X.509 certificate</p>
-<h3>Constructors</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="-init-.html">&lt;init&gt;</a></h4>
-</td>
-<td>
-<p>Relaynet PKI Certificate.</p>
-<code><span class="identifier">Certificate</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.wrappers.x509.Certificate$<init>(org.bouncycastle.cert.X509CertificateHolder)/certificateHolder">certificateHolder</span><span class="symbol">:</span>&nbsp;<span class="identifier">X509CertificateHolder</span><span class="symbol">)</span></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Properties</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="common-name.html">commonName</a></h4>
-</td>
-<td>
-<p>Return the Common Name of the subject</p>
-<code><span class="keyword">val </span><span class="identifier">commonName</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="expiry-date.html">expiryDate</a></h4>
-</td>
-<td>
-<p>The expiry date of the certificate.</p>
-<code><span class="keyword">val </span><span class="identifier">expiryDate</span><span class="symbol">: </span><span class="identifier">ZonedDateTime</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="issuer-common-name.html">issuerCommonName</a></h4>
-</td>
-<td>
-<p>Return the Common Name of the issuer</p>
-<code><span class="keyword">val </span><span class="identifier">issuerCommonName</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="start-date.html">startDate</a></h4>
-</td>
-<td>
-<p>The start date of the certificate.</p>
-<code><span class="keyword">val </span><span class="identifier">startDate</span><span class="symbol">: </span><span class="identifier">ZonedDateTime</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="subject-private-address.html">subjectPrivateAddress</a></h4>
-</td>
-<td>
-<p>Calculate the private address of the subject.</p>
-<code><span class="keyword">val </span><span class="identifier">subjectPrivateAddress</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="subject-public-key.html">subjectPublicKey</a></h4>
-</td>
-<td>
-<p>The public key of the subject.</p>
-<code><span class="keyword">val </span><span class="identifier">subjectPublicKey</span><span class="symbol">: </span><a href="https://docs.oracle.com/javase/6/docs/api/java/security/PublicKey.html"><span class="identifier">PublicKey</span></a></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Functions</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="equals.html">equals</a></h4>
-</td>
-<td>
-<p>Report whether this certificate equals another.</p>
-<code><span class="keyword">fun </span><span class="identifier">equals</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.wrappers.x509.Certificate$equals(kotlin.Any)/other">other</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="get-certification-path.html">getCertificationPath</a></h4>
-</td>
-<td>
-<p>Get the certification path (aka certificate chain) between the current certificate and
-one of the <code>trustedCAs</code>.</p>
-<code><span class="keyword">fun </span><span class="identifier">getCertificationPath</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.wrappers.x509.Certificate$getCertificationPath(kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/intermediateCAs">intermediateCAs</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="./index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="tech.relaycorp.relaynet.wrappers.x509.Certificate$getCertificationPath(kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)), kotlin.collections.Collection((tech.relaycorp.relaynet.wrappers.x509.Certificate)))/trustedCAs">trustedCAs</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="./index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="./index.html"><span class="identifier">Certificate</span></a><span class="symbol">&gt;</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="hash-code.html">hashCode</a></h4>
-</td>
-<td>
-<p>Return the hash code of the certificate.</p>
-<code><span class="keyword">fun </span><span class="identifier">hashCode</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="serialize.html">serialize</a></h4>
-</td>
-<td>
-<p>Return the DER cerialization of the certificate.</p>
-<code><span class="keyword">fun </span><span class="identifier">serialize</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="validate.html">validate</a></h4>
-</td>
-<td>
-<p>Validate the certificate.</p>
-<code><span class="keyword">fun </span><span class="identifier">validate</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Companion Object Functions</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="deserialize.html">deserialize</a></h4>
-</td>
-<td>
-<p>Deserialize certificate,</p>
-<code><span class="keyword">fun </span><span class="identifier">deserialize</span><span class="symbol">(</span><span class="identifier" id="tech.relaycorp.relaynet.wrappers.x509.Certificate.Companion$deserialize(kotlin.ByteArray)/certificateSerialized">certificateSerialized</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Certificate</span></a></code></td>
-</tr>
-</tbody>
-</table>
-</BODY>
-</HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Certificate</title>
+<link href="../../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../";</script><script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script><link href="../../styles/style.css" rel="Stylesheet"><link href="../../styles/logo-styles.css" rel="Stylesheet"><link href="../../styles/jetbrains-mono.css" rel="Stylesheet"><link href="../../styles/main.css" rel="Stylesheet"><script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script><script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="../../scripts/main.js" async="async"></script>  </head>
+  <body>
+    <div id="container">
+      <div id="leftColumn"><a href="../../../index.html">
+          <div id="logo"></div>
+        </a>
+        <div id="paneSearch"></div>
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div id="leftToggler"><span class="icon-toggler"></span></div>
+<script type="text/javascript" src="../../scripts/main.js"></script>        <div class="main-content" id="content" pageIds="awala::tech.relaycorp.relaynet.wrappers.x509/Certificate///PointingToDeclaration//769193423">
+          <div class="navigation-wrapper" id="navigation-wrapper">
+            <div class="breadcrumbs"><a href="../../../index.html">awala</a>/<a href="../index.html">tech.relaycorp.relaynet.wrappers.x509</a>/<a href="index.html">Certificate</a></div>
+            <div class="pull-right d-flex">
+              <div id="searchBar"></div>
+            </div>
+          </div>
+          <div class="cover ">
+            <h1 class="cover"><span>Certificate</span></h1>
+            <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">class <a href="index.html">Certificate</a>(certificateHolder: <span data-unresolved-link="org.bouncycastle.cert/X509CertificateHolder///PointingToDeclaration/">X509CertificateHolder</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">Relaynet PKI Certificate.</p></div></div>
+          </div>
+          <div class="tabbedcontent">
+            <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Types">Types</button><button class="section-tab" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button><button class="section-tab" data-togglable="Properties">Properties</button><button class="section-tab" data-togglable="Parameters">Parameters</button></div>
+            <div class="tabs-section-body">
+              <h2 class="">Parameters</h2>
+              <div data-togglable="Parameters">
+                <div class="platform-hinted WithExtraAttributes" data-platform-hinted="data-platform-hinted" data-togglable="Parameters"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div data-togglable="Parameters"><div class="table" data-togglable="Parameters"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex">certificateHolder</span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">Bouncy Castle representation of the X.509 certificate</p></div></div></div></div></div></div></div></div></div>
+              </div>
+              <h2 class="tabbedcontent">Constructors</h2>
+              <div class="table" data-togglable="Constructors"><a data-name="524368335%2FConstructors%2F769193423" anchor-label="Certificate" id="524368335%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue TabbedContent">
+                    <div class=""><span class="inline-flex"><a href="-certificate.html">Certificate</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="524368335%2FConstructors%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">fun <a href="-certificate.html">Certificate</a>(certificateHolder: <span data-unresolved-link="org.bouncycastle.cert/X509CertificateHolder///PointingToDeclaration/">X509CertificateHolder</span>)<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief ">Bouncy Castle representation of the X.</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Types</h2>
+              <div class="table" data-togglable="Types"><a data-name="1105627022%2FClasslikes%2F769193423" anchor-label="Companion" id="1105627022%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="-companion/index.html">Companion</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1105627022%2FClasslikes%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">object <a href="-companion/index.html">Companion</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+</div>
+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Functions</h2>
+              <div class="table" data-togglable="Functions"><a data-name="385258734%2FFunctions%2F769193423" anchor-label="equals" id="385258734%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="equals.html">equals</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="385258734%2FFunctions%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">open operator override fun <a href="equals.html">equals</a>(other: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="385258734%2FFunctions%2F769193423" anchor-label="equals" id="385258734%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="brief "><a data-name="385258734%2FFunctions%2F769193423" anchor-label="equals" id="385258734%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Report whether this certificate equals another.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-1932089291%2FFunctions%2F769193423" anchor-label="getCertificationPath" id="-1932089291%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="get-certification-path.html">getCertificationPath</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1932089291%2FFunctions%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">fun <a href="get-certification-path.html">getCertificationPath</a>(intermediateCAs: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;<a href="index.html">Certificate</a>&gt;, trustedCAs: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;<a href="index.html">Certificate</a>&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="index.html">Certificate</a>&gt;<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="-1932089291%2FFunctions%2F769193423" anchor-label="getCertificationPath" id="-1932089291%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="brief "><a data-name="-1932089291%2FFunctions%2F769193423" anchor-label="getCertificationPath" id="-1932089291%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Get the certification path (aka certificate chain) between the current certificate and one of the <code>trustedCAs</code>.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-949243848%2FFunctions%2F769193423" anchor-label="hashCode" id="-949243848%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="hash-code.html">hashCode</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-949243848%2FFunctions%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">open override fun <a href="hash-code.html">hashCode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="-949243848%2FFunctions%2F769193423" anchor-label="hashCode" id="-949243848%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="brief "><a data-name="-949243848%2FFunctions%2F769193423" anchor-label="hashCode" id="-949243848%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Return the hash code of the certificate.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-1912616089%2FFunctions%2F769193423" anchor-label="serialize" id="-1912616089%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="serialize.html">serialize</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1912616089%2FFunctions%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">fun <a href="serialize.html">serialize</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="-1912616089%2FFunctions%2F769193423" anchor-label="serialize" id="-1912616089%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="brief "><a data-name="-1912616089%2FFunctions%2F769193423" anchor-label="serialize" id="-1912616089%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Return the DER cerialization of the certificate.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-730446947%2FFunctions%2F769193423" anchor-label="validate" id="-730446947%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="validate.html">validate</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-730446947%2FFunctions%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title"><div class="divergent-group" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="with-platform-tags"><span class="pull-right"></span></div>
+
+  <div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace">fun <a href="validate.html">validate</a>()<span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div></div>
+  </div>
+<a data-name="-730446947%2FFunctions%2F769193423" anchor-label="validate" id="-730446947%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="brief "><a data-name="-730446947%2FFunctions%2F769193423" anchor-label="validate" id="-730446947%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Validate the certificate.</div></div>
+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <h2 class="">Properties</h2>
+              <div class="table" data-togglable="Properties"><a data-name="661928989%2FProperties%2F769193423" anchor-label="commonName" id="661928989%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="common-name.html">commonName</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="661928989%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="661928989%2FProperties%2F769193423" anchor-label="commonName" id="661928989%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="common-name.html">commonName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="661928989%2FProperties%2F769193423" anchor-label="commonName" id="661928989%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Return the Common Name of the subject</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-1371007470%2FProperties%2F769193423" anchor-label="expiryDate" id="-1371007470%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="expiry-date.html">expiryDate</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1371007470%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="-1371007470%2FProperties%2F769193423" anchor-label="expiryDate" id="-1371007470%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="expiry-date.html">expiryDate</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/time/ZonedDateTime.html">ZonedDateTime</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-1371007470%2FProperties%2F769193423" anchor-label="expiryDate" id="-1371007470%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>The expiry date of the certificate.</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="35057188%2FProperties%2F769193423" anchor-label="issuerCommonName" id="35057188%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="issuer-common-name.html">issuerCommonName</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="35057188%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="35057188%2FProperties%2F769193423" anchor-label="issuerCommonName" id="35057188%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="issuer-common-name.html">issuerCommonName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="35057188%2FProperties%2F769193423" anchor-label="issuerCommonName" id="35057188%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Return the Common Name of the issuer</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="1485112599%2FProperties%2F769193423" anchor-label="startDate" id="1485112599%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="start-date.html">startDate</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1485112599%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="1485112599%2FProperties%2F769193423" anchor-label="startDate" id="1485112599%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="start-date.html">startDate</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/time/ZonedDateTime.html">ZonedDateTime</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="1485112599%2FProperties%2F769193423" anchor-label="startDate" id="1485112599%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>The start date of the certificate.</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="555818154%2FProperties%2F769193423" anchor-label="subjectPrivateAddress" id="555818154%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="subject-private-address.html">subjectPrivateAddress</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="555818154%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="555818154%2FProperties%2F769193423" anchor-label="subjectPrivateAddress" id="555818154%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="subject-private-address.html">subjectPrivateAddress</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="555818154%2FProperties%2F769193423" anchor-label="subjectPrivateAddress" id="555818154%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>Calculate the private address of the subject.</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+<a data-name="-25067063%2FProperties%2F769193423" anchor-label="subjectPublicKey" id="-25067063%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+                <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+                  <div class="main-subrow keyValue ">
+                    <div class=""><span class="inline-flex"><a href="subject-public-key.html">subjectPublicKey</a><span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-25067063%2FProperties%2F769193423"></span>
+                          <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                        </span></span></div>
+                    <div>
+                      <div class="title">
+                        <div class="platform-hinted " data-platform-hinted="data-platform-hinted" data-togglable="Properties"><div class="content sourceset-depenent-content" data-active="" data-togglable=":dokkaHtml/main"><a data-name="-25067063%2FProperties%2F769193423" anchor-label="subjectPublicKey" id="-25067063%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a><div class="symbol monospace">val <a href="subject-public-key.html">subjectPublicKey</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/security/PublicKey.html">PublicKey</a><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><div class="brief "><a data-name="-25067063%2FProperties%2F769193423" anchor-label="subjectPublicKey" id="-25067063%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>The public key of the subject.</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content"></a></span><span>© 2021 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  </body>
+</html>
+
