@@ -27,7 +27,7 @@ Relaycorp provides implementations for gateways and couriers, so if you're contr
 - [Implementing a gateway](howto-gateway.md).
 - [Implementing a courier](./howto-courier.md).
 
-[Read API documentation](./api/relaynet/).
+[Read API documentation](./api/awala/).
 
 ## Specs supported
 

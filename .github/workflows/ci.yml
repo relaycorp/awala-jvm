@@ -82,7 +82,7 @@ jobs:
           mkdir -p ./build/docs
           mv ./build/dokka/html ./build/docs/api
           cd ./build/docs/api
-          mv ./styles ./images ./scripts navigation.html ./awala/
+          mv ./styles ./images ./scripts navigation.html index.html ./awala/
           find ./awala/ -name '*.html' -print0 | xargs -0 sed -i 's;../styles/;styles/;g'
           find ./awala/ -name '*.html' -print0 | xargs -0 sed -i 's;../images/;images/;g'
           find ./awala/ -name '*.html' -print0 | xargs -0 sed -i 's;../scripts/;scripts/;g'
