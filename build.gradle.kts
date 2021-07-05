@@ -110,9 +110,12 @@ tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.dokka {
-    outputFormat = "html"
-    outputDirectory = "$buildDir/docs/api"
+tasks.dokkaHtml.configure {
+    dokkaSourceSets {
+        configureEach {
+            reportUndocumented.set(true)
+        }
+    }
 }
 
 signing {
