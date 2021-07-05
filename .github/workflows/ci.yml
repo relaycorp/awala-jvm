@@ -28,7 +28,7 @@ jobs:
             ${{ runner.os }}-gradle-
       - uses: eskatos/gradle-command-action@v1
         with:
-          arguments: build
+          arguments: build dokkaHtml
       - uses: eskatos/gradle-command-action@v1
         with:
           arguments: jacocoTestCoverageVerification
@@ -73,7 +73,21 @@ jobs:
           cd ..
 
           # API docs:
-          ./gradlew dokka
+          ./gradlew dokkaHtml
+
+      # Ridiculous workaround for https://github.com/Kotlin/dokka/issues/163
+      - name: Move Dokka's assets into a sensible place
+        run: |
+          set -x -o nounset -o errexit -o pipefail
+          mkdir -p ./build/docs
+          mv ./build/dokka/html ./build/docs/api
+          cd ./build/docs/api
+          mv ./styles ./images ./scripts navigation.html ./awala/
+          find ./awala/ -name '*.html' -print0 | xargs -0 sed -i 's;../styles/;styles/;g'
+          find ./awala/ -name '*.html' -print0 | xargs -0 sed -i 's;../images/;images/;g'
+          find ./awala/ -name '*.html' -print0 | xargs -0 sed -i 's;../scripts/;scripts/;g'
+          find ./awala/ -name '*.html' -print0 | xargs -0 sed -i 's;pathToRoot = "../;pathToRoot = ";g'
+          sed -i 's;href="awala/;href=";g' ./awala/navigation.html
 
       - name: Release
         run: npx semantic-release

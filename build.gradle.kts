@@ -14,7 +14,7 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
-    id("org.jetbrains.dokka") version "0.10.1"
+    id("org.jetbrains.dokka") version "1.4.32"
 
     id("com.diffplug.spotless") version "5.14.0"
     jacoco
@@ -110,9 +110,12 @@ tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.dokka {
-    outputFormat = "html"
-    outputDirectory = "$buildDir/docs/api"
+tasks.dokkaHtml.configure {
+    dokkaSourceSets {
+        configureEach {
+            reportUndocumented.set(true)
+        }
+    }
 }
 
 signing {
