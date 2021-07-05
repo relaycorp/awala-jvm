@@ -9,7 +9,7 @@ group = "tech.relaycorp"
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    id("org.jetbrains.kotlin.jvm") version "1.5.20"
 
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
@@ -40,7 +40,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     // Bouncy Castle
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.68")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.69")
 
     // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
     // https://github.com/relaycorp/awala-jvm/issues/25
@@ -49,7 +49,7 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
 }
@@ -60,7 +60,7 @@ java {
 }
 
 jacoco {
-    toolVersion = "0.8.5"
+    toolVersion = "0.8.7"
 }
 
 tasks.jacocoTestReport {
