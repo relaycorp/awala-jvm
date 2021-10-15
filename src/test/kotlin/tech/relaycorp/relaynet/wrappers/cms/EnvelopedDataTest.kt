@@ -20,6 +20,7 @@ import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.crypto.DataLengthException
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -629,6 +630,14 @@ class SessionEnvelopedDataTest {
                 )
             }
         }
+
+        @Nested
+        inner class UnprotectedAttrs {
+            @Test
+            @Disabled
+            fun `Generated ECDH key id should be included`() {
+            }
+        }
     }
 
     @Nested
@@ -696,6 +705,55 @@ class SessionEnvelopedDataTest {
             val actualRecipientKeyId = envelopedData.getRecipientKeyId()
             assertTrue(actualRecipientKeyId is RecipientKeyIdentifier)
             assertEquals(recipientKeyId.asList(), actualRecipientKeyId.id.asList())
+        }
+    }
+
+    @Nested
+    inner class GetOriginatorKey {
+        @Nested
+        inner class KeyId {
+            @Test
+            @Disabled
+            fun `Originator DH public key id should be returned`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Call should fail if unprotectedAttrs is missing`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Call should fail if unprotectedAttrs is present but empty`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Call should fail if originator key id is missing`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Call should fail if attribute for originator key id is empty`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Call should fail if attribute for originator key id is multi-valued`() {
+            }
+        }
+
+        @Nested
+        inner class PublicKey {
+            @Test
+            @Disabled
+            fun `Originator DH public key should be returned if it is valid`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Call should fail if RecipientInfo is not KeyAgreeRecipientInfo`() {
+            }
         }
     }
 

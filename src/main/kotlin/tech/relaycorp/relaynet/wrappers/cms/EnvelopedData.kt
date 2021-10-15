@@ -261,6 +261,10 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         }
     }
 
+    fun getOriginatorKey(): OriginatorSessionKey {
+        TODO("implement")
+    }
+
     override fun validate() {
         // No validation needed.
     }
