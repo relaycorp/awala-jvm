@@ -21,6 +21,7 @@ import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.SymmetricEncryption
+import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.KeyPair
 import java.security.PrivateKey
@@ -245,7 +246,9 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
                 originatorKeyPair.private,
                 originatorKeyPair.public,
                 keyWrapCipher
-            ).setProvider(BC_PROVIDER)
+            )
+                .setUserKeyingMaterial(generateRandomOctets(64))
+                .setProvider(BC_PROVIDER)
         }
     }
 
