@@ -2,6 +2,9 @@ package tech.relaycorp.relaynet.wrappers.cms
 
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.DERSet
+import org.bouncycastle.asn1.cms.Attribute
+import org.bouncycastle.asn1.cms.AttributeTable
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.RSAESOAEPparams
@@ -16,13 +19,14 @@ import org.bouncycastle.cms.KeyAgreeRecipientId
 import org.bouncycastle.cms.KeyAgreeRecipientInformation
 import org.bouncycastle.cms.KeyTransRecipientId
 import org.bouncycastle.cms.KeyTransRecipientInformation
+import org.bouncycastle.cms.SimpleAttributeTableGenerator
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder
 import org.bouncycastle.cms.jcajce.JceKEKRecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient
+import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator
 import org.bouncycastle.crypto.DataLengthException
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -31,12 +35,14 @@ import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.KeyPairSet
+import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.issueInitialDHKeyCertificate
 import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import java.util.Hashtable
 import javax.crypto.KeyGenerator
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -74,6 +80,8 @@ interface DecryptTest {
     fun `Decryption with the right key should succeed`()
     fun `Decryption with the wrong key should fail`()
 }
+
+typealias AttributeHashtable = Hashtable<ASN1ObjectIdentifier, Attribute>
 
 class EnvelopedDataTest {
     @Nested
@@ -758,57 +766,8 @@ class SessionEnvelopedDataTest {
 
     @Nested
     inner class GetOriginatorKey {
-        @Nested
-        inner class KeyId {
-            @Test
-            @Disabled
-            fun `Originator DH public key id should be returned`() {
-            }
-
-            @Test
-            @Disabled
-            fun `Call should fail if unprotectedAttrs is missing`() {
-            }
-
-            @Test
-            @Disabled
-            fun `Call should fail if unprotectedAttrs is present but empty`() {
-            }
-
-            @Test
-            @Disabled
-            fun `Call should fail if originator key id is missing`() {
-            }
-
-            @Test
-            @Disabled
-            fun `Call should fail if attribute for originator key id is empty`() {
-            }
-
-            @Test
-            @Disabled
-            fun `Call should fail if attribute for originator key id is multi-valued`() {
-            }
-        }
-
-        @Nested
-        inner class PublicKey {
-            @Test
-            @Disabled
-            fun `Originator DH public key should be returned if it is valid`() {
-            }
-
-            @Test
-            @Disabled
-            fun `Call should fail if RecipientInfo is not KeyAgreeRecipientInfo`() {
-            }
-        }
-    }
-
-    @Nested
-    inner class Validation {
         @Test
-        fun `Validate method should do nothing`() {
+        fun `Key id should be returned`() {
             val envelopedData = SessionEnvelopedData.encrypt(
                 PLAINTEXT,
                 SESSION_RECIPIENT_CERTIFICATE,
@@ -816,7 +775,144 @@ class SessionEnvelopedDataTest {
                 SESSION_SENDER_KEY_PAIR
             )
 
-            envelopedData.validate()
+            val originatorKeyId = envelopedData.getOriginatorKey()
+
+            assertEquals(SESSION_SENDER_KEY_ID, originatorKeyId.keyId)
+        }
+
+        @Test
+        fun `Originator DH public key should be returned if it is valid`() {
+            val envelopedData = SessionEnvelopedData.encrypt(
+                PLAINTEXT,
+                SESSION_RECIPIENT_CERTIFICATE,
+                SESSION_SENDER_KEY_ID,
+                SESSION_SENDER_KEY_PAIR
+            )
+
+            val originatorKeyId = envelopedData.getOriginatorKey()
+
+            assertEquals(
+                SESSION_SENDER_KEY_PAIR.public.encoded.asList(),
+                originatorKeyId.publicKey.encoded.asList()
+            )
+        }
+    }
+
+    @Nested
+    inner class Validation {
+        @Nested
+        inner class UnprotectedAttrs {
+            @Test
+            fun `unprotectedAttrs should be present`() {
+                val envelopedDataSerialized = generateEnvelopedData(null)
+
+                val exception = assertThrows<EnvelopedDataException> {
+                    EnvelopedData.deserialize(envelopedDataSerialized)
+                }
+
+                assertEquals("unprotectedAttrs is missing", exception.message)
+            }
+
+            @Test
+            fun `unprotectedAttrs should not be empty`() {
+                val envelopedDataSerialized = generateEnvelopedData(
+                    AttributeHashtable()
+                )
+
+                val exception = assertThrows<EnvelopedDataException> {
+                    EnvelopedData.deserialize(envelopedDataSerialized)
+                }
+
+                assertEquals("unprotectedAttrs is empty", exception.message)
+            }
+
+            @Nested
+            inner class OriginatorKeyId {
+                @Test
+                fun `Call should fail if originator key id is missing`() {
+                    val unprotectedAttrs = AttributeHashtable()
+                    val irrelevantOID = ASN1ObjectIdentifier("1.2.3")
+                    unprotectedAttrs[irrelevantOID] = Attribute(
+                        irrelevantOID,
+                        DERSet()
+                    )
+                    val envelopedDataSerialized = generateEnvelopedData(unprotectedAttrs)
+
+                    val exception = assertThrows<EnvelopedDataException> {
+                        EnvelopedData.deserialize(envelopedDataSerialized)
+                    }
+
+                    assertEquals(
+                        "Originator key id is missing from unprotectedAttrs",
+                        exception.message
+                    )
+                }
+
+                @Test
+                fun `Call should fail if attribute for originator key id is empty`() {
+                    val unprotectedAttrs = AttributeHashtable()
+                    unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
+                        OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
+                        DERSet()
+                    )
+                    val envelopedDataSerialized = generateEnvelopedData(unprotectedAttrs)
+
+                    val exception = assertThrows<EnvelopedDataException> {
+                        EnvelopedData.deserialize(envelopedDataSerialized)
+                    }
+
+                    assertEquals(
+                        "Originator key id is empty",
+                        exception.message
+                    )
+                }
+
+                @Test
+                fun `Call should fail if attribute for originator key id is multi-valued`() {
+                    val unprotectedAttrs = AttributeHashtable()
+                    unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
+                        OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
+                        DERSet(arrayOf(ASN1Integer(3), ASN1Integer(5)))
+                    )
+                    val envelopedDataSerialized = generateEnvelopedData(unprotectedAttrs)
+
+                    val exception = assertThrows<EnvelopedDataException> {
+                        EnvelopedData.deserialize(envelopedDataSerialized)
+                    }
+
+                    assertEquals(
+                        "Originator key id has multiple values",
+                        exception.message
+                    )
+                }
+            }
+
+            private fun generateEnvelopedData(
+                unprotectedAttrs: AttributeHashtable?
+            ): ByteArray {
+                val cmsEnvelopedDataGenerator = CMSEnvelopedDataGenerator()
+
+                val recipientInfoGenerator =
+                    JceKeyAgreeRecipientInfoGenerator(
+                        CMSAlgorithm.ECDH_SHA256KDF,
+                        SESSION_SENDER_KEY_PAIR.private,
+                        SESSION_SENDER_KEY_PAIR.public,
+                        CMSAlgorithm.AES128_WRAP
+                    ).setProvider(BC_PROVIDER)
+                cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
+
+                if (unprotectedAttrs != null) {
+                    val unprotectedAttrsGenerator = SimpleAttributeTableGenerator(
+                        AttributeTable(unprotectedAttrs)
+                    )
+                    cmsEnvelopedDataGenerator.setUnprotectedAttributeGenerator(
+                        unprotectedAttrsGenerator
+                    )
+                }
+
+                val bcEnvelopedData = generateBcEnvelopedData(cmsEnvelopedDataGenerator)
+                return bcEnvelopedData.encoded
+            }
         }
     }
 }

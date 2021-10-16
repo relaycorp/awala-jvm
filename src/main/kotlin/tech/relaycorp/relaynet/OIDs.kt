@@ -8,7 +8,7 @@ internal object OIDs {
     private val AWALA = RELAYCORP.branch("0").intern()
 
     private val AWALA_PKI = AWALA.branch("1").intern()
-    val ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER : ASN1ObjectIdentifier =
+    val ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER: ASN1ObjectIdentifier =
         AWALA_PKI.branch("0")
 
     private val PRIVATE_NODE_REGISTRATION_PREFIX = AWALA.branch("2").intern()
