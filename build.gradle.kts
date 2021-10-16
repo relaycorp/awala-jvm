@@ -14,7 +14,7 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
-    id("org.jetbrains.dokka") version "1.5.0"
+    id("org.jetbrains.dokka") version "1.5.31"
 
     id("com.diffplug.spotless") version "5.17.0"
     jacoco
