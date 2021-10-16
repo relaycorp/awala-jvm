@@ -897,6 +897,9 @@ class SessionEnvelopedDataTest {
                         SESSION_SENDER_KEY_PAIR.public,
                         CMSAlgorithm.AES128_WRAP
                     ).setProvider(BC_PROVIDER)
+                val recipientX509Certificate = JcaX509CertificateConverter()
+                    .getCertificate(SESSION_RECIPIENT_CERTIFICATE.certificateHolder)
+                recipientInfoGenerator.addRecipient(recipientX509Certificate)
                 cmsEnvelopedDataGenerator.addRecipientInfoGenerator(recipientInfoGenerator)
 
                 if (unprotectedAttrs != null) {
