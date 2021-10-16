@@ -128,7 +128,8 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
             val certs = JcaCertStore(encapsulatedCertificates.map { it.certificateHolder })
             signedDataGenerator.addCertificates(certs)
             val plaintextCms: CMSTypedData = CMSProcessableByteArray(plaintext)
-            val bcSignedData = signedDataGenerator.generate(plaintextCms, encapsulatePlaintext
+            val bcSignedData = signedDataGenerator.generate(
+                plaintextCms, encapsulatePlaintext
             )
             return SignedData(
                 // Work around BC bug that keeps the plaintext encapsulated in the CMSSignedData
