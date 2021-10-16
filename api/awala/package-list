@@ -233,6 +233,10 @@ $dokka.location:tech.relaycorp.relaynet.wrappers.asn1/ASN1Exception///PointingTo
 $dokka.location:tech.relaycorp.relaynet.wrappers.asn1/ASN1Exception/ASN1Exception/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.asn1/-a-s-n1-exception/-a-s-n1-exception.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.cms////PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/index.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.cms/EnvelopedDataException///PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-enveloped-data-exception/index.html
+$dokka.location:tech.relaycorp.relaynet.wrappers.cms/OriginatorSessionKey///PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-originator-session-key/index.html
+$dokka.location:tech.relaycorp.relaynet.wrappers.cms/OriginatorSessionKey/OriginatorSessionKey/#java.math.BigInteger#java.security.PublicKey/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-originator-session-key/-originator-session-key.html
+$dokka.location:tech.relaycorp.relaynet.wrappers.cms/OriginatorSessionKey/keyId/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-originator-session-key/key-id.html
+$dokka.location:tech.relaycorp.relaynet.wrappers.cms/OriginatorSessionKey/publicKey/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-originator-session-key/public-key.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.cms/RecipientIdentifier///PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-recipient-identifier/index.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.cms/RecipientIdentifier/RecipientIdentifier/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-recipient-identifier/-recipient-identifier.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.cms/RecipientKeyIdentifier///PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.cms/-recipient-key-identifier/index.html
