@@ -191,7 +191,7 @@ spotless {
     )
 
     kotlin {
-        ktlint("0.36.0").userData(ktlintUserData)
+        ktlint("0.42.1").userData(ktlintUserData)
     }
     kotlinGradle {
         ktlint().userData(ktlintUserData)
