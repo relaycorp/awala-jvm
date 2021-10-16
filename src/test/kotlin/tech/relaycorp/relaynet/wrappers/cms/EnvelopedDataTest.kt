@@ -351,11 +351,9 @@ class SessionlessEnvelopedDataTest {
 
         @Test
         fun `There should be no unprotectedAttrs`() {
-            val envelopedData = SessionEnvelopedData.encrypt(
+            val envelopedData = SessionlessEnvelopedData.encrypt(
                 PLAINTEXT,
-                SESSION_RECIPIENT_CERTIFICATE,
-                SESSION_SENDER_KEY_ID,
-                SESSION_SENDER_KEY_PAIR,
+                PDACertPath.PRIVATE_ENDPOINT,
             )
 
             assertNull(envelopedData.bcEnvelopedData.unprotectedAttributes)
