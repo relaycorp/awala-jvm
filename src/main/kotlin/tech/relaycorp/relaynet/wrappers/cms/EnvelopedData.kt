@@ -117,7 +117,7 @@ internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
      * Validate EnvelopedData value, post-deserialization.
      */
     @Throws(EnvelopedDataException::class)
-    abstract fun validate()
+    protected abstract fun validate()
 }
 
 internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
