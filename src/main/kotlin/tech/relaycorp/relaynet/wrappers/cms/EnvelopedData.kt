@@ -241,12 +241,9 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             recipientInfoAppender(recipientInfoGenerator)
 
             val unprotectedAttrs = Hashtable<ASN1ObjectIdentifier, Attribute>()
-            unprotectedAttrs.put(
+            unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
                 OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
-                Attribute(
-                    OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
-                    DERSet(ASN1Integer(originatorKeyId))
-                )
+                DERSet(ASN1Integer(originatorKeyId))
             )
 
             val bcEnvelopedData = bcEncrypt(
