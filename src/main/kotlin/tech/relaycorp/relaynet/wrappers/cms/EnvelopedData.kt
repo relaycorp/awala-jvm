@@ -28,6 +28,7 @@ import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.SymmetricEncryption
+import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.math.BigInteger
@@ -283,7 +284,16 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     }
 
     fun getOriginatorKey(): OriginatorSessionKey {
-        TODO("implement")
+        val originatorKeyIdAttribute = bcEnvelopedData.unprotectedAttributes
+            .get(OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER)
+        val keyIdEncoded = originatorKeyIdAttribute.attrValues.getObjectAt(0) as ASN1Integer
+
+        val recipientInfo = bcEnvelopedData.recipientInfos.first() as KeyAgreeRecipientInformation
+        val originator = recipientInfo.originator
+        return OriginatorSessionKey(
+            keyIdEncoded.value,
+            originator.originatorKey.encoded.deserializeECPublicKey()
+        )
     }
 
     override fun validate() {
