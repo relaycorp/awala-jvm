@@ -51,8 +51,9 @@ internal object ASN1Utils {
         }
         return sequence.map {
             if (it !is T) {
-                throw ASN1Exception("Sequence contains an item of an unexpected type " +
-                    "(${it::class.java.simpleName})"
+                throw ASN1Exception(
+                    "Sequence contains an item of an unexpected type " +
+                        "(${it::class.java.simpleName})"
                 )
             }
             @Suppress("USELESS_CAST")
