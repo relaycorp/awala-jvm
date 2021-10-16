@@ -287,7 +287,27 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     }
 
     override fun validate() {
-        // No validation needed.
+        val unprotectedAttrs = bcEnvelopedData.unprotectedAttributes
+            ?: throw EnvelopedDataException("unprotectedAttrs is missing")
+        if (unprotectedAttrs.size() == 0) {
+            throw EnvelopedDataException("unprotectedAttrs is empty")
+        }
+
+        val originatorKeyIdAttributeContainer =
+            unprotectedAttrs.get(OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER)
+                ?: throw EnvelopedDataException(
+                    "Originator key id is missing from unprotectedAttrs"
+                )
+        if (originatorKeyIdAttributeContainer.attrValues.size() == 0) {
+            throw EnvelopedDataException("Originator key id is empty")
+        }
+        if (1 < originatorKeyIdAttributeContainer.attrValues.size()) {
+            throw EnvelopedDataException("Originator key id has multiple values")
+        }
+        val originatorKeyIdAttribute = originatorKeyIdAttributeContainer.attrValues.getObjectAt(0)
+        if (originatorKeyIdAttribute !is ASN1Integer) {
+            throw EnvelopedDataException("Originator key id is not an INTEGER")
+        }
     }
 }
 

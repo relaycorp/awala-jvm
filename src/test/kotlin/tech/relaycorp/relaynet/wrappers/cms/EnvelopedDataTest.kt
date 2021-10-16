@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.wrappers.cms
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DERSet
+import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.cms.Attribute
 import org.bouncycastle.asn1.cms.AttributeTable
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
@@ -880,6 +881,25 @@ class SessionEnvelopedDataTest {
 
                     assertEquals(
                         "Originator key id has multiple values",
+                        exception.message
+                    )
+                }
+
+                @Test
+                fun `Call should fail if attribute for originator key id is not INTEGER`() {
+                    val unprotectedAttrs = AttributeHashtable()
+                    unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
+                        OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
+                        DERSet(arrayOf(DERVisibleString("not a number")))
+                    )
+                    val envelopedDataSerialized = generateEnvelopedData(unprotectedAttrs)
+
+                    val exception = assertThrows<EnvelopedDataException> {
+                        EnvelopedData.deserialize(envelopedDataSerialized)
+                    }
+
+                    assertEquals(
+                        "Originator key id is not an INTEGER",
                         exception.message
                     )
                 }
