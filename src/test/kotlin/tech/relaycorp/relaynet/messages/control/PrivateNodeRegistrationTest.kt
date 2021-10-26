@@ -98,7 +98,8 @@ class PrivateNodeRegistrationTest {
                 arrayOf(
                     DEROctetString(PDACertPath.PRIVATE_ENDPOINT.serialize()),
                     DERNull.INSTANCE
-                ), false
+                ),
+                false
             )
 
             val exception = assertThrows<InvalidMessageException> {

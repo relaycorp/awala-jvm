@@ -14,9 +14,9 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
-    id("org.jetbrains.dokka") version "1.5.0"
+    id("org.jetbrains.dokka") version "1.5.31"
 
-    id("com.diffplug.spotless") version "5.14.0"
+    id("com.diffplug.spotless") version "5.17.0"
     jacoco
 
     signing
@@ -48,8 +48,8 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.69")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
 }
@@ -191,7 +191,7 @@ spotless {
     )
 
     kotlin {
-        ktlint("0.36.0").userData(ktlintUserData)
+        ktlint("0.42.1").userData(ktlintUserData)
     }
     kotlinGradle {
         ktlint().userData(ktlintUserData)
