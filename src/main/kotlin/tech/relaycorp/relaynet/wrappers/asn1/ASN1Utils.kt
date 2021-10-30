@@ -21,14 +21,17 @@ internal object ASN1Utils {
     val BER_DATETIME_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
-    fun serializeSequence(items: Array<ASN1Encodable>, explicitTagging: Boolean = true): ByteArray {
+    fun makeSequence(items: Array<ASN1Encodable>, explicitTagging: Boolean = true): DERSequence {
         val messagesVector = ASN1EncodableVector(items.size)
         val finalItems = if (explicitTagging) items.asList() else items.mapIndexed { index, item ->
             DERTaggedObject(false, index, item)
         }
         finalItems.forEach { messagesVector.add(it) }
-        val sequence = DERSequence(messagesVector)
-        return sequence.encoded
+        return DERSequence(messagesVector)
+    }
+
+    fun serializeSequence(items: Array<ASN1Encodable>, explicitTagging: Boolean = true): ByteArray {
+        return makeSequence(items, explicitTagging).encoded
     }
 
     @Throws(ASN1Exception::class)
