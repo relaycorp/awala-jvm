@@ -9,7 +9,7 @@ group = "tech.relaycorp"
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.5.20"
+    id("org.jetbrains.kotlin.jvm") version "1.5.31"
 
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    val kotlinCoroutinesVersion = "1.5.1"
+    val kotlinCoroutinesVersion = "1.5.2"
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -48,7 +48,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.69")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
