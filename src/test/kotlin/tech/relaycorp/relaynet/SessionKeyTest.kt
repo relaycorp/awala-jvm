@@ -17,10 +17,10 @@ class SessionKeyTest {
 
     @Test
     fun `privateKey should correspond to public key`() {
-        val (sessionKey, privateKey) = SessionKey.generate()
+        val sessionKeyGeneration = SessionKey.generate()
 
-        val ecPrivateKey = privateKey as BCECPrivateKey
-        val ecPublicKey = sessionKey.publicKey as BCECPublicKey
+        val ecPrivateKey = sessionKeyGeneration.privateKey as BCECPrivateKey
+        val ecPublicKey = sessionKeyGeneration.sessionKey.publicKey as BCECPublicKey
         assertEquals(ecPrivateKey.parameters.g.multiply(ecPrivateKey.d), ecPublicKey.q)
         assertEquals(ecPrivateKey.params, ecPublicKey.params)
     }
