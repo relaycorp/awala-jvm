@@ -283,14 +283,14 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         }
     }
 
-    fun getOriginatorKey(): OriginatorSessionKey {
+    fun getOriginatorKey(): SessionKey {
         val originatorKeyIdAttribute = bcEnvelopedData.unprotectedAttributes
             .get(OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER)
         val keyIdEncoded = originatorKeyIdAttribute.attrValues.getObjectAt(0) as ASN1Integer
 
         val recipientInfo = bcEnvelopedData.recipientInfos.first() as KeyAgreeRecipientInformation
         val originator = recipientInfo.originator
-        return OriginatorSessionKey(
+        return SessionKey(
             keyIdEncoded.value,
             originator.originatorKey.encoded.deserializeECPublicKey()
         )
