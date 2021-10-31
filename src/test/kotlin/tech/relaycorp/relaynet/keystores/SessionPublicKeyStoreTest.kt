@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.keystores
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.bouncycastle.asn1.ASN1Integer
 import tech.relaycorp.relaynet.SessionKey
 import org.junit.jupiter.api.Nested
@@ -11,6 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SessionPublicKeyStoreTest {
     private val peerPrivateAddress = "0deadbeef"
     private val creationTime: ZonedDateTime = ZonedDateTime.now()
@@ -21,7 +24,7 @@ class SessionPublicKeyStoreTest {
     @Nested
     inner class Save {
         @Test
-        fun `Key data should be saved if there is no prior key for recipient`() {
+        fun `Key data should be saved if there is no prior key for recipient`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
 
             store.save(sessionKey, peerPrivateAddress, creationTime)
@@ -34,7 +37,7 @@ class SessionPublicKeyStoreTest {
         }
 
         @Test
-        fun `Key data should be saved if prior key is older`() {
+        fun `Key data should be saved if prior key is older`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
             val (oldSessionKey) = SessionKey.generate()
             store.save(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
@@ -48,7 +51,7 @@ class SessionPublicKeyStoreTest {
         }
 
         @Test
-        fun `Key data should not be saved if prior key is newer`() {
+        fun `Key data should not be saved if prior key is newer`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
             store.save(sessionKey, peerPrivateAddress, creationTime)
 
@@ -62,7 +65,7 @@ class SessionPublicKeyStoreTest {
         }
 
         @Test
-        fun `Any error while retrieving existing key should be wrapped`() {
+        fun `Any error while retrieving existing key should be wrapped`() = runBlockingTest {
             val backendException = Exception("Something went wrong")
             val store = MockSessionPublicKeyStore(retrievalException = backendException)
 
@@ -75,7 +78,7 @@ class SessionPublicKeyStoreTest {
         }
 
         @Test
-        fun `Any error while saving existing key should be wrapped`() {
+        fun `Any error while saving existing key should be wrapped`() = runBlockingTest {
             val backendException = Exception("Something went wrong")
             val store = MockSessionPublicKeyStore(backendException)
 
@@ -91,7 +94,7 @@ class SessionPublicKeyStoreTest {
     @Nested
     inner class Retrieve {
         @Test
-        fun `Key data should be returned if key for recipient exists`() {
+        fun `Key data should be returned if key for recipient exists`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
             store.save(sessionKey, peerPrivateAddress, creationTime)
 
@@ -105,14 +108,14 @@ class SessionPublicKeyStoreTest {
         }
 
         @Test
-        fun `Null should be returned if key for recipient does not exist`() {
+        fun `Null should be returned if key for recipient does not exist`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
 
             assertNull(store.retrieve(peerPrivateAddress))
         }
 
         @Test
-        fun `Retrieval errors should be wrapped`() {
+        fun `Retrieval errors should be wrapped`() = runBlockingTest {
             val backendException = Exception("whoops")
             val store = MockSessionPublicKeyStore(retrievalException = backendException)
 

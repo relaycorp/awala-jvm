@@ -107,7 +107,12 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs = freeCompilerArgs + arrayOf(
+            "-Xopt-in=kotlin.RequiresOptIn"
+        )
+    }
 }
 
 tasks.dokkaHtml.configure {
