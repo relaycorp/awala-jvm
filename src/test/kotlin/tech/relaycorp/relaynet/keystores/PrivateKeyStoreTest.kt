@@ -170,4 +170,91 @@ class PrivateKeyStoreTest {
             assertEquals(backendException, exception.cause)
         }
     }
+
+    @Nested
+    inner class RetrieveSessionKey {
+        @Test
+        fun `Unbound session keys should be returned`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            store.saveSessionKey(
+                sessionKeyGeneration.privateKey,
+                sessionKeyGeneration.sessionKey.keyId,
+            )
+
+            val sessionKey = store.retrieveSessionKey(
+                sessionKeyGeneration.sessionKey.keyId,
+                "not $peerPrivateAddress"
+            )
+
+            assertEquals(
+                sessionKeyGeneration.privateKey.encoded.asList(),
+                sessionKey!!.encoded.asList()
+            )
+        }
+
+        @Test
+        fun `Bound session keys should be returned if peer matches`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            store.saveSessionKey(
+                sessionKeyGeneration.privateKey,
+                sessionKeyGeneration.sessionKey.keyId,
+                peerPrivateAddress
+            )
+
+            val sessionKey = store.retrieveSessionKey(
+                sessionKeyGeneration.sessionKey.keyId,
+                peerPrivateAddress
+            )
+
+            assertEquals(
+                sessionKeyGeneration.privateKey.encoded.asList(),
+                sessionKey!!.encoded.asList()
+            )
+        }
+
+        @Test
+        fun `Keys bound to another peer should not be returned`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            store.saveSessionKey(
+                sessionKeyGeneration.privateKey,
+                sessionKeyGeneration.sessionKey.keyId,
+                peerPrivateAddress
+            )
+
+            val sessionKey = store.retrieveSessionKey(
+                sessionKeyGeneration.sessionKey.keyId,
+                "not $peerPrivateAddress"
+            )
+
+            assertNull(sessionKey)
+        }
+
+        @Test
+        fun `Null should be returned if key pair does not exist`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            val sessionKey = store.retrieveSessionKey(
+                sessionKeyGeneration.sessionKey.keyId,
+                peerPrivateAddress
+            )
+
+            assertNull(sessionKey)
+        }
+
+        @Test
+        fun `Errors should be wrapped`() = runBlockingTest {
+            val backendException = Exception("oh noes")
+            val store = MockPrivateKeyStore(retrievalException = backendException)
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.retrieveSessionKey(
+                    sessionKeyGeneration.sessionKey.keyId,
+                    peerPrivateAddress
+                )
+            }
+
+            assertEquals("Failed to retrieve key", exception.message)
+            assertEquals(backendException, exception.cause)
+        }
+    }
 }

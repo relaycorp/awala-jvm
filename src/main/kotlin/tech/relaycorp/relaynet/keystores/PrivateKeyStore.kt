@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.keystores
 
+import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.math.BigInteger
@@ -36,6 +37,15 @@ abstract class PrivateKeyStore {
     ) {
         val keyData = PrivateKeyData(privateKey.encoded, peerPrivateAddress = peerPrivatAddress)
         saveKeyDataOrWrapError(keyData, "s-${keyId.toString(16)}")
+    }
+
+    @Throws(KeyStoreBackendException::class)
+    suspend fun retrieveSessionKey(keyId: BigInteger, peerPrivatAddress: String): PrivateKey? {
+        val keyData = retrieveKeyDataOrWrapError("s-${keyId.toString(16)}") ?: return null
+        if (keyData.peerPrivateAddress != null && keyData.peerPrivateAddress != peerPrivatAddress) {
+            return null
+        }
+        return keyData.privateKeyDer.deserializeECKeyPair().private
     }
 
     protected abstract suspend fun saveKeyData(keyData: PrivateKeyData, keyId: String)
