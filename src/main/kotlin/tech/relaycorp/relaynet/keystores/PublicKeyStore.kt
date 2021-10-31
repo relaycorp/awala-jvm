@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.keystores
 
+import org.bouncycastle.asn1.ASN1Integer
 import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import java.time.ZonedDateTime
@@ -17,7 +18,7 @@ abstract class PublicKeyStore {
         }
 
         val keyData = SessionPublicKeyData(
-            key.keyId,
+            ASN1Integer(key.keyId).encoded,
             key.publicKey.encoded,
             creationTime
         )
@@ -32,8 +33,9 @@ abstract class PublicKeyStore {
     fun fetchSessionKey(peerPrivateAddress: String): SessionKey? {
         val keyData = fetchKeyDataOrWrapException(peerPrivateAddress) ?: return null
 
+        val sessionKeyIdASN1 = ASN1Integer.getInstance(keyData.keyIdDer)
         val sessionPublicKey = keyData.keyDer.deserializeECPublicKey()
-        return SessionKey(keyData.keyId, sessionPublicKey)
+        return SessionKey(sessionKeyIdASN1.value, sessionPublicKey)
     }
 
     protected abstract fun saveKey(keyData: SessionPublicKeyData, peerPrivateAddress: String)

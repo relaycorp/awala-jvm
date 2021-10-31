@@ -1,9 +1,11 @@
 package tech.relaycorp.relaynet.keystores
 
+import org.bouncycastle.asn1.ASN1Integer
 import tech.relaycorp.relaynet.SessionKey
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.math.BigInteger
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -26,7 +28,7 @@ class PublicKeyStoreTest {
 
             assertTrue(store.keys.containsKey(peerPrivateAddress))
             val keyData = store.keys[peerPrivateAddress]!!
-            assertEquals(sessionKey.keyId, keyData.keyId)
+            assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime, keyData.creationTime)
         }
@@ -40,7 +42,7 @@ class PublicKeyStoreTest {
             store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
 
             val keyData = store.keys[peerPrivateAddress]!!
-            assertEquals(sessionKey.keyId, keyData.keyId)
+            assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime, keyData.creationTime)
         }
@@ -54,7 +56,7 @@ class PublicKeyStoreTest {
             store.saveSessionKey(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
 
             val keyData = store.keys[peerPrivateAddress]!!
-            assertEquals(sessionKey.keyId, keyData.keyId)
+            assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime, keyData.creationTime)
         }
@@ -122,4 +124,7 @@ class PublicKeyStoreTest {
             assertEquals(exception.cause, backendException)
         }
     }
+
+    fun deserializeBigInteger(serialization: ByteArray): BigInteger =
+        ASN1Integer.getInstance(serialization).value
 }
