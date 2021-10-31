@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class PublicKeyStoreTest {
+class SessionPublicKeyStoreTest {
     private val peerPrivateAddress = "0deadbeef"
     private val creationTime: ZonedDateTime = ZonedDateTime.now()
 
@@ -19,12 +19,12 @@ class PublicKeyStoreTest {
     private val sessionKey = sessionKeyGeneration.sessionKey
 
     @Nested
-    inner class SaveSessionKey {
+    inner class Save {
         @Test
         fun `Key data should be saved if there is no prior key for recipient`() {
-            val store = MockPublicKeyStore()
+            val store = MockSessionPublicKeyStore()
 
-            store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
+            store.save(sessionKey, peerPrivateAddress, creationTime)
 
             assertTrue(store.keys.containsKey(peerPrivateAddress))
             val keyData = store.keys[peerPrivateAddress]!!
@@ -35,11 +35,11 @@ class PublicKeyStoreTest {
 
         @Test
         fun `Key data should be saved if prior key is older`() {
-            val store = MockPublicKeyStore()
+            val store = MockSessionPublicKeyStore()
             val (oldSessionKey) = SessionKey.generate()
-            store.saveSessionKey(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
+            store.save(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
 
-            store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
+            store.save(sessionKey, peerPrivateAddress, creationTime)
 
             val keyData = store.keys[peerPrivateAddress]!!
             assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
@@ -49,11 +49,11 @@ class PublicKeyStoreTest {
 
         @Test
         fun `Key data should not be saved if prior key is newer`() {
-            val store = MockPublicKeyStore()
-            store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
+            val store = MockSessionPublicKeyStore()
+            store.save(sessionKey, peerPrivateAddress, creationTime)
 
             val (oldSessionKey) = SessionKey.generate()
-            store.saveSessionKey(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
+            store.save(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
 
             val keyData = store.keys[peerPrivateAddress]!!
             assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
@@ -64,10 +64,10 @@ class PublicKeyStoreTest {
         @Test
         fun `Any error while retrieving existing key should be wrapped`() {
             val backendException = Exception("Something went wrong")
-            val store = MockPublicKeyStore(fetchingException = backendException)
+            val store = MockSessionPublicKeyStore(retrievalException = backendException)
 
             val exception = assertThrows<KeyStoreBackendException> {
-                store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
+                store.save(sessionKey, peerPrivateAddress, creationTime)
             }
 
             assertEquals(exception.message, "Failed to retrieve key")
@@ -77,10 +77,10 @@ class PublicKeyStoreTest {
         @Test
         fun `Any error while saving existing key should be wrapped`() {
             val backendException = Exception("Something went wrong")
-            val store = MockPublicKeyStore(backendException)
+            val store = MockSessionPublicKeyStore(backendException)
 
             val exception = assertThrows<KeyStoreBackendException> {
-                store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
+                store.save(sessionKey, peerPrivateAddress, creationTime)
             }
 
             assertEquals(exception.message, "Failed to save session key")
@@ -89,13 +89,13 @@ class PublicKeyStoreTest {
     }
 
     @Nested
-    inner class FetchSessionKey {
+    inner class Retrieve {
         @Test
         fun `Key data should be returned if key for recipient exists`() {
-            val store = MockPublicKeyStore()
-            store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
+            val store = MockSessionPublicKeyStore()
+            store.save(sessionKey, peerPrivateAddress, creationTime)
 
-            val fetchedSessionKey = store.fetchSessionKey(peerPrivateAddress)
+            val fetchedSessionKey = store.retrieve(peerPrivateAddress)
 
             assertEquals(fetchedSessionKey!!.keyId, sessionKey.keyId)
             assertEquals(
@@ -106,18 +106,18 @@ class PublicKeyStoreTest {
 
         @Test
         fun `Null should be returned if key for recipient does not exist`() {
-            val store = MockPublicKeyStore()
+            val store = MockSessionPublicKeyStore()
 
-            assertNull(store.fetchSessionKey(peerPrivateAddress))
+            assertNull(store.retrieve(peerPrivateAddress))
         }
 
         @Test
         fun `Retrieval errors should be wrapped`() {
             val backendException = Exception("whoops")
-            val store = MockPublicKeyStore(fetchingException = backendException)
+            val store = MockSessionPublicKeyStore(retrievalException = backendException)
 
             val exception = assertThrows<KeyStoreBackendException> {
-                store.fetchSessionKey(peerPrivateAddress)
+                store.retrieve(peerPrivateAddress)
             }
 
             assertEquals(exception.message, "Failed to retrieve key")

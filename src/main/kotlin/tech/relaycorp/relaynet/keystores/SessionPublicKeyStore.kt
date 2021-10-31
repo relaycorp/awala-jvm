@@ -5,13 +5,9 @@ import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import java.time.ZonedDateTime
 
-abstract class PublicKeyStore {
+abstract class SessionPublicKeyStore {
     @Throws(KeyStoreBackendException::class)
-    fun saveSessionKey(
-        key: SessionKey,
-        peerPrivateAddress: String,
-        creationTime: ZonedDateTime,
-    ) {
+    fun save(key: SessionKey, peerPrivateAddress: String, creationTime: ZonedDateTime) {
         val existingKeyData = fetchKeyDataOrWrapException(peerPrivateAddress)
         if (existingKeyData != null && creationTime < existingKeyData.creationTime) {
             return
@@ -23,14 +19,14 @@ abstract class PublicKeyStore {
             creationTime
         )
         try {
-            saveKey(keyData, peerPrivateAddress)
+            saveKeyData(keyData, peerPrivateAddress)
         } catch (exc: Throwable) {
             throw KeyStoreBackendException("Failed to save session key", exc)
         }
     }
 
     @Throws(KeyStoreBackendException::class)
-    fun fetchSessionKey(peerPrivateAddress: String): SessionKey? {
+    fun retrieve(peerPrivateAddress: String): SessionKey? {
         val keyData = fetchKeyDataOrWrapException(peerPrivateAddress) ?: return null
 
         val sessionKeyIdASN1 = ASN1Integer.getInstance(keyData.keyIdDer)
@@ -38,13 +34,13 @@ abstract class PublicKeyStore {
         return SessionKey(sessionKeyIdASN1.value, sessionPublicKey)
     }
 
-    protected abstract fun saveKey(keyData: SessionPublicKeyData, peerPrivateAddress: String)
+    protected abstract fun saveKeyData(keyData: SessionPublicKeyData, peerPrivateAddress: String)
 
-    protected abstract fun fetchKey(peerPrivateAddress: String): SessionPublicKeyData?
+    protected abstract fun fetchKeyData(peerPrivateAddress: String): SessionPublicKeyData?
 
     private fun fetchKeyDataOrWrapException(peerPrivateAddress: String): SessionPublicKeyData? {
         return try {
-            fetchKey(peerPrivateAddress)
+            fetchKeyData(peerPrivateAddress)
         } catch (exc: Throwable) {
             throw KeyStoreBackendException("Failed to retrieve key", exc)
         }
