@@ -52,6 +52,32 @@ $dokka.location:tech.relaycorp.relaynet.bindings/ContentTypes/value/#/PointingTo
 $dokka.location:tech.relaycorp.relaynet.crypto////PointingToDeclaration/awala/tech.relaycorp.relaynet.crypto/index.html
 $dokka.location:tech.relaycorp.relaynet.crypto/SignedDataException///PointingToDeclaration/awala/tech.relaycorp.relaynet.crypto/-signed-data-exception/index.html
 $dokka.location:tech.relaycorp.relaynet.crypto/SignedDataException/SignedDataException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.crypto/-signed-data-exception/-signed-data-exception.html
+$dokka.location:tech.relaycorp.relaynet.keystores////PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/IdentityKeyPair///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-identity-key-pair/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/IdentityKeyPair/IdentityKeyPair/#java.security.PrivateKey#tech.relaycorp.relaynet.wrappers.x509.Certificate/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-identity-key-pair/-identity-key-pair.html
+$dokka.location:tech.relaycorp.relaynet.keystores/IdentityKeyPair/certificate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-identity-key-pair/certificate.html
+$dokka.location:tech.relaycorp.relaynet.keystores/IdentityKeyPair/privateKey/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-identity-key-pair/private-key.html
+$dokka.location:tech.relaycorp.relaynet.keystores/KeyStoreBackendException///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-key-store-backend-exception/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-data/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData/PrivateKeyData/#kotlin.ByteArray#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-data/-private-key-data.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData/certificateDer/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-data/certificate-der.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData/peerPrivateAddress/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-data/peer-private-address.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData/privateKeyDer/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-data/private-key-der.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/PrivateKeyStore/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/-private-key-store.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/retrieveIdentityKey/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/retrieve-identity-key.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/retrieveSessionKey/#java.math.BigInteger#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/retrieve-session-key.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/saveIdentityKey/#java.security.PrivateKey#tech.relaycorp.relaynet.wrappers.x509.Certificate/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/save-identity-key.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/saveSessionKey/#java.security.PrivateKey#java.math.BigInteger#kotlin.String?/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/save-session-key.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyData///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-data/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyData/SessionPublicKeyData/#kotlin.ByteArray#kotlin.ByteArray#java.time.ZonedDateTime/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-data/-session-public-key-data.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyData/creationTime/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-data/creation-time.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyData/keyDer/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-data/key-der.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyData/keyIdDer/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-data/key-id-der.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore/SessionPublicKeyStore/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/-session-public-key-store.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore/retrieve/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/retrieve.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore/save/#tech.relaycorp.relaynet.SessionKey#kotlin.String#java.time.ZonedDateTime/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/save.html
 $dokka.location:tech.relaycorp.relaynet.messages.control////PointingToDeclaration/awala/tech.relaycorp.relaynet.messages.control/index.html
 $dokka.location:tech.relaycorp.relaynet.messages.control/HandshakeChallenge.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet.messages.control/-handshake-challenge/-companion/index.html
 $dokka.location:tech.relaycorp.relaynet.messages.control/HandshakeChallenge.Companion/deserialize/#kotlin.ByteArray/PointingToDeclaration/awala/tech.relaycorp.relaynet.messages.control/-handshake-challenge/-companion/deserialize.html
@@ -283,6 +309,7 @@ tech.relaycorp.relaynet
 tech.relaycorp.relaynet.bindings
 tech.relaycorp.relaynet.bindings.pdc
 tech.relaycorp.relaynet.crypto
+tech.relaycorp.relaynet.keystores
 tech.relaycorp.relaynet.messages
 tech.relaycorp.relaynet.messages.control
 tech.relaycorp.relaynet.messages.payloads
