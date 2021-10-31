@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.keystores
 
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import java.math.BigInteger
 import java.security.PrivateKey
 
 abstract class PrivateKeyStore {
@@ -25,6 +26,16 @@ abstract class PrivateKeyStore {
             keyData.privateKeyDer.deserializeRSAKeyPair().private,
             Certificate.deserialize(keyData.certificateDer)
         )
+    }
+
+    @Throws(KeyStoreBackendException::class)
+    suspend fun saveSessionKey(
+        privateKey: PrivateKey,
+        keyId: BigInteger,
+        peerPrivatAddress: String? = null
+    ) {
+        val keyData = PrivateKeyData(privateKey.encoded, peerPrivateAddress = peerPrivatAddress)
+        saveKeyDataOrWrapError(keyData, "s-${keyId.toString(16)}")
     }
 
     protected abstract suspend fun saveKeyData(keyData: PrivateKeyData, keyId: String)

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.PDACertPath
+import tech.relaycorp.relaynet.SessionKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -15,6 +16,11 @@ import kotlin.test.assertTrue
 class PrivateKeyStoreTest {
     private val identityPrivateKey = KeyPairSet.PRIVATE_GW.private
     private val identityCertificate = PDACertPath.PRIVATE_GW
+
+    private val sessionKeyGeneration = SessionKey.generate()
+    private val sessionKeyIdHex = sessionKeyGeneration.sessionKey.keyId.toString(16)
+
+    private val peerPrivateAddress = PDACertPath.PUBLIC_GW.subjectPrivateAddress
 
     @Nested
     inner class SaveIdentityKey {
@@ -96,6 +102,71 @@ class PrivateKeyStoreTest {
             }
 
             assertEquals("Failed to retrieve key", exception.message)
+            assertEquals(backendException, exception.cause)
+        }
+    }
+
+    @Nested
+    inner class SaveSessionKey {
+        @Test
+        fun `Key should be stored`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            store.saveSessionKey(
+                sessionKeyGeneration.privateKey,
+                sessionKeyGeneration.sessionKey.keyId
+            )
+
+            assertTrue(store.keys.containsKey("s-$sessionKeyIdHex"))
+            val keyData = store.keys["s-$sessionKeyIdHex"]!!
+            assertEquals(
+                sessionKeyGeneration.privateKey.encoded.asList(),
+                keyData.privateKeyDer.asList()
+            )
+            assertNull(keyData.certificateDer)
+        }
+
+        @Test
+        fun `Key should be unbound by default`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            store.saveSessionKey(
+                sessionKeyGeneration.privateKey,
+                sessionKeyGeneration.sessionKey.keyId
+            )
+
+            val keyData = store.keys["s-$sessionKeyIdHex"]!!
+            assertNull(keyData.peerPrivateAddress)
+        }
+
+        @Test
+        fun `Key should be bound to a peer if required`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            store.saveSessionKey(
+                sessionKeyGeneration.privateKey,
+                sessionKeyGeneration.sessionKey.keyId,
+                peerPrivateAddress
+            )
+
+            val keyData = store.keys["s-$sessionKeyIdHex"]!!
+            assertEquals(peerPrivateAddress, keyData.peerPrivateAddress)
+        }
+
+        @Test
+        fun `Errors should be wrapped`() = runBlockingTest {
+            val backendException = Exception("oh noes")
+            val store = MockPrivateKeyStore(backendException)
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.saveSessionKey(
+                    sessionKeyGeneration.privateKey,
+                    sessionKeyGeneration.sessionKey.keyId,
+                    peerPrivateAddress
+                )
+            }
+
+            assertEquals("Failed to save key", exception.message)
             assertEquals(backendException, exception.cause)
         }
     }
