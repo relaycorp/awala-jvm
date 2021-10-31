@@ -1,6 +1,7 @@
 package tech.relaycorp.relaynet.keystores
 
 import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import java.time.ZonedDateTime
 
 abstract class PublicKeyStore {
@@ -25,6 +26,14 @@ abstract class PublicKeyStore {
         } catch (exc: Throwable) {
             throw KeyStoreBackendException("Failed to save session key", exc)
         }
+    }
+
+    @Throws(KeyStoreBackendException::class)
+    fun fetchSessionKey(peerPrivateAddress: String): SessionKey? {
+        val keyData = fetchKeyDataOrWrapException(peerPrivateAddress) ?: return null
+
+        val sessionPublicKey = keyData.keyDer.deserializeECPublicKey()
+        return SessionKey(keyData.keyId, sessionPublicKey)
     }
 
     protected abstract fun saveKey(keyData: SessionPublicKeyData, peerPrivateAddress: String)

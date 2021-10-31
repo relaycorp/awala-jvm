@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PublicKeyStoreTest {
@@ -81,6 +82,43 @@ class PublicKeyStoreTest {
             }
 
             assertEquals(exception.message, "Failed to save session key")
+            assertEquals(exception.cause, backendException)
+        }
+    }
+
+    @Nested
+    inner class FetchSessionKey {
+        @Test
+        fun `Key data should be returned if key for recipient exists`() {
+            val store = MockPublicKeyStore()
+            store.saveSessionKey(sessionKey, peerPrivateAddress, creationTime)
+
+            val fetchedSessionKey = store.fetchSessionKey(peerPrivateAddress)
+
+            assertEquals(fetchedSessionKey!!.keyId, sessionKey.keyId)
+            assertEquals(
+                fetchedSessionKey.publicKey.encoded.asList(),
+                sessionKey.publicKey.encoded.asList()
+            )
+        }
+
+        @Test
+        fun `Null should be returned if key for recipient does not exist`() {
+            val store = MockPublicKeyStore()
+
+            assertNull(store.fetchSessionKey(peerPrivateAddress))
+        }
+
+        @Test
+        fun `Retrieval errors should be wrapped`() {
+            val backendException = Exception("whoops")
+            val store = MockPublicKeyStore(fetchingException = backendException)
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.fetchSessionKey(peerPrivateAddress)
+            }
+
+            assertEquals(exception.message, "Failed to retrieve key")
             assertEquals(exception.cause, backendException)
         }
     }
