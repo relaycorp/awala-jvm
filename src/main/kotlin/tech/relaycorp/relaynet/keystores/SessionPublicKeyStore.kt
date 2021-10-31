@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 abstract class SessionPublicKeyStore {
     @Throws(KeyStoreBackendException::class)
     suspend fun save(key: SessionKey, peerPrivateAddress: String, creationTime: ZonedDateTime) {
-        val existingKeyData = fetchKeyDataOrWrapException(peerPrivateAddress)
+        val existingKeyData = retrieveKeyDataOrWrapException(peerPrivateAddress)
         if (existingKeyData != null && creationTime < existingKeyData.creationTime) {
             return
         }
@@ -27,7 +27,7 @@ abstract class SessionPublicKeyStore {
 
     @Throws(KeyStoreBackendException::class)
     suspend fun retrieve(peerPrivateAddress: String): SessionKey? {
-        val keyData = fetchKeyDataOrWrapException(peerPrivateAddress) ?: return null
+        val keyData = retrieveKeyDataOrWrapException(peerPrivateAddress) ?: return null
 
         val sessionKeyIdASN1 = ASN1Integer.getInstance(keyData.keyIdDer)
         val sessionPublicKey = keyData.keyDer.deserializeECPublicKey()
@@ -39,13 +39,14 @@ abstract class SessionPublicKeyStore {
         peerPrivateAddress: String
     )
 
-    protected abstract suspend fun fetchKeyData(peerPrivateAddress: String): SessionPublicKeyData?
+    protected abstract suspend fun retrieveKeyData(peerPrivateAddress: String):
+        SessionPublicKeyData?
 
-    private suspend fun fetchKeyDataOrWrapException(
+    private suspend fun retrieveKeyDataOrWrapException(
         peerPrivateAddress: String
     ): SessionPublicKeyData? {
         return try {
-            fetchKeyData(peerPrivateAddress)
+            retrieveKeyData(peerPrivateAddress)
         } catch (exc: Throwable) {
             throw KeyStoreBackendException("Failed to retrieve key", exc)
         }

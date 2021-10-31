@@ -13,7 +13,7 @@ class MockSessionPublicKeyStore(
         this.keys[peerPrivateAddress] = keyData
     }
 
-    override suspend fun fetchKeyData(peerPrivateAddress: String): SessionPublicKeyData? {
+    override suspend fun retrieveKeyData(peerPrivateAddress: String): SessionPublicKeyData? {
         if (retrievalException != null) {
             throw retrievalException
         }

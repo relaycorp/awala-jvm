@@ -47,4 +47,56 @@ class PrivateKeyStoreTest {
             assertEquals(backendException, exception.cause)
         }
     }
+
+    @Nested
+    inner class RetrieveIdentityKey {
+        @Test
+        fun `Existing key pair should be returned`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+
+            val idKeyPair = store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)!!
+
+            assertEquals(identityPrivateKey.encoded.asList(), idKeyPair.privateKey.encoded.asList())
+            assertEquals(identityCertificate, idKeyPair.certificate)
+        }
+
+        @Test
+        fun `Null should be returned if key pair does not exist`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            assertNull(store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress))
+        }
+
+        @Test
+        fun `Error should be thrown if certificate is missing`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            val privateAddress = identityCertificate.subjectPrivateAddress
+            store.keys["i-$privateAddress"] = PrivateKeyData(
+                identityPrivateKey.encoded
+            )
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.retrieveIdentityKey(privateAddress)
+            }
+
+            assertEquals(
+                "Identity key pair $privateAddress is missing certificate",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Errors should be wrapped`() = runBlockingTest {
+            val backendException = Exception("oh noes")
+            val store = MockPrivateKeyStore(retrievalException = backendException)
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)
+            }
+
+            assertEquals("Failed to retrieve key", exception.message)
+            assertEquals(backendException, exception.cause)
+        }
+    }
 }
