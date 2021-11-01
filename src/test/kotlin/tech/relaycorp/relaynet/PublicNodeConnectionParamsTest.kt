@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet
 
-import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
@@ -53,8 +52,8 @@ class PublicNodeConnectionParamsTest {
             val sequenceASN1 = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val sessionKeyASN1 = ASN1Sequence.getInstance(sequenceASN1[2], false)
             val keyIdASN1 =
-                ASN1Integer.getInstance(sessionKeyASN1.getObjectAt(0) as ASN1TaggedObject, false)
-            assertEquals(sessionKey.keyId, keyIdASN1.value)
+                ASN1Utils.getOctetString(sessionKeyASN1.getObjectAt(0) as ASN1TaggedObject)
+            assertEquals(sessionKey.keyId.asList(), keyIdASN1.octets.asList())
         }
 
         @Test
@@ -199,7 +198,7 @@ class PublicNodeConnectionParamsTest {
                 identityKey.encoded.asList(),
                 paramsDeserialized.identityKey.encoded.asList()
             )
-            assertEquals(sessionKey.keyId, paramsDeserialized.sessionKey.keyId)
+            assertEquals(sessionKey.keyId.asList(), paramsDeserialized.sessionKey.keyId.asList())
             assertEquals(
                 sessionKey.publicKey.encoded.asList(),
                 paramsDeserialized.sessionKey.publicKey.encoded.asList()

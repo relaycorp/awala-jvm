@@ -3,8 +3,8 @@ package tech.relaycorp.relaynet.keystores
 import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.math.BigInteger
 import java.security.PrivateKey
+import org.bouncycastle.util.encoders.Base64
 
 abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
@@ -32,21 +32,23 @@ abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
     suspend fun saveSessionKey(
         privateKey: PrivateKey,
-        keyId: BigInteger,
+        keyId: ByteArray,
         peerPrivatAddress: String? = null
     ) {
         val keyData = PrivateKeyData(privateKey.encoded, peerPrivateAddress = peerPrivatAddress)
-        saveKeyDataOrWrapError(keyData, "s-${keyId.toString(16)}")
+        saveKeyDataOrWrapError(keyData, formatSessionKeyId(keyId))
     }
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveSessionKey(keyId: BigInteger, peerPrivatAddress: String): PrivateKey? {
-        val keyData = retrieveKeyDataOrWrapError("s-${keyId.toString(16)}") ?: return null
+    suspend fun retrieveSessionKey(keyId: ByteArray, peerPrivatAddress: String): PrivateKey? {
+        val keyData = retrieveKeyDataOrWrapError(formatSessionKeyId(keyId)) ?: return null
         if (keyData.peerPrivateAddress != null && keyData.peerPrivateAddress != peerPrivatAddress) {
             return null
         }
         return keyData.privateKeyDer.deserializeECKeyPair().private
     }
+
+    private fun formatSessionKeyId(keyId: ByteArray) = "s-${Base64.toBase64String(keyId)}"
 
     protected abstract suspend fun saveKeyData(keyData: PrivateKeyData, keyId: String)
 
