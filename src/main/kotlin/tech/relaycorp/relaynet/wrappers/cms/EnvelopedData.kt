@@ -234,13 +234,9 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         }
     }
 
-    override fun getRecipientKeyId(): RecipientIdentifier {
+    override fun getRecipientKeyId(): RecipientKeyIdentifier {
         val rid = bcEnvelopedData.recipientInfos.first().rid as KeyAgreeRecipientId
-        return if (rid.serialNumber == null) {
-            RecipientKeyIdentifier(rid.subjectKeyIdentifier)
-        } else {
-            RecipientSerialNumber(rid.serialNumber)
-        }
+        return RecipientKeyIdentifier(rid.subjectKeyIdentifier)
     }
 
     fun getOriginatorKey(): SessionKey {

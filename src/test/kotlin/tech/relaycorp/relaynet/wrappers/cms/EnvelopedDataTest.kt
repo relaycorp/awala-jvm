@@ -709,7 +709,6 @@ class SessionEnvelopedDataTest {
             )
 
             val actualRecipientKeyId = envelopedData.getRecipientKeyId()
-            assertTrue(actualRecipientKeyId is RecipientKeyIdentifier)
             assertEquals(RECIPIENT_SESSION_KEY.keyId.asList(), actualRecipientKeyId.id.asList())
         }
     }
