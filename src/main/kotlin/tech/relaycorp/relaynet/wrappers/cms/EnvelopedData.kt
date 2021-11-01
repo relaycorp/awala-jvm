@@ -1,7 +1,7 @@
 package tech.relaycorp.relaynet.wrappers.cms
 
-import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSet
 import org.bouncycastle.asn1.cms.Attribute
 import org.bouncycastle.asn1.cms.AttributeTable
@@ -32,7 +32,6 @@ import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.math.BigInteger
 import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -193,7 +192,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         fun encrypt(
             plaintext: ByteArray,
             recipientCertificate: Certificate,
-            originatorKeyId: BigInteger,
+            originatorKeyId: ByteArray,
             originatorKeyPair: KeyPair,
             symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
             hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
@@ -213,7 +212,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             plaintext: ByteArray,
             recipientKeyId: ByteArray,
             recipientKey: PublicKey,
-            originatorKeyId: BigInteger,
+            originatorKeyId: ByteArray,
             originatorKeyPair: KeyPair,
             symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
             hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
@@ -229,7 +228,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
 
         private fun encrypt(
             plaintext: ByteArray,
-            originatorKeyId: BigInteger,
+            originatorKeyId: ByteArray,
             originatorKeyPair: KeyPair,
             symmetricEncryptionAlgorithm: SymmetricEncryption,
             hashingAlgorithm: HashingAlgorithm,
@@ -245,7 +244,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             val unprotectedAttrs = Hashtable<ASN1ObjectIdentifier, Attribute>()
             unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
                 OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
-                DERSet(ASN1Integer(originatorKeyId))
+                DERSet(DEROctetString(originatorKeyId))
             )
 
             val bcEnvelopedData = bcEncrypt(
@@ -287,12 +286,12 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     fun getOriginatorKey(): SessionKey {
         val originatorKeyIdAttribute = bcEnvelopedData.unprotectedAttributes
             .get(OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER)
-        val keyIdEncoded = originatorKeyIdAttribute.attrValues.getObjectAt(0) as ASN1Integer
+        val keyIdASN1 = originatorKeyIdAttribute.attrValues.getObjectAt(0) as DEROctetString
 
         val recipientInfo = bcEnvelopedData.recipientInfos.first() as KeyAgreeRecipientInformation
         val originator = recipientInfo.originator
         return SessionKey(
-            keyIdEncoded.value,
+            keyIdASN1.octets,
             originator.originatorKey.encoded.deserializeECPublicKey()
         )
     }
@@ -316,8 +315,8 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             throw EnvelopedDataException("Originator key id has multiple values")
         }
         val originatorKeyIdAttribute = originatorKeyIdAttributeContainer.attrValues.getObjectAt(0)
-        if (originatorKeyIdAttribute !is ASN1Integer) {
-            throw EnvelopedDataException("Originator key id is not an INTEGER")
+        if (originatorKeyIdAttribute !is DEROctetString) {
+            throw EnvelopedDataException("Originator key id is not an OCTET STRING")
         }
     }
 }

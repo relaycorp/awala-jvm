@@ -11,6 +11,7 @@ import tech.relaycorp.relaynet.SessionKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.bouncycastle.util.encoders.Base64
 
 @ExperimentalCoroutinesApi
 class PrivateKeyStoreTest {
@@ -18,7 +19,7 @@ class PrivateKeyStoreTest {
     private val identityCertificate = PDACertPath.PRIVATE_GW
 
     private val sessionKeyGeneration = SessionKey.generate()
-    private val sessionKeyIdHex = sessionKeyGeneration.sessionKey.keyId.toString(16)
+    private val sessionKeyIdBase64 = Base64.toBase64String(sessionKeyGeneration.sessionKey.keyId)
 
     private val peerPrivateAddress = PDACertPath.PUBLIC_GW.subjectPrivateAddress
 
@@ -117,8 +118,8 @@ class PrivateKeyStoreTest {
                 sessionKeyGeneration.sessionKey.keyId
             )
 
-            assertTrue(store.keys.containsKey("s-$sessionKeyIdHex"))
-            val keyData = store.keys["s-$sessionKeyIdHex"]!!
+            assertTrue(store.keys.containsKey("s-$sessionKeyIdBase64"))
+            val keyData = store.keys["s-$sessionKeyIdBase64"]!!
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
                 keyData.privateKeyDer.asList()
@@ -135,7 +136,7 @@ class PrivateKeyStoreTest {
                 sessionKeyGeneration.sessionKey.keyId
             )
 
-            val keyData = store.keys["s-$sessionKeyIdHex"]!!
+            val keyData = store.keys["s-$sessionKeyIdBase64"]!!
             assertNull(keyData.peerPrivateAddress)
         }
 
@@ -149,7 +150,7 @@ class PrivateKeyStoreTest {
                 peerPrivateAddress
             )
 
-            val keyData = store.keys["s-$sessionKeyIdHex"]!!
+            val keyData = store.keys["s-$sessionKeyIdBase64"]!!
             assertEquals(peerPrivateAddress, keyData.peerPrivateAddress)
         }
 

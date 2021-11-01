@@ -2,12 +2,10 @@ package tech.relaycorp.relaynet.keystores
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import org.bouncycastle.asn1.ASN1Integer
 import tech.relaycorp.relaynet.SessionKey
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.math.BigInteger
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -31,7 +29,7 @@ class SessionPublicKeyStoreTest {
 
             assertTrue(store.keys.containsKey(peerPrivateAddress))
             val keyData = store.keys[peerPrivateAddress]!!
-            assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
+            assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime, keyData.creationTime)
         }
@@ -45,7 +43,7 @@ class SessionPublicKeyStoreTest {
             store.save(sessionKey, peerPrivateAddress, creationTime)
 
             val keyData = store.keys[peerPrivateAddress]!!
-            assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
+            assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime, keyData.creationTime)
         }
@@ -59,7 +57,7 @@ class SessionPublicKeyStoreTest {
             store.save(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
 
             val keyData = store.keys[peerPrivateAddress]!!
-            assertEquals(sessionKey.keyId, deserializeBigInteger(keyData.keyIdDer))
+            assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime, keyData.creationTime)
         }
@@ -127,7 +125,4 @@ class SessionPublicKeyStoreTest {
             assertEquals(exception.cause, backendException)
         }
     }
-
-    fun deserializeBigInteger(serialization: ByteArray): BigInteger =
-        ASN1Integer.getInstance(serialization).value
 }
