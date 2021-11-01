@@ -4,13 +4,9 @@ package tech.relaycorp.relaynet
 
 import tech.relaycorp.relaynet.wrappers.privateAddress
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.security.PrivateKey
 import java.security.PublicKey
-import java.time.ZoneId
 import java.time.ZonedDateTime
-
-private const val MAX_DH_CERT_LENGTH_DAYS: Long = 60
 
 /**
  * Issue Relaynet PKI certificate to a private or public gateway.
@@ -97,34 +93,3 @@ fun issueDeliveryAuthorization(
     0,
     validityStartDate
 )
-
-/**
- * Issue an initial (EC)DH certificate to initiate a channel session.
- *
- * The subject must be the node initiating the session and the issue must be the recipient of the
- * initial message.
- */
-fun issueInitialDHKeyCertificate(
-    subjectPublicKey: PublicKey,
-    issuerPrivateKey: PrivateKey,
-    issuerCertificate: Certificate,
-    validityEndDate: ZonedDateTime,
-    validityStartDate: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
-): Certificate {
-    val maxEndDate = validityStartDate.plusDays(MAX_DH_CERT_LENGTH_DAYS)
-    if (maxEndDate < validityEndDate) {
-        throw CertificateException(
-            "DH key may not be valid for more than $MAX_DH_CERT_LENGTH_DAYS days"
-        )
-    }
-    return Certificate.issue(
-        issuerCertificate.commonName,
-        subjectPublicKey,
-        issuerPrivateKey,
-        validityEndDate,
-        issuerCertificate,
-        false,
-        0,
-        validityStartDate
-    )
-}
