@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.wrappers.cms
 
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
+import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSet
 import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.cms.Attribute
@@ -43,6 +44,7 @@ import tech.relaycorp.relaynet.issueInitialDHKeyCertificate
 import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import java.util.Hashtable
 import javax.crypto.KeyGenerator
 import kotlin.test.assertEquals
@@ -55,7 +57,7 @@ private val PLAINTEXT = "hello".toByteArray()
 private val ORIGINATOR_KEY_ID_OID = ASN1ObjectIdentifier("0.4.0.127.0.17.0.1.0")
 
 private val SESSION_SENDER_KEY_PAIR = generateECDHKeyPair()
-private val SESSION_SENDER_KEY_ID = 42.toBigInteger()
+private val SESSION_SENDER_KEY_ID = generateRandomOctets(8)
 
 private val SESSION_RECIPIENT_KEY_PAIR = generateECDHKeyPair()
 private val SESSION_RECIPIENT_CERTIFICATE = issueInitialDHKeyCertificate(
@@ -685,8 +687,9 @@ class SessionEnvelopedDataTest {
 
                 val keyIdAttribute = unprotectedAttrs.get(ORIGINATOR_KEY_ID_OID)
                 assertEquals(1, keyIdAttribute.attrValues.size())
-                val keyIdValue = keyIdAttribute.attrValues.getObjectAt(0) as ASN1Integer
-                assertEquals(SESSION_SENDER_KEY_ID, keyIdValue.value)
+                val keyIdASN1 = keyIdAttribute.attrValues.getObjectAt(0)
+                assertTrue(keyIdASN1 is DEROctetString)
+                assertEquals(SESSION_SENDER_KEY_ID.asList(), keyIdASN1.octets.asList())
             }
         }
     }
@@ -776,7 +779,7 @@ class SessionEnvelopedDataTest {
 
             val originatorKeyId = envelopedData.getOriginatorKey()
 
-            assertEquals(SESSION_SENDER_KEY_ID, originatorKeyId.keyId)
+            assertEquals(SESSION_SENDER_KEY_ID.asList(), originatorKeyId.keyId.asList())
         }
 
         @Test
@@ -886,7 +889,7 @@ class SessionEnvelopedDataTest {
                 }
 
                 @Test
-                fun `Call should fail if attribute for originator key id is not INTEGER`() {
+                fun `Call should fail if attribute for originator key id is not OCTET STRING`() {
                     val unprotectedAttrs = AttributeHashtable()
                     unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
                         OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
@@ -899,7 +902,7 @@ class SessionEnvelopedDataTest {
                     }
 
                     assertEquals(
-                        "Originator key id is not an INTEGER",
+                        "Originator key id is not an OCTET STRING",
                         exception.message
                     )
                 }

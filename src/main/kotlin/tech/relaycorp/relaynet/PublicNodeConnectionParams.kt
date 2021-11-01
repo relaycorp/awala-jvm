@@ -77,10 +77,9 @@ class PublicNodeConnectionParams(
                 )
             }
 
-            val sessionKeyId = ASN1Integer.getInstance(
+            val sessionKeyId = ASN1Utils.getOctetString(
                 sessionKeySequence.getObjectAt(0) as ASN1TaggedObject,
-                false
-            ).value
+            ).octets
 
             val sessionPublicKeyASN1 =
                 ASN1Utils.getOctetString(sessionKeySequence.getObjectAt(1) as ASN1TaggedObject)

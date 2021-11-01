@@ -2,17 +2,15 @@ package tech.relaycorp.relaynet
 
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey
-import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class SessionKeyTest {
-    @RepeatedTest(8) // Because the bitLength of the value is variable
-    fun `keyId should be randomly generated, 64-bit BigInteger`() {
+    @Test
+    fun `keyId should be randomly generated, 64-bit ByteArray`() {
         val (sessionKey) = SessionKey.generate()
 
-        assertTrue(sessionKey.keyId.bitLength() in 48..64)
+        assertEquals(8, sessionKey.keyId.size)
     }
 
     @Test
