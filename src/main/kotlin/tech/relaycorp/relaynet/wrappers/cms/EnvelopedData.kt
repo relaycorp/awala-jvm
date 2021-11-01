@@ -34,7 +34,6 @@ import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.KeyPair
 import java.security.PrivateKey
-import java.security.PublicKey
 import java.security.interfaces.ECKey
 import java.security.spec.MGF1ParameterSpec
 import java.util.Hashtable
@@ -191,62 +190,23 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
 
         fun encrypt(
             plaintext: ByteArray,
-            recipientCertificate: Certificate,
+            recipientKey: SessionKey,
             originatorKeyId: ByteArray,
             originatorKeyPair: KeyPair,
             symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
             hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
-        ): SessionEnvelopedData {
-            val recipientX509Certificate = JcaX509CertificateConverter()
-                .getCertificate(recipientCertificate.certificateHolder)
-            return encrypt(
-                plaintext,
-                originatorKeyId,
-                originatorKeyPair,
-                symmetricEncryptionAlgorithm,
-                hashingAlgorithm
-            ) { addRecipient(recipientX509Certificate) }
-        }
-
-        fun encrypt(
-            plaintext: ByteArray,
-            recipientKeyId: ByteArray,
-            recipientKey: PublicKey,
-            originatorKeyId: ByteArray,
-            originatorKeyPair: KeyPair,
-            symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
-            hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
-        ): SessionEnvelopedData {
-            return encrypt(
-                plaintext,
-                originatorKeyId,
-                originatorKeyPair,
-                symmetricEncryptionAlgorithm,
-                hashingAlgorithm
-            ) { addRecipient(recipientKeyId, recipientKey) }
-        }
-
-        private fun encrypt(
-            plaintext: ByteArray,
-            originatorKeyId: ByteArray,
-            originatorKeyPair: KeyPair,
-            symmetricEncryptionAlgorithm: SymmetricEncryption,
-            hashingAlgorithm: HashingAlgorithm,
-            recipientInfoAppender: JceKeyAgreeRecipientInfoGenerator.() -> Unit
         ): SessionEnvelopedData {
             val recipientInfoGenerator = makeRecipientInfoGenerator(
                 originatorKeyPair,
                 symmetricEncryptionAlgorithm,
                 hashingAlgorithm
             )
-            recipientInfoAppender(recipientInfoGenerator)
-
+            recipientInfoGenerator.addRecipient(recipientKey.keyId, recipientKey.publicKey)
             val unprotectedAttrs = Hashtable<ASN1ObjectIdentifier, Attribute>()
             unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
                 OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
                 DERSet(DEROctetString(originatorKeyId))
             )
-
             val bcEnvelopedData = bcEncrypt(
                 plaintext,
                 symmetricEncryptionAlgorithm,
