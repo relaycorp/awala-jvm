@@ -16,7 +16,7 @@ plugins {
 
     id("org.jetbrains.dokka") version "1.5.31"
 
-    id("com.diffplug.spotless") version "5.17.0"
+    id("com.diffplug.spotless") version "5.17.1"
     jacoco
 
     signing
