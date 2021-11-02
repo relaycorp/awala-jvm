@@ -199,11 +199,7 @@ class PublicNodeConnectionParamsTest {
                 identityKey.encoded.asList(),
                 paramsDeserialized.identityKey.encoded.asList()
             )
-            assertEquals(sessionKey.keyId.asList(), paramsDeserialized.sessionKey.keyId.asList())
-            assertEquals(
-                sessionKey.publicKey.encoded.asList(),
-                paramsDeserialized.sessionKey.publicKey.encoded.asList()
-            )
+            assertEquals(sessionKey, paramsDeserialized.sessionKey)
         }
     }
 }

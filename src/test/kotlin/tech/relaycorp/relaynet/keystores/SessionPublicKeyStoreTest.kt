@@ -99,11 +99,7 @@ class SessionPublicKeyStoreTest {
 
             val fetchedSessionKey = store.retrieve(peerPrivateAddress)
 
-            assertEquals(fetchedSessionKey!!.keyId, sessionKey.keyId)
-            assertEquals(
-                fetchedSessionKey.publicKey.encoded.asList(),
-                sessionKey.publicKey.encoded.asList()
-            )
+            assertEquals(sessionKey, fetchedSessionKey)
         }
 
         @Test
