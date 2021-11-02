@@ -21,7 +21,7 @@ private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
 internal typealias RAMFMessageConstructor<M> =
-        (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
+    (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
 
 private val PRIVATE_ADDRESS_REGEX = "^0[a-f0-9]+$".toRegex()
 
