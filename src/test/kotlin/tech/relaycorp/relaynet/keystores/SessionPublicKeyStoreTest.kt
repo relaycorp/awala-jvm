@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SessionPublicKeyStoreTest {

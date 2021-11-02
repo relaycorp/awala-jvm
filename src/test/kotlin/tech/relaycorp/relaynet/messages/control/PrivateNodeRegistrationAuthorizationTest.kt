@@ -11,7 +11,7 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.BER_DATETIME_FORMATTER
+import tech.relaycorp.relaynet.utils.BER_DATETIME_FORMATTER
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.crypto.RSASigning
 import tech.relaycorp.relaynet.messages.InvalidMessageException

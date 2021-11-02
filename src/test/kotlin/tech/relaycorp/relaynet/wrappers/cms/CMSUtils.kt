@@ -5,7 +5,7 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
 import org.bouncycastle.cms.CMSSignedData
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.SymmetricEncryption
-import tech.relaycorp.relaynet.parseDer
+import tech.relaycorp.relaynet.utils.parseDer
 
 fun parseCmsSignedData(serialization: ByteArray): CMSSignedData {
     val contentInfo = ContentInfo.getInstance(

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.ECDHCurve
-import tech.relaycorp.relaynet.sha256Hex
+import tech.relaycorp.relaynet.utils.sha256Hex
 
 class KeysTest {
     @Nested

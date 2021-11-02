@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet
+package tech.relaycorp.relaynet.utils
 
 import java.time.format.DateTimeFormatter
 import org.bouncycastle.asn1.ASN1InputStream

@@ -1,4 +1,7 @@
-package tech.relaycorp.relaynet.keystores
+package tech.relaycorp.relaynet.utils
+
+import tech.relaycorp.relaynet.keystores.SessionPublicKeyData
+import tech.relaycorp.relaynet.keystores.SessionPublicKeyStore
 
 class MockSessionPublicKeyStore(
     private val savingException: Throwable? = null,

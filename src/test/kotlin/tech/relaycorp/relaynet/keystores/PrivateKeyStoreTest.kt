@@ -9,9 +9,10 @@ import org.bouncycastle.util.encoders.Base64
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.KeyPairSet
-import tech.relaycorp.relaynet.PDACertPath
+import tech.relaycorp.relaynet.utils.KeyPairSet
+import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 
 @ExperimentalCoroutinesApi
 class PrivateKeyStoreTest {

@@ -7,8 +7,8 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.CERTIFICATE
-import tech.relaycorp.relaynet.KEY_PAIR
+import tech.relaycorp.relaynet.utils.CERTIFICATE
+import tech.relaycorp.relaynet.utils.KEY_PAIR
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
 import tech.relaycorp.relaynet.ramf.RAMFException

@@ -34,9 +34,9 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.BC_PROVIDER
-import tech.relaycorp.relaynet.issueStubCertificate
-import tech.relaycorp.relaynet.sha256
-import tech.relaycorp.relaynet.sha256Hex
+import tech.relaycorp.relaynet.utils.issueStubCertificate
+import tech.relaycorp.relaynet.utils.sha256
+import tech.relaycorp.relaynet.utils.sha256Hex
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
 

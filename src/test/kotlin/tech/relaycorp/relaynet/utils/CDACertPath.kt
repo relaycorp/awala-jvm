@@ -1,6 +1,8 @@
-package tech.relaycorp.relaynet
+package tech.relaycorp.relaynet.utils
 
 import java.time.ZonedDateTime
+import tech.relaycorp.relaynet.issueDeliveryAuthorization
+import tech.relaycorp.relaynet.issueGatewayCertificate
 
 /**
  * Full certification path from a private gateway to a public one.
