@@ -40,9 +40,9 @@ abstract class PrivateKeyStore {
     }
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveSessionKey(keyId: ByteArray, peerPrivatAddress: String): PrivateKey? {
+    suspend fun retrieveSessionKey(keyId: ByteArray, peerPrivateAddress: String): PrivateKey? {
         val keyData = retrieveKeyDataOrWrapError(formatSessionKeyId(keyId)) ?: return null
-        if (keyData.peerPrivateAddress != null && keyData.peerPrivateAddress != peerPrivatAddress) {
+        if (keyData.peerPrivateAddress != null && keyData.peerPrivateAddress != peerPrivateAddress) {
             return null
         }
         return keyData.privateKeyDer.deserializeECKeyPair().private

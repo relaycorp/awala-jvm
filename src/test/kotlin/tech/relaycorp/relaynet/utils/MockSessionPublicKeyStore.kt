@@ -9,6 +9,10 @@ class MockSessionPublicKeyStore(
 ) : SessionPublicKeyStore() {
     val keys: MutableMap<String, SessionPublicKeyData> = mutableMapOf()
 
+    fun clear() {
+        keys.clear()
+    }
+
     override suspend fun saveKeyData(keyData: SessionPublicKeyData, peerPrivateAddress: String) {
         if (savingException != null) {
             throw savingException

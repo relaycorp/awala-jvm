@@ -9,6 +9,10 @@ class MockPrivateKeyStore(
 ) : PrivateKeyStore() {
     val keys: MutableMap<String, PrivateKeyData> = mutableMapOf()
 
+    fun clear() {
+        keys.clear()
+    }
+
     override suspend fun saveKeyData(keyData: PrivateKeyData, keyId: String) {
         if (savingException != null) {
             throw savingException
