@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.utils.CERTIFICATE
 import tech.relaycorp.relaynet.utils.KEY_PAIR
+import tech.relaycorp.relaynet.utils.StubEncryptedPayload
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.PAYLOAD_SYMMETRIC_CIPHER_OIDS
 

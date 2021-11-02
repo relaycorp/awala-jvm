@@ -4,9 +4,12 @@ import tech.relaycorp.relaynet.ECDHCurve
 import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.SessionKeyGeneration
 import tech.relaycorp.relaynet.keystores.PrivateKeyStore
+import tech.relaycorp.relaynet.keystores.SessionPublicKeyStore
+import tech.relaycorp.relaynet.messages.payloads.Payload
 
-abstract class NodeManager(
+abstract class NodeManager<P : Payload>(
     private val privateKeyStore: PrivateKeyStore,
+    private val sessionPublicKeyStore: SessionPublicKeyStore,
     private val cryptoOptions: NodeCryptoOptions?,
 ) {
     suspend fun generateSessionKey(peerPrivateAddress: String? = null): SessionKeyGeneration {
@@ -17,5 +20,9 @@ abstract class NodeManager(
             peerPrivateAddress
         )
         return keyGeneration
+    }
+
+    suspend fun wrapMessagePayload(payload: P, peerPrivateAddress: String): ByteArray {
+        TODO()
     }
 }

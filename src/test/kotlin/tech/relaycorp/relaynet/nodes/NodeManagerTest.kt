@@ -9,6 +9,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -37,7 +38,7 @@ class NodeManagerTest {
     inner class GenerateSessionKey {
         @Test
         fun `Key should not be bound to any peer by default`() = runBlockingTest {
-            val manager = StubNodeManager(privateKeyStore)
+            val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val (sessionKey, privateKey) = manager.generateSessionKey()
 
@@ -54,7 +55,7 @@ class NodeManagerTest {
 
         @Test
         fun `Key should be bound to a peer if explicitly set`() = runBlockingTest {
-            val manager = StubNodeManager(privateKeyStore)
+            val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val (sessionKey, privateKey) = manager.generateSessionKey(peerPrivateAddress)
 
@@ -79,7 +80,7 @@ class NodeManagerTest {
 
         @Test
         fun `Key should use P-256 by default`() = runBlockingTest {
-            val manager = StubNodeManager(privateKeyStore)
+            val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val (sessionKey) = manager.generateSessionKey(peerPrivateAddress)
 
@@ -92,7 +93,7 @@ class NodeManagerTest {
         @ParameterizedTest(name = "Key should use {0} if explicitly requested")
         @EnumSource
         fun explicitCurveName(curve: ECDHCurve) = runBlockingTest {
-            val manager = StubNodeManager(privateKeyStore, NodeCryptoOptions(curve))
+            val manager = StubNodeManager(privateKeyStore, publicKeyStore, NodeCryptoOptions(curve))
 
             val (sessionKey) = manager.generateSessionKey(peerPrivateAddress)
 
@@ -101,6 +102,34 @@ class NodeManagerTest {
                 curveName,
                 ((sessionKey.publicKey as BCECPublicKey).params as ECNamedCurveSpec).name
             )
+        }
+    }
+
+    @Nested
+    inner class WrapMessagePayload {
+        @Test
+        @Disabled
+        fun `There should be a session key for the recipient`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Payload should be encrypted with the session key of the recipient`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Passing the payload as an ArrayBuffer should be supported`() {
+        }
+
+        @Test
+        @Disabled
+        fun `The new ephemeral session key of the sender should be stored`() {
+        }
+
+        @Test
+        @Disabled
+        fun `Encryption options should be honoured if set`() {
         }
     }
 }

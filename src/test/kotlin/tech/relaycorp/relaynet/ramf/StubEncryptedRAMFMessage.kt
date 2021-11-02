@@ -3,7 +3,7 @@ package tech.relaycorp.relaynet.ramf
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.time.ZonedDateTime
-import tech.relaycorp.relaynet.messages.payloads.StubEncryptedPayload
+import tech.relaycorp.relaynet.utils.StubEncryptedPayload
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 internal val STUB_SERIALIZER = RAMFSerializer(32, 0)
