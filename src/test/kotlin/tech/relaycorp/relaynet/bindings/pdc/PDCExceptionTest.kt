@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import kotlin.test.assertEquals
 
 /**
  * Pointless tests for exceptions just to maintain 100% code coverage. These exceptions aren't

@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
-import org.junit.jupiter.api.Test
-import tech.relaycorp.relaynet.PDACertPath
-import tech.relaycorp.relaynet.KeyPairSet
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
+import tech.relaycorp.relaynet.KeyPairSet
+import tech.relaycorp.relaynet.PDACertPath
 
 class SignerTest {
     private val plaintext = "The plaintext".toByteArray()

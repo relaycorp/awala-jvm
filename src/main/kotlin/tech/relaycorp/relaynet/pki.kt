@@ -2,11 +2,11 @@
 
 package tech.relaycorp.relaynet
 
-import tech.relaycorp.relaynet.wrappers.privateAddress
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.time.ZonedDateTime
+import tech.relaycorp.relaynet.wrappers.privateAddress
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 /**
  * Issue Relaynet PKI certificate to a private or public gateway.

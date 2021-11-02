@@ -1,5 +1,21 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
+import java.io.IOException
+import java.security.InvalidAlgorithmParameterException
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.security.cert.CertPathBuilder
+import java.security.cert.CertPathBuilderException
+import java.security.cert.CertStore
+import java.security.cert.CollectionCertStoreParameters
+import java.security.cert.PKIXBuilderParameters
+import java.security.cert.PKIXCertPathBuilderResult
+import java.security.cert.PKIXParameters
+import java.security.cert.TrustAnchor
+import java.security.cert.X509CertSelector
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.Date
 import org.bouncycastle.asn1.DERBMPString
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
@@ -17,22 +33,6 @@ import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.getSHA256Digest
 import tech.relaycorp.relaynet.getSHA256DigestHex
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
-import java.io.IOException
-import java.security.InvalidAlgorithmParameterException
-import java.security.PrivateKey
-import java.security.PublicKey
-import java.security.cert.CertPathBuilder
-import java.security.cert.CertPathBuilderException
-import java.security.cert.CertStore
-import java.security.cert.CollectionCertStoreParameters
-import java.security.cert.PKIXBuilderParameters
-import java.security.cert.PKIXCertPathBuilderResult
-import java.security.cert.PKIXParameters
-import java.security.cert.TrustAnchor
-import java.security.cert.X509CertSelector
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.util.Date
 
 /**
  * Relaynet PKI Certificate.

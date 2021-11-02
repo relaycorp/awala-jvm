@@ -1,17 +1,17 @@
 package tech.relaycorp.relaynet.keystores
 
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.bouncycastle.util.encoders.Base64
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.SessionKey
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
-import org.bouncycastle.util.encoders.Base64
 
 @ExperimentalCoroutinesApi
 class PrivateKeyStoreTest {

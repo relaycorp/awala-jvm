@@ -1,5 +1,11 @@
 package tech.relaycorp.relaynet.wrappers.cms
 
+import java.util.Hashtable
+import javax.crypto.KeyGenerator
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DEROctetString
@@ -45,12 +51,6 @@ import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomOctets
-import java.util.Hashtable
-import javax.crypto.KeyGenerator
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 private val PLAINTEXT = "hello".toByteArray()
 

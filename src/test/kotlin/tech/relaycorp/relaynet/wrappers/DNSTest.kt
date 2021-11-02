@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet.wrappers
 
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
 class DNSTest {
     @Nested

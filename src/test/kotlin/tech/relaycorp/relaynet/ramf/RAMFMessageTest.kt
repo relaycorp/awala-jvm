@@ -1,18 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.PDACertPath
-import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.KeyPairSet
-import tech.relaycorp.relaynet.assertDateIsAlmostNow
-import tech.relaycorp.relaynet.issueStubCertificate
-import tech.relaycorp.relaynet.messages.InvalidMessageException
-import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
-import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
-import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -21,6 +8,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.KeyPairSet
+import tech.relaycorp.relaynet.PDACertPath
+import tech.relaycorp.relaynet.assertDateIsAlmostNow
+import tech.relaycorp.relaynet.issueStubCertificate
+import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
+import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class RAMFMessageTest {
     private val recipientAddress = PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress

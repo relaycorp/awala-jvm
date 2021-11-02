@@ -1,10 +1,10 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
+import java.io.Closeable
+import java.security.PublicKey
 import kotlinx.coroutines.flow.Flow
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistration
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistrationRequest
-import java.io.Closeable
-import java.security.PublicKey
 
 /**
  * Interface for all Parcel Delivery Connection clients.

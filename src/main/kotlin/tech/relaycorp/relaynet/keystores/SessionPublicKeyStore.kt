@@ -1,8 +1,8 @@
 package tech.relaycorp.relaynet.keystores
 
+import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
-import java.time.ZonedDateTime
 
 abstract class SessionPublicKeyStore {
     @Throws(KeyStoreBackendException::class)

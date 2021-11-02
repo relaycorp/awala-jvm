@@ -1,15 +1,15 @@
 package tech.relaycorp.relaynet.keystores
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
-import tech.relaycorp.relaynet.SessionKey
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.SessionKey
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SessionPublicKeyStoreTest {

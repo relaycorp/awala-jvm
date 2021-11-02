@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.messages.control
 
+import java.security.PrivateKey
+import java.security.PublicKey
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.OIDs
@@ -9,8 +11,6 @@ import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.deserializeRSAPublicKey
-import java.security.PrivateKey
-import java.security.PublicKey
 
 /**
  * Private Node Registration Request (PNRR).

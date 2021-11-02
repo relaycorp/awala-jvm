@@ -1,5 +1,21 @@
 package tech.relaycorp.relaynet.wrappers.x509
 
+import java.io.IOException
+import java.math.BigInteger
+import java.security.InvalidAlgorithmParameterException
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.security.cert.CertPathBuilderException
+import java.time.LocalDateTime
+import java.time.ZoneOffset.UTC
+import java.time.ZonedDateTime
+import java.util.Date
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DERBMPString
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers
@@ -23,22 +39,6 @@ import tech.relaycorp.relaynet.sha256
 import tech.relaycorp.relaynet.sha256Hex
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomBigInteger
-import java.io.IOException
-import java.math.BigInteger
-import java.security.InvalidAlgorithmParameterException
-import java.security.PrivateKey
-import java.security.PublicKey
-import java.security.cert.CertPathBuilderException
-import java.time.LocalDateTime
-import java.time.ZoneOffset.UTC
-import java.time.ZonedDateTime
-import java.util.Date
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
 
 class CertificateTest {
     private val stubSubjectCommonName = "The CommonName"

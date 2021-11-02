@@ -7,12 +7,6 @@ import com.beanit.jasn1.ber.types.BerDateTime
 import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.string.BerVisibleString
-import org.bouncycastle.asn1.ASN1Integer
-import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.crypto.SignedData
-import tech.relaycorp.relaynet.crypto.SignedDataException
-import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
-import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -22,6 +16,12 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
+import org.bouncycastle.asn1.ASN1Integer
+import tech.relaycorp.relaynet.HashingAlgorithm
+import tech.relaycorp.relaynet.crypto.SignedData
+import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 private const val OCTETS_IN_9_MIB = 9437184
 

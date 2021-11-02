@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet
 
+import kotlin.test.assertEquals
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class SessionKeyTest {
     @Test

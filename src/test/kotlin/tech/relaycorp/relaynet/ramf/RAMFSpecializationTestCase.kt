@@ -1,13 +1,13 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.time.ZonedDateTime
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.time.ZonedDateTime
-import kotlin.test.assertEquals
 
 typealias MinimalRAMFMessageConstructor<M> = (String, ByteArray, Certificate) -> M
 

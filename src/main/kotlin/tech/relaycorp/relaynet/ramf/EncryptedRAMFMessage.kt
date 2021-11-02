@@ -1,12 +1,12 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.security.PrivateKey
+import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.messages.payloads.EncryptedPayload
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedDataException
 import tech.relaycorp.relaynet.wrappers.cms.SessionlessEnvelopedData
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.security.PrivateKey
-import java.time.ZonedDateTime
 
 abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
     serializer: RAMFSerializer,

@@ -1,10 +1,10 @@
 package tech.relaycorp.relaynet.messages.payloads
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.ramf.RAMFException
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 internal class EmptyPayloadTest {
     @Nested

@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.messages.control
 
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import org.junit.jupiter.api.Nested
@@ -8,8 +10,6 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class HandshakeResponseTest {
     val nonceSignature = "the nonce signature".toByteArray()

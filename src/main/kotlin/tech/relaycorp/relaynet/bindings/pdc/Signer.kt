@@ -1,7 +1,7 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.PrivateKey
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 /**
  * Object to produce detached signatures given a key pair.

@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
+import java.security.PublicKey
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -8,8 +10,6 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistration
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistrationRequest
-import java.security.PublicKey
-import kotlin.test.assertTrue
 
 class MockPDCClient : PDCClient {
     var parcelsCollected = false

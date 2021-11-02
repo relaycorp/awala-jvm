@@ -1,13 +1,13 @@
 package tech.relaycorp.relaynet.messages
 
+import java.io.InputStream
+import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.messages.payloads.EmptyPayload
 import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
 import tech.relaycorp.relaynet.ramf.RAMFSerializer
 import tech.relaycorp.relaynet.ramf.UnencryptedRAMFMessage
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.io.InputStream
-import java.time.ZonedDateTime
 
 private val SERIALIZER = RAMFSerializer(0x44, 0x00)
 
