@@ -2,11 +2,6 @@
 
 package tech.relaycorp.relaynet.wrappers
 
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
-import org.bouncycastle.jce.spec.ECPublicKeySpec
-import tech.relaycorp.relaynet.BC_PROVIDER
-import tech.relaycorp.relaynet.ECDHCurve
-import tech.relaycorp.relaynet.getSHA256DigestHex
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -18,6 +13,11 @@ import java.security.spec.InvalidKeySpecException
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAPublicKeySpec
 import java.security.spec.X509EncodedKeySpec
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
+import org.bouncycastle.jce.spec.ECPublicKeySpec
+import tech.relaycorp.relaynet.BC_PROVIDER
+import tech.relaycorp.relaynet.ECDHCurve
+import tech.relaycorp.relaynet.getSHA256DigestHex
 
 private const val DEFAULT_RSA_KEY_MODULUS = 2048
 private const val MIN_RSA_KEY_MODULUS = 2048

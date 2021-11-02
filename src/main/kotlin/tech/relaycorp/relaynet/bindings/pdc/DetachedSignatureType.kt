@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
+import java.security.PrivateKey
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.OIDs
@@ -8,7 +9,6 @@ import tech.relaycorp.relaynet.crypto.SignedDataException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
-import java.security.PrivateKey
 
 /**
  * Utility to sign and verify CMS SignedData values where the plaintext is not encapsulated (to

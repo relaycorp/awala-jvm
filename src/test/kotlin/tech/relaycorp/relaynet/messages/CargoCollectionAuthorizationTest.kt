@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet.messages
 
+import kotlin.test.Test
 import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.ramf.RAMFSpecializationTestCase
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import kotlin.test.Test
 
 internal class CargoCollectionAuthorizationTest :
     RAMFSpecializationTestCase<CargoCollectionAuthorization>(

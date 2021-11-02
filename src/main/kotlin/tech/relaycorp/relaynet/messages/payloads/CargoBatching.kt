@@ -2,10 +2,10 @@
 
 package tech.relaycorp.relaynet.messages.payloads
 
-import tech.relaycorp.relaynet.messages.InvalidMessageException
-import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
 import java.time.ZonedDateTime
 import java.util.Collections
+import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
 
 private const val MAX_BATCH_LENGTH =
     EncryptedRAMFMessage.MAX_PAYLOAD_PLAINTEXT_LENGTH - CargoMessage.DER_TL_OVERHEAD_OCTETS

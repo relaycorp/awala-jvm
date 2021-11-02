@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.messages.control
 
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.DERNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -7,8 +9,6 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ParcelDeliveryTest {
     val deliveryId = "the id"

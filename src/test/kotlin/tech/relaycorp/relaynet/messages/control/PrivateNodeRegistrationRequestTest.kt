@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.messages.control
 
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Nested
@@ -12,8 +14,6 @@ import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class PrivateNodeRegistrationRequestTest {
     private val pnraSerialized = "PNRA".toByteArray()

@@ -1,20 +1,20 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
-import org.bouncycastle.asn1.DEROctetString
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.PDACertPath
-import tech.relaycorp.relaynet.KeyPairSet
-import tech.relaycorp.relaynet.OIDs
-import tech.relaycorp.relaynet.crypto.SignedData
-import tech.relaycorp.relaynet.crypto.SignedDataException
-import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.bouncycastle.asn1.DEROctetString
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.KeyPairSet
+import tech.relaycorp.relaynet.OIDs
+import tech.relaycorp.relaynet.PDACertPath
+import tech.relaycorp.relaynet.crypto.SignedData
+import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class DetachedSignatureTypeTest {
     val signatureType = DetachedSignatureType.NONCE

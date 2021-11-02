@@ -1,13 +1,13 @@
 package tech.relaycorp.relaynet.messages.payloads
 
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.KEY_PAIR
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class CargoMessageTest {
     @Nested

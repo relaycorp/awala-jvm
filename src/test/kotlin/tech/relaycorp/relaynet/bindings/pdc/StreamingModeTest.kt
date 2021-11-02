@@ -1,7 +1,7 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
-import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 
 class StreamingModeTest {
     @Test

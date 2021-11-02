@@ -1,5 +1,12 @@
 package tech.relaycorp.relaynet.wrappers.cms
 
+import java.security.KeyPair
+import java.security.PrivateKey
+import java.security.interfaces.ECKey
+import java.security.spec.MGF1ParameterSpec
+import java.util.Hashtable
+import javax.crypto.spec.OAEPParameterSpec
+import javax.crypto.spec.PSource
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSet
@@ -32,13 +39,6 @@ import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.security.KeyPair
-import java.security.PrivateKey
-import java.security.interfaces.ECKey
-import java.security.spec.MGF1ParameterSpec
-import java.util.Hashtable
-import javax.crypto.spec.OAEPParameterSpec
-import javax.crypto.spec.PSource
 
 // CBC mode is temporary. See: https://github.com/relaycorp/relayverse/issues/16
 private val cmsContentEncryptionAlgorithm = mapOf(

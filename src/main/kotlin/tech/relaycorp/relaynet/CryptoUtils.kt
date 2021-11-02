@@ -2,8 +2,8 @@
 
 package tech.relaycorp.relaynet
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.MessageDigest
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 internal fun getSHA256Digest(input: ByteArray): ByteArray {
     val digest = MessageDigest.getInstance("SHA-256")

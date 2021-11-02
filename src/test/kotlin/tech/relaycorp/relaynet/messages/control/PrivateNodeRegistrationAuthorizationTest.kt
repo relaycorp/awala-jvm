@@ -1,5 +1,9 @@
 package tech.relaycorp.relaynet.messages.control
 
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.DERGeneralizedTime
 import org.bouncycastle.asn1.DEROctetString
@@ -14,10 +18,6 @@ import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class PrivateNodeRegistrationAuthorizationTest {
     private val tomorrow = ZonedDateTime.now().plusDays(1)

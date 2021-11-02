@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet.crypto
 
-import tech.relaycorp.relaynet.BC_PROVIDER
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Signature
+import tech.relaycorp.relaynet.BC_PROVIDER
 
 /**
  * Plain RSA signatures are used when CMS SignedData can't be used. That is, when the signer

@@ -1,16 +1,16 @@
 package tech.relaycorp.relaynet
 
-import org.bouncycastle.asn1.x500.style.BCStyle
-import org.bouncycastle.asn1.x509.BasicConstraints
-import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
-import org.junit.jupiter.api.Nested
-import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.bouncycastle.asn1.x500.style.BCStyle
+import org.bouncycastle.asn1.x509.BasicConstraints
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
+import org.junit.jupiter.api.Nested
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class PKITest {
     val identityKeyPair = KeyPairSet.PUBLIC_GW

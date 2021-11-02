@@ -1,13 +1,5 @@
 package tech.relaycorp.relaynet.wrappers
 
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.ECDHCurve
-import tech.relaycorp.relaynet.sha256Hex
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.interfaces.ECPrivateKey
@@ -17,6 +9,14 @@ import java.security.interfaces.RSAPublicKey
 import java.security.spec.InvalidKeySpecException
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.ECDHCurve
+import tech.relaycorp.relaynet.sha256Hex
 
 class KeysTest {
     @Nested

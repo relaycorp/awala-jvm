@@ -16,7 +16,8 @@ plugins {
 
     id("org.jetbrains.dokka") version "1.5.31"
 
-    id("com.diffplug.spotless") version "5.17.1"
+    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+
     jacoco
 
     signing
@@ -189,16 +190,6 @@ tasks.publish {
     finalizedBy("closeAndReleaseSonatypeStagingRepository")
 }
 
-spotless {
-    val ktlintUserData = mapOf(
-        "max_line_length" to "100",
-        "disabled_rules" to "import-ordering"
-    )
-
-    kotlin {
-        ktlint("0.42.1").userData(ktlintUserData)
-    }
-    kotlinGradle {
-        ktlint().userData(ktlintUserData)
-    }
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    version.set("0.42.1")
 }

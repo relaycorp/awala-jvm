@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.messages.payloads
 
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
@@ -11,8 +13,6 @@ import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
 import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 internal class CargoMessageSetTest {
     @Test

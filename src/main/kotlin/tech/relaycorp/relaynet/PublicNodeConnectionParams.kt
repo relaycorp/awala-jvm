@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet
 
+import java.security.PublicKey
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
@@ -11,7 +12,6 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.deserializeRSAPublicKey
-import java.security.PublicKey
 
 class PublicNodeConnectionParams(
     val publicAddress: String,

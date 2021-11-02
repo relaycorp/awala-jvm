@@ -1,9 +1,9 @@
 package tech.relaycorp.relaynet
 
-import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
-import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import java.security.PrivateKey
 import java.security.PublicKey
+import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
+import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 
 data class SessionKeyGeneration(val sessionKey: SessionKey, val privateKey: PrivateKey)
 

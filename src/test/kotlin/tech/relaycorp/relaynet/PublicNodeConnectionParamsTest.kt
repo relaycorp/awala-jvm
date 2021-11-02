@@ -1,5 +1,8 @@
 package tech.relaycorp.relaynet
 
+import java.security.PublicKey
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
@@ -10,9 +13,6 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import java.security.PublicKey
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class PublicNodeConnectionParamsTest {
     val publicAddress = "foo.relaycorp.tech"

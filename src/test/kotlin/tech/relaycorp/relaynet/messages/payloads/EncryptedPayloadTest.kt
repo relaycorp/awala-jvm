@@ -1,5 +1,8 @@
 package tech.relaycorp.relaynet.messages.payloads
 
+import java.nio.charset.Charset
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -8,9 +11,6 @@ import tech.relaycorp.relaynet.KEY_PAIR
 import tech.relaycorp.relaynet.SymmetricEncryption
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.PAYLOAD_SYMMETRIC_CIPHER_OIDS
-import java.nio.charset.Charset
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 internal class EncryptedPayloadTest {
     @Nested

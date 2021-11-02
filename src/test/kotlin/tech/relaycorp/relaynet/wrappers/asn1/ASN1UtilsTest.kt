@@ -1,5 +1,8 @@
 package tech.relaycorp.relaynet.wrappers.asn1
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1StreamParser
@@ -12,9 +15,6 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.bouncycastle.asn1.DLSequenceParser
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 internal class ASN1UtilsTest {
     val visibleString = DERVisibleString("foo")

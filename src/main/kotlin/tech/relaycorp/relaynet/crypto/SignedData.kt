@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.crypto
 
+import java.io.IOException
+import java.security.PrivateKey
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.cms.ContentInfo
 import org.bouncycastle.cert.X509CertificateHolder
@@ -21,8 +23,6 @@ import org.bouncycastle.util.Selector
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.io.IOException
-import java.security.PrivateKey
 
 /**
  * Relaynet-specific, CMS SignedData representation.

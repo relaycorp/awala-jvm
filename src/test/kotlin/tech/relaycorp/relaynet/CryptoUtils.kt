@@ -1,11 +1,11 @@
 package tech.relaycorp.relaynet
 
-import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.time.ZonedDateTime
+import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
+import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 fun sha256(input: ByteArray): ByteArray {
     val digest = MessageDigest.getInstance("SHA-256")

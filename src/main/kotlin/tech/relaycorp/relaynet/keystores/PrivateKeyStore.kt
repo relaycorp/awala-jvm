@@ -1,10 +1,10 @@
 package tech.relaycorp.relaynet.keystores
 
+import java.security.PrivateKey
+import org.bouncycastle.util.encoders.Base64
 import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import java.security.PrivateKey
-import org.bouncycastle.util.encoders.Base64
 
 abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)

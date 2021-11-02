@@ -9,6 +9,14 @@ import com.beanit.jasn1.ber.types.BerInteger
 import com.beanit.jasn1.ber.types.BerOctetString
 import com.beanit.jasn1.ber.types.BerType
 import com.beanit.jasn1.ber.types.string.BerVisibleString
+import java.io.ByteArrayOutputStream
+import java.nio.charset.Charset
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERGeneralizedTime
@@ -24,14 +32,6 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import java.io.ByteArrayOutputStream
-import java.nio.charset.Charset
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 // Pick a timezone that's never equivalent to UTC (unlike "Europe/London")
 val NON_UTC_ZONE_ID: ZoneId = ZoneId.of("America/Caracas")

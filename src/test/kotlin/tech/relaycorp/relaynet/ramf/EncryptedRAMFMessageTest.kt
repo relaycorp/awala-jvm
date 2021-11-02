@@ -1,12 +1,12 @@
 package tech.relaycorp.relaynet.ramf
 
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.CERTIFICATE
 import tech.relaycorp.relaynet.issueStubCertificate
 import tech.relaycorp.relaynet.messages.payloads.StubEncryptedPayload
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import kotlin.test.assertEquals
 
 internal class EncryptedRAMFMessageTest {
     private val recipientAddress = "04334"
