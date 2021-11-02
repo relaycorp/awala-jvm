@@ -2,10 +2,10 @@ package tech.relaycorp.relaynet.messages
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import tech.relaycorp.relaynet.KeyPairSet
-import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.messages.payloads.ServiceMessage
 import tech.relaycorp.relaynet.ramf.RAMFSpecializationTestCase
+import tech.relaycorp.relaynet.utils.KeyPairSet
+import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(

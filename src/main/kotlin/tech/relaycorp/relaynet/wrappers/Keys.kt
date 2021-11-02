@@ -22,7 +22,7 @@ import tech.relaycorp.relaynet.getSHA256DigestHex
 private const val DEFAULT_RSA_KEY_MODULUS = 2048
 private const val MIN_RSA_KEY_MODULUS = 2048
 
-private val ecdhCurveMap = mapOf(
+internal val ECDH_CURVE_MAP = mapOf(
     ECDHCurve.P256 to "P-256",
     ECDHCurve.P384 to "P-384",
     ECDHCurve.P521 to "P-521"
@@ -100,7 +100,7 @@ private fun ByteArray.deserializePublicKey(algorithm: String): PublicKey {
  */
 fun generateECDHKeyPair(curve: ECDHCurve = ECDHCurve.P256): KeyPair {
     val keyGen = KeyPairGenerator.getInstance("EC", BC_PROVIDER)
-    val ecSpec = ECGenParameterSpec(ecdhCurveMap[curve])
+    val ecSpec = ECGenParameterSpec(ECDH_CURVE_MAP[curve])
     keyGen.initialize(ecSpec)
     return keyGen.generateKeyPair()
 }

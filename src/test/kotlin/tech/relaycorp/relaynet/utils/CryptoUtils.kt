@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet
+package tech.relaycorp.relaynet.utils
 
 import java.security.MessageDigest
 import java.security.PrivateKey

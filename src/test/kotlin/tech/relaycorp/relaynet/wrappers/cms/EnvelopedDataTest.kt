@@ -42,12 +42,12 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.OIDs
-import tech.relaycorp.relaynet.PDACertPath
 import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.SymmetricEncryption
-import tech.relaycorp.relaynet.sha256
+import tech.relaycorp.relaynet.utils.KeyPairSet
+import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.utils.sha256
 import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomOctets

@@ -10,6 +10,7 @@ import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -198,11 +199,7 @@ class PublicNodeConnectionParamsTest {
                 identityKey.encoded.asList(),
                 paramsDeserialized.identityKey.encoded.asList()
             )
-            assertEquals(sessionKey.keyId.asList(), paramsDeserialized.sessionKey.keyId.asList())
-            assertEquals(
-                sessionKey.publicKey.encoded.asList(),
-                paramsDeserialized.sessionKey.publicKey.encoded.asList()
-            )
+            assertEquals(sessionKey, paramsDeserialized.sessionKey)
         }
     }
 }

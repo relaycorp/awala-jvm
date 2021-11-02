@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet
+package tech.relaycorp.relaynet.utils
 
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 

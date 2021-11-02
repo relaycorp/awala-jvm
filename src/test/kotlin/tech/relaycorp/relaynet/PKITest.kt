@@ -10,6 +10,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle
 import org.bouncycastle.asn1.x509.BasicConstraints
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
 import org.junit.jupiter.api.Nested
+import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class PKITest {

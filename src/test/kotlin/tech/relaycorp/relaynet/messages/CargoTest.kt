@@ -2,10 +2,10 @@ package tech.relaycorp.relaynet.messages
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import tech.relaycorp.relaynet.CDACertPath
-import tech.relaycorp.relaynet.KeyPairSet
 import tech.relaycorp.relaynet.messages.payloads.CargoMessageSet
 import tech.relaycorp.relaynet.ramf.RAMFSpecializationTestCase
+import tech.relaycorp.relaynet.utils.CDACertPath
+import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
