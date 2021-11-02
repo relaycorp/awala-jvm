@@ -7,11 +7,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.utils.KeyPairSet
-import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.ramf.RAMFException
+import tech.relaycorp.relaynet.utils.KeyPairSet
+import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 @ExperimentalCoroutinesApi

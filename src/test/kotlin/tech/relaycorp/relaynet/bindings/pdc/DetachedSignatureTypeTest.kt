@@ -8,11 +8,11 @@ import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.OIDs
-import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.utils.KeyPairSet
+import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 

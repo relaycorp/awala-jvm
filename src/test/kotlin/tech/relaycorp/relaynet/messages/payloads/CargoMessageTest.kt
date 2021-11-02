@@ -4,10 +4,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import tech.relaycorp.relaynet.utils.CERTIFICATE
-import tech.relaycorp.relaynet.utils.KEY_PAIR
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
+import tech.relaycorp.relaynet.utils.CERTIFICATE
+import tech.relaycorp.relaynet.utils.KEY_PAIR
 
 class CargoMessageTest {
     @Nested
