@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
-import tech.relaycorp.relaynet.ramf.RAMFException
+import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
 import tech.relaycorp.relaynet.utils.ID_KEY_PAIR
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -70,7 +70,7 @@ internal class CargoMessageSetTest {
     inner class Deserialize {
         @Test
         fun `Non-DER-encoded values should be refused`() {
-            val exception = assertThrows<RAMFException> {
+            val exception = assertThrows<InvalidPayloadException> {
                 CargoMessageSet.deserialize("invalid".toByteArray())
             }
 
@@ -81,7 +81,7 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `Outer value should be an ASN1 SEQUENCE`() {
-            val exception = assertThrows<RAMFException> {
+            val exception = assertThrows<InvalidPayloadException> {
                 CargoMessageSet.deserialize(DERVisibleString("invalid").encoded)
             }
 

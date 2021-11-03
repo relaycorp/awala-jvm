@@ -31,16 +31,16 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
      *
      * @throws EnvelopedDataException if the CMS EnvelopedData value is invalid or the
      *      `privateKey` is invalid.
-     * @throws RAMFException if the plaintext is invalid.
+     * @throws InvalidPayloadException if the plaintext is invalid.
      */
-    @Throws(RAMFException::class, EnvelopedDataException::class)
+    @Throws(InvalidPayloadException::class, EnvelopedDataException::class)
     fun unwrapPayload(privateKey: PrivateKey): P {
         val envelopedData = EnvelopedData.deserialize(payload)
         val plaintext = envelopedData.decrypt(privateKey)
         return deserializePayload(plaintext)
     }
 
-    @Throws(RAMFException::class)
+    @Throws(InvalidPayloadException::class)
     protected abstract fun deserializePayload(payloadPlaintext: ByteArray): P
 
     companion object {

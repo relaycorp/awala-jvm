@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.ramf
 import tech.relaycorp.relaynet.RelaynetException
 
 /**
- * RAMF-related exception
+ * RAMF-related issue.
  */
-class RAMFException(message: String, cause: Throwable? = null) : RelaynetException(message, cause)
+open class RAMFException(message: String, cause: Throwable? = null) :
+    RelaynetException(message, cause)
