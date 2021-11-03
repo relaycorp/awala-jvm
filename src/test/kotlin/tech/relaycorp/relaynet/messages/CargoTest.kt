@@ -43,7 +43,7 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
             CDACertPath.PRIVATE_GW
         )
 
-        val payloadDeserialized = cargo.unwrapPayload(privateKeyStore)
+        val (payloadDeserialized) = cargo.unwrapPayload(privateKeyStore)
 
         assertEquals(
             cargoMessageSet.messages.map { it.asList() },

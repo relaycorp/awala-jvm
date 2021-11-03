@@ -43,7 +43,7 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
             PDACertPath.PDA
         )
 
-        val serviceMessageDeserialized = parcel.unwrapPayload(privateKeyStore)
+        val (serviceMessageDeserialized) = parcel.unwrapPayload(privateKeyStore)
 
         assertEquals(serviceMessage.type, serviceMessageDeserialized.type)
         assertEquals(serviceMessage.content.asList(), serviceMessageDeserialized.content.asList())

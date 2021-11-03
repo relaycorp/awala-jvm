@@ -25,6 +25,7 @@ import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
+import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
 import tech.relaycorp.relaynet.wrappers.ECDH_CURVE_MAP
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.PAYLOAD_SYMMETRIC_CIPHER_OIDS
@@ -262,6 +263,60 @@ class NodeManagerTest {
                 ecdhAlgorithmOID.id,
                 recipientInfo.keyEncryptionAlgOID
             )
+        }
+    }
+
+    @Nested
+    inner class UnwrapMessagePayload {
+        private val ownSessionKeyPair = SessionKeyPair.generate()
+
+        private val envelopedData = SessionEnvelopedData.encrypt(
+            payload.serializePlaintext(),
+            ownSessionKeyPair.sessionKey,
+            peerSessionKeyPair,
+        )
+        private val message = StubEncryptedRAMFMessage(
+            PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
+            envelopedData.serialize(),
+            PDACertPath.PDA
+        )
+
+        @BeforeEach
+        fun registerOwnSessionKey() = runBlockingTest {
+            privateKeyStore.saveSessionKey(
+                ownSessionKeyPair.privateKey,
+                ownSessionKeyPair.sessionKey.keyId,
+                peerPrivateAddress,
+            )
+        }
+
+        @Test
+        fun `Exception should be thrown if session key does not exist`() = runBlockingTest {
+            privateKeyStore.clear()
+            val manager = StubNodeManager(privateKeyStore, publicKeyStore)
+
+            assertThrows<MissingKeyException> {
+                manager.unwrapMessagePayload(message)
+            }
+        }
+
+        @Test
+        fun `Payload should be returned decrypted`() = runBlockingTest {
+            val manager = StubNodeManager(privateKeyStore, publicKeyStore)
+
+            assertEquals(payload.payload, manager.unwrapMessagePayload(message).payload)
+        }
+
+        @Test
+        fun `Peer session key should be stored`() = runBlockingTest {
+            val manager = StubNodeManager(privateKeyStore, publicKeyStore)
+            assertEquals(0, publicKeyStore.keys.size)
+
+            manager.unwrapMessagePayload(message)
+
+            assertEquals(peerSessionKey, publicKeyStore.retrieve(peerPrivateAddress))
+            val storedKey = publicKeyStore.keys[peerPrivateAddress]!!
+            assertEquals(message.creationDate, storedKey.creationTime)
         }
     }
 }

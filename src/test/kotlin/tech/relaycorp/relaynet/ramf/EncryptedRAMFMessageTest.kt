@@ -92,9 +92,22 @@ internal class EncryptedRAMFMessageTest {
                 PDACertPath.PDA,
             )
 
-            val plaintextDeserialized = message.unwrapPayload(privateKeyStore)
+            val (plaintextDeserialized) = message.unwrapPayload(privateKeyStore)
 
             assertEquals(payload.payload, plaintextDeserialized.payload)
+        }
+
+        @Test
+        fun `Peer's session key should be output`() = runBlockingTest {
+            val message = StubEncryptedRAMFMessage(
+                recipientPrivateAddress,
+                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                PDACertPath.PDA,
+            )
+
+            val (_, senderSessionKey) = message.unwrapPayload(privateKeyStore)
+
+            assertEquals(senderSessionKeyPair.sessionKey, senderSessionKey)
         }
     }
 }

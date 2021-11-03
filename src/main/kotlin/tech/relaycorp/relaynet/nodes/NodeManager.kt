@@ -7,6 +7,8 @@ import tech.relaycorp.relaynet.keystores.PrivateKeyStore
 import tech.relaycorp.relaynet.keystores.SessionPublicKeyStore
 import tech.relaycorp.relaynet.messages.payloads.EncryptedPayload
 import tech.relaycorp.relaynet.messages.payloads.Payload
+import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
+import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 
 abstract class NodeManager<P : Payload>(
     private val privateKeyStore: PrivateKeyStore,
@@ -44,5 +46,31 @@ abstract class NodeManager<P : Payload>(
             cryptoOptions.symmetricCipher,
             cryptoOptions.hashingAlgorithm,
         )
+    }
+
+    /**
+     * Decrypt and return the payload in the `message`.
+     *
+     * Also store the recipient's session key.
+     *
+     * @param message The RAMF message whose payload should be unwrapped.
+     * @throws MissingKeyException if the payload was encrypted with an unknown key.
+     * @throws KeyStoreBackendException if the private key couldn't be retrieved or the
+     *     peer's session key could not be saved.
+     * @throws InvalidPayloadException if the ciphertext or plaintext of the payload is invalid.
+     */
+    @Throws(
+        MissingKeyException::class,
+        KeyStoreBackendException::class,
+        InvalidPayloadException::class,
+    )
+    suspend fun <P : EncryptedPayload> unwrapMessagePayload(message: EncryptedRAMFMessage<P>): P {
+        val unwrapping = message.unwrapPayload(privateKeyStore)
+        sessionPublicKeyStore.save(
+            unwrapping.peerSessionKey,
+            message.senderCertificate.subjectPrivateAddress,
+            message.creationDate
+        )
+        return unwrapping.payload
     }
 }

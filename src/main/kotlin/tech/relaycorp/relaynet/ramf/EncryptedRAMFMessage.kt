@@ -4,6 +4,7 @@ import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.keystores.MissingKeyException
 import tech.relaycorp.relaynet.keystores.PrivateKeyStore
 import tech.relaycorp.relaynet.messages.payloads.EncryptedPayload
+import tech.relaycorp.relaynet.messages.payloads.PayloadUnwrapping
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedDataException
 import tech.relaycorp.relaynet.wrappers.cms.SessionEnvelopedData
@@ -41,7 +42,7 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
         MissingKeyException::class,
         EnvelopedDataException::class,
     )
-    suspend fun unwrapPayload(privateKeyStore: PrivateKeyStore): P {
+    suspend fun unwrapPayload(privateKeyStore: PrivateKeyStore): PayloadUnwrapping<P> {
         val envelopedData = EnvelopedData.deserialize(payload)
         if (envelopedData !is SessionEnvelopedData) {
             throw InvalidPayloadException("SessionlessEnvelopedData is no longer supported")
@@ -50,7 +51,8 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
         val privateKey =
             privateKeyStore.retrieveSessionKey(keyId.id, senderCertificate.subjectPrivateAddress)
         val plaintext = envelopedData.decrypt(privateKey)
-        return deserializePayload(plaintext)
+        val payload = deserializePayload(plaintext)
+        return PayloadUnwrapping(payload, envelopedData.getOriginatorKey())
     }
 
     @Throws(InvalidPayloadException::class)
