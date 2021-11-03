@@ -30,5 +30,5 @@ fun issueStubCertificate(
     )
 }
 
-val KEY_PAIR = generateRSAKeyPair()
-val CERTIFICATE = issueStubCertificate(KEY_PAIR.public, KEY_PAIR.private)
+val ID_KEY_PAIR = generateRSAKeyPair()
+val ID_CERTIFICATE = issueStubCertificate(ID_KEY_PAIR.public, ID_KEY_PAIR.private)

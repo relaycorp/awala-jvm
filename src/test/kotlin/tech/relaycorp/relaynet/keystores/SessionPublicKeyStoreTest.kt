@@ -2,14 +2,13 @@ package tech.relaycorp.relaynet.keystores
 
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -17,7 +16,7 @@ class SessionPublicKeyStoreTest {
     private val peerPrivateAddress = "0deadbeef"
     private val creationTime: ZonedDateTime = ZonedDateTime.now()
 
-    private val sessionKeyGeneration = SessionKey.generate()
+    private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKey = sessionKeyGeneration.sessionKey
 
     @Nested
@@ -38,7 +37,7 @@ class SessionPublicKeyStoreTest {
         @Test
         fun `Key data should be saved if prior key is older`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
-            val (oldSessionKey) = SessionKey.generate()
+            val (oldSessionKey) = SessionKeyPair.generate()
             store.save(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
 
             store.save(sessionKey, peerPrivateAddress, creationTime)
@@ -54,7 +53,7 @@ class SessionPublicKeyStoreTest {
             val store = MockSessionPublicKeyStore()
             store.save(sessionKey, peerPrivateAddress, creationTime)
 
-            val (oldSessionKey) = SessionKey.generate()
+            val (oldSessionKey) = SessionKeyPair.generate()
             store.save(oldSessionKey, peerPrivateAddress, creationTime.minusSeconds(1))
 
             val keyData = store.keys[peerPrivateAddress]!!
@@ -103,10 +102,13 @@ class SessionPublicKeyStoreTest {
         }
 
         @Test
-        fun `Null should be returned if key for recipient does not exist`() = runBlockingTest {
+        fun `Exception should be thrown if key for recipient does not exist`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
 
-            assertNull(store.retrieve(peerPrivateAddress))
+            val exception =
+                assertThrows<MissingKeyException> { (store.retrieve(peerPrivateAddress)) }
+
+            assertEquals("There is no session key for $peerPrivateAddress", exception.message)
         }
 
         @Test

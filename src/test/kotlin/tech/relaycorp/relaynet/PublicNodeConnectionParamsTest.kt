@@ -19,7 +19,7 @@ class PublicNodeConnectionParamsTest {
     val publicAddress = "foo.relaycorp.tech"
 
     val identityKey: PublicKey = KeyPairSet.PUBLIC_GW.public
-    val sessionKey = SessionKey.generate().sessionKey
+    val sessionKey = SessionKeyPair.generate().sessionKey
 
     @Nested
     inner class Serialize {
