@@ -11,7 +11,7 @@ class HandshakeResponse(val nonceSignatures: List<ByteArray>) {
     fun serialize(): ByteArray {
         val nonceSignaturesASN1 = ASN1EncodableVector(nonceSignatures.size)
         nonceSignatures.forEach { nonceSignaturesASN1.add(DEROctetString(it)) }
-        return ASN1Utils.serializeSequence(arrayOf(DERSequence(nonceSignaturesASN1)), false)
+        return ASN1Utils.serializeSequence(listOf(DERSequence(nonceSignaturesASN1)), false)
     }
 
     companion object {

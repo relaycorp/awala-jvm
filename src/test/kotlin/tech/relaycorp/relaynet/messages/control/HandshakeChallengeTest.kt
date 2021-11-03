@@ -40,7 +40,7 @@ class HandshakeChallengeTest {
 
         @Test
         fun `Sequence should have at least one item`() {
-            val invalidSequence = ASN1Utils.serializeSequence(arrayOf(), false)
+            val invalidSequence = ASN1Utils.serializeSequence(listOf(), false)
 
             val exception = assertThrows<InvalidMessageException> {
                 HandshakeChallenge.deserialize(invalidSequence)

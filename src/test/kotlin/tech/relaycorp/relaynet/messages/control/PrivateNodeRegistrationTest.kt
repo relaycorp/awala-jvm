@@ -64,7 +64,7 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Sequence should have at least two items`() {
             val invalidSerialization =
-                ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE), false)
+                ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidMessageException> {
                 PrivateNodeRegistration.deserialize(invalidSerialization)
@@ -79,7 +79,7 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Invalid node certificates should be refused`() {
             val invalidSerialization =
-                ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE, DERNull.INSTANCE), false)
+                ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE, DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidMessageException> {
                 PrivateNodeRegistration.deserialize(invalidSerialization)
@@ -95,7 +95,7 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Invalid gateway certificates should be refused`() {
             val invalidSerialization = ASN1Utils.serializeSequence(
-                arrayOf(
+                listOf(
                     DEROctetString(PDACertPath.PRIVATE_ENDPOINT.serialize()),
                     DERNull.INSTANCE
                 ),

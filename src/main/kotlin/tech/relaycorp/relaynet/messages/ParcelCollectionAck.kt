@@ -17,7 +17,7 @@ class ParcelCollectionAck(
      */
     fun serialize(): ByteArray {
         val sequence = ASN1Utils.serializeSequence(
-            arrayOf(
+            listOf(
                 DERVisibleString(senderEndpointPrivateAddress),
                 DERVisibleString(recipientEndpointAddress),
                 DERVisibleString(parcelId)

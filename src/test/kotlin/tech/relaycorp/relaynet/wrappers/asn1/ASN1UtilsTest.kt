@@ -24,7 +24,7 @@ internal class ASN1UtilsTest {
     inner class MakeSequence {
         @Test
         fun `Values should be explicitly tagged by default`() {
-            val sequence = ASN1Utils.makeSequence(arrayOf(visibleString, octetString))
+            val sequence = ASN1Utils.makeSequence(listOf(visibleString, octetString))
 
             assertEquals(2, sequence.size())
 
@@ -39,7 +39,7 @@ internal class ASN1UtilsTest {
 
         @Test
         fun `Implicitly-tagged values should be supported`() {
-            val sequence = ASN1Utils.makeSequence(arrayOf(visibleString, octetString), false)
+            val sequence = ASN1Utils.makeSequence(listOf(visibleString, octetString), false)
 
             assertEquals(2, sequence.size())
 
@@ -58,7 +58,7 @@ internal class ASN1UtilsTest {
     inner class SerializeSequence {
         @Test
         fun `Values should be explicitly tagged by default`() {
-            val serialization = ASN1Utils.serializeSequence(arrayOf(visibleString, octetString))
+            val serialization = ASN1Utils.serializeSequence(listOf(visibleString, octetString))
 
             val parser = ASN1StreamParser(serialization)
             val sequence = parser.readObject() as DLSequenceParser
@@ -78,7 +78,7 @@ internal class ASN1UtilsTest {
         @Test
         fun `Implicitly-tagged values should be supported`() {
             val serialization =
-                ASN1Utils.serializeSequence(arrayOf(visibleString, octetString), false)
+                ASN1Utils.serializeSequence(listOf(visibleString, octetString), false)
 
             val parser = ASN1StreamParser(serialization)
             val sequence =
@@ -128,7 +128,7 @@ internal class ASN1UtilsTest {
 
         @Test
         fun `Explicitly tagged items should be deserialized with their corresponding types`() {
-            val serialization = ASN1Utils.serializeSequence(arrayOf(visibleString, visibleString))
+            val serialization = ASN1Utils.serializeSequence(listOf(visibleString, visibleString))
 
             val sequence = ASN1Utils.deserializeHomogeneousSequence<DERVisibleString>(serialization)
 
@@ -141,7 +141,7 @@ internal class ASN1UtilsTest {
 
         @Test
         fun `Explicitly tagged items with unexpected types should be refused`() {
-            val serialization = ASN1Utils.serializeSequence(arrayOf(visibleString, octetString))
+            val serialization = ASN1Utils.serializeSequence(listOf(visibleString, octetString))
 
             val exception = assertThrows<ASN1Exception> {
                 ASN1Utils.deserializeHomogeneousSequence<DERVisibleString>(serialization)
@@ -157,7 +157,7 @@ internal class ASN1UtilsTest {
         @Test
         fun `Implicitly tagged items should be deserialized with their corresponding types`() {
             val serialization =
-                ASN1Utils.serializeSequence(arrayOf(visibleString, octetString), false)
+                ASN1Utils.serializeSequence(listOf(visibleString, octetString), false)
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
 

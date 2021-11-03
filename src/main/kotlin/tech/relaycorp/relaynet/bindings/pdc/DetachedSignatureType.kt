@@ -63,7 +63,7 @@ enum class DetachedSignatureType(internal val oid: ASN1ObjectIdentifier) {
     }
 
     private fun makePlaintextSafe(plaintext: ByteArray) = ASN1Utils.serializeSequence(
-        arrayOf(oid, DEROctetString(plaintext)),
+        listOf(oid, DEROctetString(plaintext)),
         false
     )
 }

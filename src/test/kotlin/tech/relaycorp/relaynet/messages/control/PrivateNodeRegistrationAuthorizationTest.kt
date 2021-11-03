@@ -59,7 +59,7 @@ class PrivateNodeRegistrationAuthorizationTest {
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val signature = ASN1Utils.getOctetString(sequence[2]).octets
             val expectedPlaintext = ASN1Utils.serializeSequence(
-                arrayOf(
+                listOf(
                     OIDs.PNRA,
                     ASN1Utils.derEncodeUTCDate(tomorrow),
                     DEROctetString(gatewayData)
@@ -87,7 +87,7 @@ class PrivateNodeRegistrationAuthorizationTest {
         @Test
         fun `Sequence should have at least 3 items`() {
             val serialization = ASN1Utils.serializeSequence(
-                arrayOf(DERVisibleString("a"), DERVisibleString("b")),
+                listOf(DERVisibleString("a"), DERVisibleString("b")),
                 false
             )
 
@@ -118,7 +118,7 @@ class PrivateNodeRegistrationAuthorizationTest {
         fun `Invalid signatures should be refused`() {
             val invalidSignature = "not a valid signature".toByteArray()
             val serialization = ASN1Utils.serializeSequence(
-                arrayOf(
+                listOf(
                     ASN1Utils.derEncodeUTCDate(tomorrow),
                     DEROctetString(gatewayData),
                     DEROctetString(invalidSignature)

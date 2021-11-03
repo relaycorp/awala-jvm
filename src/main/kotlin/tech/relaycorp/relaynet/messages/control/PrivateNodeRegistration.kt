@@ -28,7 +28,7 @@ class PrivateNodeRegistration(
         val nodeCertificateASN1 = DEROctetString(privateNodeCertificate.serialize())
         val gatewayCertificateASN1 = DEROctetString(gatewayCertificate.serialize())
         return ASN1Utils.serializeSequence(
-            arrayOf(nodeCertificateASN1, gatewayCertificateASN1),
+            listOf(nodeCertificateASN1, gatewayCertificateASN1),
             false
         )
     }

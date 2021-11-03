@@ -98,7 +98,7 @@ internal class ParcelCollectionAckTest {
         @Test
         fun `ACK should be refused if it has fewer than 3 items`() {
             val serialization = formatSignature + ASN1Utils.serializeSequence(
-                arrayOf(
+                listOf(
                     DERVisibleString("one"),
                     DERVisibleString("two")
                 ),

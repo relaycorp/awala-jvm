@@ -48,7 +48,7 @@ class DetachedSignatureTypeTest {
 
             val signedData = SignedData.deserialize(serialization)
             val expectedPlaintext = ASN1Utils.serializeSequence(
-                arrayOf(
+                listOf(
                     signatureType.oid,
                     DEROctetString(plaintext)
                 ),

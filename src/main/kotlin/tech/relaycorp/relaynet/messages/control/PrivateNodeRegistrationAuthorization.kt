@@ -30,7 +30,7 @@ class PrivateNodeRegistrationAuthorization(
         val signaturePlaintext = makeSignaturePlaintext(expiryDateASN1, gatewayDataASN1)
         val signature = RSASigning.sign(signaturePlaintext, gatewayPrivateKey)
         return ASN1Utils.serializeSequence(
-            arrayOf(expiryDateASN1, gatewayDataASN1, DEROctetString(signature)),
+            listOf(expiryDateASN1, gatewayDataASN1, DEROctetString(signature)),
             false
         )
     }
@@ -77,6 +77,6 @@ class PrivateNodeRegistrationAuthorization(
         private fun makeSignaturePlaintext(
             expiryDateASN1: ASN1GeneralizedTime,
             gatewayDataASN1: ASN1OctetString
-        ) = ASN1Utils.serializeSequence(arrayOf(OIDs.PNRA, expiryDateASN1, gatewayDataASN1), false)
+        ) = ASN1Utils.serializeSequence(listOf(OIDs.PNRA, expiryDateASN1, gatewayDataASN1), false)
     }
 }

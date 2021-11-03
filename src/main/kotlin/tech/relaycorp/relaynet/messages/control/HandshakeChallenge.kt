@@ -7,7 +7,7 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 class HandshakeChallenge(val nonce: ByteArray) {
     fun serialize(): ByteArray = ASN1Utils.serializeSequence(
-        arrayOf(DEROctetString(nonce)),
+        listOf(DEROctetString(nonce)),
         false
     )
 

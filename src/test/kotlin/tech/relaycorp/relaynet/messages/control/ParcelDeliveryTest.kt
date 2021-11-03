@@ -56,7 +56,7 @@ class ParcelDeliveryTest {
 
         @Test
         fun `Sequence should have at least two items`() {
-            val invalidSequence = ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE), false)
+            val invalidSequence = ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidMessageException> {
                 ParcelDelivery.deserialize(invalidSequence)

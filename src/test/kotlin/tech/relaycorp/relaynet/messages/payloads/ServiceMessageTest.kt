@@ -56,7 +56,7 @@ internal class ServiceMessageTest {
         @Test
         fun `Sequence should have at least two items`() {
             val invalidSerialization =
-                ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE), false)
+                ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidPayloadException> {
                 ServiceMessage.deserialize(invalidSerialization)
