@@ -1,10 +1,12 @@
 package tech.relaycorp.relaynet.ramf
 
-import java.security.PrivateKey
 import java.time.ZonedDateTime
+import tech.relaycorp.relaynet.keystores.MissingKeyException
+import tech.relaycorp.relaynet.keystores.PrivateKeyStore
 import tech.relaycorp.relaynet.messages.payloads.EncryptedPayload
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedDataException
+import tech.relaycorp.relaynet.wrappers.cms.SessionEnvelopedData
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
@@ -31,11 +33,22 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
      *
      * @throws EnvelopedDataException if the CMS EnvelopedData value is invalid or the
      *      `privateKey` is invalid.
+     * @throws MissingKeyException if the session key doesn't exist.
      * @throws InvalidPayloadException if the plaintext is invalid.
      */
-    @Throws(InvalidPayloadException::class, EnvelopedDataException::class)
-    fun unwrapPayload(privateKey: PrivateKey): P {
+    @Throws(
+        InvalidPayloadException::class,
+        MissingKeyException::class,
+        EnvelopedDataException::class,
+    )
+    suspend fun unwrapPayload(privateKeyStore: PrivateKeyStore): P {
         val envelopedData = EnvelopedData.deserialize(payload)
+        if (envelopedData !is SessionEnvelopedData) {
+            throw InvalidPayloadException("SessionlessEnvelopedData is no longer supported")
+        }
+        val keyId = envelopedData.getRecipientKeyId()
+        val privateKey =
+            privateKeyStore.retrieveSessionKey(keyId.id, senderCertificate.subjectPrivateAddress)
         val plaintext = envelopedData.decrypt(privateKey)
         return deserializePayload(plaintext)
     }
