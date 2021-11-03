@@ -25,8 +25,9 @@ abstract class SessionPublicKeyStore {
     }
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieve(peerPrivateAddress: String): SessionKey? {
-        val keyData = retrieveKeyDataOrWrapException(peerPrivateAddress) ?: return null
+    suspend fun retrieve(peerPrivateAddress: String): SessionKey {
+        val keyData = retrieveKeyDataOrWrapException(peerPrivateAddress)
+            ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
 
         val sessionPublicKey = keyData.keyDer.deserializeECPublicKey()
         return SessionKey(keyData.keyId, sessionPublicKey)

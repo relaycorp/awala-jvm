@@ -2,7 +2,6 @@ package tech.relaycorp.relaynet.keystores
 
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -103,10 +102,13 @@ class SessionPublicKeyStoreTest {
         }
 
         @Test
-        fun `Null should be returned if key for recipient does not exist`() = runBlockingTest {
+        fun `Exception should be thrown if key for recipient does not exist`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
 
-            assertNull(store.retrieve(peerPrivateAddress))
+            val exception =
+                assertThrows<MissingKeyException> { (store.retrieve(peerPrivateAddress)) }
+
+            assertEquals("There is no session key for $peerPrivateAddress", exception.message)
         }
 
         @Test

@@ -63,17 +63,24 @@ class PrivateKeyStoreTest {
             val store = MockPrivateKeyStore()
             store.saveIdentityKey(identityPrivateKey, identityCertificate)
 
-            val idKeyPair = store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)!!
+            val idKeyPair = store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)
 
             assertEquals(identityPrivateKey.encoded.asList(), idKeyPair.privateKey.encoded.asList())
             assertEquals(identityCertificate, idKeyPair.certificate)
         }
 
         @Test
-        fun `Null should be returned if key pair does not exist`() = runBlockingTest {
+        fun `Exception should be thrown if key pair does not exist`() = runBlockingTest {
             val store = MockPrivateKeyStore()
 
-            assertNull(store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress))
+            val exception = assertThrows<MissingKeyException> {
+                store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)
+            }
+
+            assertEquals(
+                "There is no identity key for ${identityCertificate.subjectPrivateAddress}",
+                exception.message
+            )
         }
 
         @Test
@@ -190,7 +197,7 @@ class PrivateKeyStoreTest {
 
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
-                sessionKey!!.encoded.asList()
+                sessionKey.encoded.asList()
             )
         }
 
@@ -210,7 +217,7 @@ class PrivateKeyStoreTest {
 
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
-                sessionKey!!.encoded.asList()
+                sessionKey.encoded.asList()
             )
         }
 
@@ -222,25 +229,36 @@ class PrivateKeyStoreTest {
                 sessionKeyGeneration.sessionKey.keyId,
                 peerPrivateAddress
             )
+            val invalidPeerPrivateAddress = "not $peerPrivateAddress"
 
-            val sessionKey = store.retrieveSessionKey(
-                sessionKeyGeneration.sessionKey.keyId,
-                "not $peerPrivateAddress"
+            val exception = assertThrows<MissingKeyException> {
+                store.retrieveSessionKey(
+                    sessionKeyGeneration.sessionKey.keyId,
+                    invalidPeerPrivateAddress
+                )
+            }
+
+            assertEquals(
+                "Session key is bound to $peerPrivateAddress (not $invalidPeerPrivateAddress)",
+                exception.message
             )
-
-            assertNull(sessionKey)
         }
 
         @Test
-        fun `Null should be returned if key pair does not exist`() = runBlockingTest {
+        fun `Exception should be thrown if key pair does not exist`() = runBlockingTest {
             val store = MockPrivateKeyStore()
 
-            val sessionKey = store.retrieveSessionKey(
-                sessionKeyGeneration.sessionKey.keyId,
-                peerPrivateAddress
-            )
+            val exception = assertThrows<MissingKeyException> {
+                store.retrieveSessionKey(
+                    sessionKeyGeneration.sessionKey.keyId,
+                    peerPrivateAddress
+                )
+            }
 
-            assertNull(sessionKey)
+            assertEquals(
+                "There is no session key for $peerPrivateAddress",
+                exception.message
+            )
         }
 
         @Test

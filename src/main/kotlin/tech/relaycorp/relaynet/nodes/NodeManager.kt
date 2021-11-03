@@ -1,6 +1,8 @@
 package tech.relaycorp.relaynet.nodes
 
 import tech.relaycorp.relaynet.SessionKeyPair
+import tech.relaycorp.relaynet.keystores.KeyStoreBackendException
+import tech.relaycorp.relaynet.keystores.MissingKeyException
 import tech.relaycorp.relaynet.keystores.PrivateKeyStore
 import tech.relaycorp.relaynet.keystores.SessionPublicKeyStore
 import tech.relaycorp.relaynet.messages.payloads.EncryptedPayload
@@ -29,13 +31,12 @@ abstract class NodeManager<P : Payload>(
      * @param payload
      * @param peerPrivateAddress
      */
-    @Throws(MissingSessionKeyException::class)
+    @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun <P : EncryptedPayload> wrapMessagePayload(
         payload: P,
         peerPrivateAddress: String
     ): ByteArray {
         val recipientSessionKey = sessionPublicKeyStore.retrieve(peerPrivateAddress)
-            ?: throw MissingSessionKeyException("There is no session key for $peerPrivateAddress")
         val senderSessionKeyPair = generateSessionKeyPair(peerPrivateAddress)
         return payload.encrypt(
             recipientSessionKey,

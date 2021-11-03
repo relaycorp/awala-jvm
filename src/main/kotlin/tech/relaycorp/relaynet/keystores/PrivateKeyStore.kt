@@ -13,9 +13,10 @@ abstract class PrivateKeyStore {
         saveKeyDataOrWrapError(keyData, "i-${certificate.subjectPrivateAddress}")
     }
 
-    @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveIdentityKey(privateAddress: String): IdentityKeyPair? {
-        val keyData = retrieveKeyDataOrWrapError("i-$privateAddress") ?: return null
+    @Throws(MissingKeyException::class, KeyStoreBackendException::class)
+    suspend fun retrieveIdentityKey(privateAddress: String): IdentityKeyPair {
+        val keyData = retrieveKeyDataOrWrapError("i-$privateAddress")
+            ?: throw MissingKeyException("There is no identity key for $privateAddress")
 
         if (keyData.certificateDer == null) {
             throw KeyStoreBackendException(
@@ -39,13 +40,16 @@ abstract class PrivateKeyStore {
         saveKeyDataOrWrapError(keyData, formatSessionKeyId(keyId))
     }
 
-    @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveSessionKey(keyId: ByteArray, peerPrivateAddress: String): PrivateKey? {
-        val keyData = retrieveKeyDataOrWrapError(formatSessionKeyId(keyId)) ?: return null
+    @Throws(MissingKeyException::class, KeyStoreBackendException::class)
+    suspend fun retrieveSessionKey(keyId: ByteArray, peerPrivateAddress: String): PrivateKey {
+        val keyData = retrieveKeyDataOrWrapError(formatSessionKeyId(keyId))
+            ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
         if (
             keyData.peerPrivateAddress != null && keyData.peerPrivateAddress != peerPrivateAddress
         ) {
-            return null
+            throw MissingKeyException(
+                "Session key is bound to ${keyData.peerPrivateAddress} (not $peerPrivateAddress)"
+            )
         }
         return keyData.privateKeyDer.deserializeECKeyPair().private
     }

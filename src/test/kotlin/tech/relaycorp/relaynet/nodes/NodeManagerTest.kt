@@ -3,7 +3,6 @@ package tech.relaycorp.relaynet.nodes
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -21,6 +20,7 @@ import tech.relaycorp.relaynet.ECDHCurve
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.SymmetricCipher
+import tech.relaycorp.relaynet.keystores.MissingKeyException
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -79,18 +79,17 @@ class NodeManagerTest {
                 sessionKey.keyId,
                 peerPrivateAddress
             )
-            assertNotNull(sessionKeyForDifferentPeer)
             assertEquals(
                 privateKey.encoded.asList(),
                 sessionKeyForDifferentPeer.encoded.asList()
             )
             // We shouldn't get the key with the wrong peer
-            assertNull(
+            assertThrows<MissingKeyException> {
                 privateKeyStore.retrieveSessionKey(
                     sessionKey.keyId,
                     "not $peerPrivateAddress"
                 )
-            )
+            }
         }
 
         @Test
@@ -136,7 +135,7 @@ class NodeManagerTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
             publicKeyStore.clear()
 
-            val exception = assertThrows<MissingSessionKeyException> {
+            val exception = assertThrows<MissingKeyException> {
                 manager.wrapMessagePayload(payload, peerPrivateAddress)
             }
 
@@ -186,12 +185,13 @@ class NodeManagerTest {
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             assertTrue(envelopedData is SessionEnvelopedData)
-            assertNull(
+            val keyId = envelopedData.getOriginatorKey().keyId
+            assertThrows<MissingKeyException> {
                 privateKeyStore.retrieveSessionKey(
-                    envelopedData.getOriginatorKey().keyId,
+                    keyId,
                     "not $peerPrivateAddress"
                 )
-            )
+            }
         }
 
         @Test
