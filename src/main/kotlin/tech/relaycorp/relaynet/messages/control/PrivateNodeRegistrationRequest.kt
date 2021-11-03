@@ -31,7 +31,7 @@ class PrivateNodeRegistrationRequest(
         val pnraCountersignature =
             RSASigning.sign(pnraCountersignaturePlaintext, privateNodePrivateKey)
         return ASN1Utils.serializeSequence(
-            arrayOf(
+            listOf(
                 DEROctetString(privateNodePublicKey.encoded),
                 pnraSerializedASN1,
                 DEROctetString(pnraCountersignature)
@@ -85,7 +85,7 @@ class PrivateNodeRegistrationRequest(
         private fun makePNRACountersignaturePlaintext(
             pnraSerializedASN1: ASN1OctetString
         ): ByteArray = ASN1Utils.serializeSequence(
-            arrayOf(OIDs.PNRA_COUNTERSIGNATURE, pnraSerializedASN1),
+            listOf(OIDs.PNRA_COUNTERSIGNATURE, pnraSerializedASN1),
             false
         )
     }

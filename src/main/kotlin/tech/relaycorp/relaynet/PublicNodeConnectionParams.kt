@@ -20,14 +20,14 @@ class PublicNodeConnectionParams(
 ) {
     fun serialize(): ByteArray {
         val sessionKeyASN1 = ASN1Utils.makeSequence(
-            arrayOf(
+            listOf(
                 ASN1Integer(sessionKey.keyId),
                 DEROctetString(sessionKey.publicKey.encoded)
             ),
             false
         )
         return ASN1Utils.serializeSequence(
-            arrayOf(
+            listOf(
                 DERVisibleString(publicAddress),
                 DEROctetString(identityKey.encoded),
                 sessionKeyASN1

@@ -10,7 +10,7 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 class CargoCollectionRequest(val cargoDeliveryAuthorization: Certificate) : EncryptedPayload() {
     override fun serializePlaintext(): ByteArray {
         val cdaASN1 = DEROctetString(cargoDeliveryAuthorization.serialize())
-        return ASN1Utils.serializeSequence(arrayOf(cdaASN1), false)
+        return ASN1Utils.serializeSequence(listOf(cdaASN1), false)
     }
 
     companion object {

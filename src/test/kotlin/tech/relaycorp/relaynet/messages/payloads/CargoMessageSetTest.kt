@@ -92,7 +92,7 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `An empty sequence should be accepted`() {
-            val serialization = ASN1Utils.serializeSequence(emptyArray())
+            val serialization = ASN1Utils.serializeSequence(listOf())
 
             val cargoMessageSet = CargoMessageSet.deserialize(serialization)
 

@@ -14,7 +14,7 @@ class ParcelDelivery(val deliveryId: String, val parcelSerialized: ByteArray) {
      * Serialize delivery.
      */
     fun serialize(): ByteArray = ASN1Utils.serializeSequence(
-        arrayOf(DERVisibleString(deliveryId), DEROctetString(parcelSerialized)),
+        listOf(DERVisibleString(deliveryId), DEROctetString(parcelSerialized)),
         false
     )
 

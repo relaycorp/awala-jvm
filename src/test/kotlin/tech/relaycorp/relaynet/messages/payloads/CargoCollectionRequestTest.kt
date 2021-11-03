@@ -50,7 +50,7 @@ class CargoCollectionRequestTest {
 
         @Test
         fun `Sequence should have at least one item`() {
-            val serialization = ASN1Utils.serializeSequence(emptyArray(), false)
+            val serialization = ASN1Utils.serializeSequence(listOf(), false)
 
             val exception =
                 assertThrows<RAMFException> { CargoCollectionRequest.deserialize(serialization) }
@@ -61,7 +61,7 @@ class CargoCollectionRequestTest {
         @Test
         fun `Malformed CDAs should be refused`() {
             val serialization =
-                ASN1Utils.serializeSequence(arrayOf(DEROctetString("invalid".toByteArray())), false)
+                ASN1Utils.serializeSequence(listOf(DEROctetString("invalid".toByteArray())), false)
 
             val exception =
                 assertThrows<RAMFException> { CargoCollectionRequest.deserialize(serialization) }

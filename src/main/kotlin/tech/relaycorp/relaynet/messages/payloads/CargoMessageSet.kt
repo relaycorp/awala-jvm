@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages.payloads
 
-import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.DEROctetString
 import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
@@ -14,7 +13,7 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
      * Serialize cargo message set.
      */
     override fun serializePlaintext(): ByteArray {
-        val items = messages.map { DEROctetString(it) as ASN1Encodable }.toTypedArray()
+        val items = messages.map { DEROctetString(it) }
         return ASN1Utils.serializeSequence(items)
     }
 

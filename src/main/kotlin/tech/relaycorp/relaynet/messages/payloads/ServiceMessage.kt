@@ -10,7 +10,7 @@ class ServiceMessage(val type: String, val content: ByteArray) : EncryptedPayloa
     override fun serializePlaintext(): ByteArray {
         val typeASN1 = DERVisibleString(type)
         val contentASN1 = DEROctetString(content)
-        return ASN1Utils.serializeSequence(arrayOf(typeASN1, contentASN1), false)
+        return ASN1Utils.serializeSequence(listOf(typeASN1, contentASN1), false)
     }
 
     companion object {

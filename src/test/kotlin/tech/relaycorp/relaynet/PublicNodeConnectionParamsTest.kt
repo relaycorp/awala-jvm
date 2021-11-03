@@ -89,7 +89,7 @@ class PublicNodeConnectionParamsTest {
         @Test
         fun `Sequence should have at least three items`() {
             val invalidSequence = ASN1Utils.serializeSequence(
-                arrayOf(
+                listOf(
                     DERVisibleString("one"),
                     DERVisibleString("two"),
                 ),
@@ -149,10 +149,10 @@ class PublicNodeConnectionParamsTest {
         @Test
         fun `Session key SEQUENCE should contain at least two items`() {
             val invalidSequence = ASN1Utils.serializeSequence(
-                arrayOf(
+                listOf(
                     DERVisibleString(publicAddress),
                     DEROctetString(identityKey.encoded),
-                    ASN1Utils.makeSequence(arrayOf(DERVisibleString("foo")), false)
+                    ASN1Utils.makeSequence(listOf(DERVisibleString("foo")), false)
                 ),
                 false
             )
