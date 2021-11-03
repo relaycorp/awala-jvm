@@ -25,7 +25,6 @@ import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
-import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
 import tech.relaycorp.relaynet.wrappers.ECDH_CURVE_MAP
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.PAYLOAD_SYMMETRIC_CIPHER_OIDS
