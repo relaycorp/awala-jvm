@@ -44,24 +44,22 @@ import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.SessionKey
-import tech.relaycorp.relaynet.SymmetricEncryption
+import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.utils.sha256
 import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
-import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 
 private val PLAINTEXT = "hello".toByteArray()
 
 private val ORIGINATOR_KEY_ID_OID = ASN1ObjectIdentifier("0.4.0.127.0.17.0.1.0")
 
-private val SESSION_SENDER_KEY_PAIR = generateECDHKeyPair()
-private val SESSION_SENDER_KEY_ID = generateRandomOctets(8)
+private val SENDER_SESSION_KEY_PAIR = SessionKey.generate()
 
-private val SESSION_RECIPIENT_KEY_GENERATION = SessionKey.generate()
-private val RECIPIENT_SESSION_KEY = SESSION_RECIPIENT_KEY_GENERATION.sessionKey
-private val RECIPIENT_SESSION_PRIVATE_KEY = SESSION_RECIPIENT_KEY_GENERATION.privateKey
+private val RECIPIENT_SESSION_KEY_PAIR = SessionKey.generate()
+private val RECIPIENT_SESSION_KEY = RECIPIENT_SESSION_KEY_PAIR.sessionKey
+private val RECIPIENT_SESSION_PRIVATE_KEY = RECIPIENT_SESSION_KEY_PAIR.privateKey
 
 interface RecipientInfoTest {
     fun `There should be exactly one RecipientInfo`()
@@ -71,7 +69,7 @@ interface EncryptedContentInfoTest {
     fun `Ciphertext corresponding to plaintext should be encapsulated`()
     fun `AES-CBC-128 should be used by default`()
     fun `Symmetric encryption algorithm may be specified explicitly`(
-        algorithm: SymmetricEncryption
+        algorithm: SymmetricCipher
     )
 }
 
@@ -158,8 +156,7 @@ class EnvelopedDataTest {
             val envelopedData = SessionEnvelopedData.encrypt(
                 PLAINTEXT,
                 RECIPIENT_SESSION_KEY,
-                SESSION_SENDER_KEY_ID,
-                SESSION_SENDER_KEY_PAIR
+                SENDER_SESSION_KEY_PAIR
             )
 
             val envelopedDataDeserialized = EnvelopedData.deserialize(envelopedData.serialize())
@@ -325,7 +322,7 @@ class SessionlessEnvelopedDataTest {
                     SessionlessEnvelopedData.encrypt(PLAINTEXT, PDACertPath.PRIVATE_ENDPOINT)
 
                 assertEquals(
-                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricCipher.AES_128],
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
@@ -333,12 +330,12 @@ class SessionlessEnvelopedDataTest {
             @ParameterizedTest(name = "{0} should be used if explicitly requested")
             @EnumSource
             override fun `Symmetric encryption algorithm may be specified explicitly`(
-                algorithm: SymmetricEncryption
+                algorithm: SymmetricCipher
             ) {
                 val envelopedData = SessionlessEnvelopedData.encrypt(
                     PLAINTEXT,
                     PDACertPath.PRIVATE_ENDPOINT,
-                    symmetricEncryptionAlgorithm = algorithm
+                    symmetricCipher = algorithm
                 )
 
                 assertEquals(
@@ -450,8 +447,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 assertEquals(1, envelopedData.bcEnvelopedData.recipientInfos.size())
@@ -462,8 +458,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first()
@@ -475,8 +470,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -496,8 +490,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR,
+                    SENDER_SESSION_KEY_PAIR,
                     hashingAlgorithm = algorithm
                 )
 
@@ -517,8 +510,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -534,21 +526,20 @@ class SessionEnvelopedDataTest {
             @ParameterizedTest(name = "{0}-KW should be used if explicitly requested")
             @EnumSource
             fun `Cipher for recipient key ciphertext may be specified explicitly`(
-                algorithm: SymmetricEncryption
+                algorithm: SymmetricCipher
             ) {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR,
-                    symmetricEncryptionAlgorithm = algorithm
+                    SENDER_SESSION_KEY_PAIR,
+                    symmetricCipher = algorithm
                 )
 
                 val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
                     KeyAgreeRecipientInformation
                 val keyCipher =
                     recipientInfo.keyEncryptionAlgorithm.parameters as AlgorithmIdentifier
-                val expectedKeyCipher = KEY_WRAP_ALGORITHMS[algorithm]!!
+                val expectedKeyCipher = CMS_KW_ALGORITHMS[algorithm]!!
                 assertEquals(expectedKeyCipher.id, keyCipher.algorithm.id)
             }
 
@@ -557,8 +548,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -573,8 +563,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
@@ -593,8 +582,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 val recipients = envelopedData.bcEnvelopedData.recipientInfos.recipients
@@ -610,12 +598,11 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR
+                    SENDER_SESSION_KEY_PAIR
                 )
 
                 assertEquals(
-                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
+                    PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricCipher.AES_128],
                     envelopedData.bcEnvelopedData.encryptionAlgOID
                 )
             }
@@ -623,14 +610,13 @@ class SessionEnvelopedDataTest {
             @ParameterizedTest(name = "{0} should be used if explicitly requested")
             @EnumSource
             override fun `Symmetric encryption algorithm may be specified explicitly`(
-                algorithm: SymmetricEncryption
+                algorithm: SymmetricCipher
             ) {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR,
-                    symmetricEncryptionAlgorithm = algorithm
+                    SENDER_SESSION_KEY_PAIR,
+                    symmetricCipher = algorithm
                 )
 
                 assertEquals(
@@ -647,8 +633,7 @@ class SessionEnvelopedDataTest {
                 val envelopedData = SessionEnvelopedData.encrypt(
                     PLAINTEXT,
                     RECIPIENT_SESSION_KEY,
-                    SESSION_SENDER_KEY_ID,
-                    SESSION_SENDER_KEY_PAIR,
+                    SENDER_SESSION_KEY_PAIR,
                 )
 
                 val unprotectedAttrs = envelopedData.bcEnvelopedData.unprotectedAttributes
@@ -657,7 +642,10 @@ class SessionEnvelopedDataTest {
                 assertEquals(1, keyIdAttribute.attrValues.size())
                 val keyIdASN1 = keyIdAttribute.attrValues.getObjectAt(0)
                 assertTrue(keyIdASN1 is DEROctetString)
-                assertEquals(SESSION_SENDER_KEY_ID.asList(), keyIdASN1.octets.asList())
+                assertEquals(
+                    SENDER_SESSION_KEY_PAIR.sessionKey.keyId.asList(),
+                    keyIdASN1.octets.asList()
+                )
             }
         }
     }
@@ -669,8 +657,7 @@ class SessionEnvelopedDataTest {
             val envelopedData = SessionEnvelopedData.encrypt(
                 PLAINTEXT,
                 RECIPIENT_SESSION_KEY,
-                SESSION_SENDER_KEY_ID,
-                SESSION_SENDER_KEY_PAIR
+                SENDER_SESSION_KEY_PAIR
             )
 
             val plaintext = envelopedData.decrypt(RECIPIENT_SESSION_PRIVATE_KEY)
@@ -683,8 +670,7 @@ class SessionEnvelopedDataTest {
             val envelopedData = SessionEnvelopedData.encrypt(
                 PLAINTEXT,
                 RECIPIENT_SESSION_KEY,
-                SESSION_SENDER_KEY_ID,
-                SESSION_SENDER_KEY_PAIR
+                SENDER_SESSION_KEY_PAIR
             )
             val anotherKeyPair = generateECDHKeyPair()
 
@@ -704,8 +690,7 @@ class SessionEnvelopedDataTest {
             val envelopedData = SessionEnvelopedData.encrypt(
                 PLAINTEXT,
                 RECIPIENT_SESSION_KEY,
-                SESSION_SENDER_KEY_ID,
-                SESSION_SENDER_KEY_PAIR
+                SENDER_SESSION_KEY_PAIR
             )
 
             val actualRecipientKeyId = envelopedData.getRecipientKeyId()
@@ -720,13 +705,15 @@ class SessionEnvelopedDataTest {
             val envelopedData = SessionEnvelopedData.encrypt(
                 PLAINTEXT,
                 RECIPIENT_SESSION_KEY,
-                SESSION_SENDER_KEY_ID,
-                SESSION_SENDER_KEY_PAIR
+                SENDER_SESSION_KEY_PAIR
             )
 
             val originatorKeyId = envelopedData.getOriginatorKey()
 
-            assertEquals(SESSION_SENDER_KEY_ID.asList(), originatorKeyId.keyId.asList())
+            assertEquals(
+                SENDER_SESSION_KEY_PAIR.sessionKey.keyId.asList(),
+                originatorKeyId.keyId.asList()
+            )
         }
 
         @Test
@@ -734,15 +721,14 @@ class SessionEnvelopedDataTest {
             val envelopedData = SessionEnvelopedData.encrypt(
                 PLAINTEXT,
                 RECIPIENT_SESSION_KEY,
-                SESSION_SENDER_KEY_ID,
-                SESSION_SENDER_KEY_PAIR
+                SENDER_SESSION_KEY_PAIR
             )
 
             val originatorKeyId = envelopedData.getOriginatorKey()
 
             assertEquals(
-                SESSION_SENDER_KEY_PAIR.public.encoded.asList(),
-                originatorKeyId.publicKey.encoded.asList()
+                SENDER_SESSION_KEY_PAIR.sessionKey.publicKey,
+                originatorKeyId.publicKey
             )
         }
     }
@@ -863,8 +849,8 @@ class SessionEnvelopedDataTest {
                 val recipientInfoGenerator =
                     JceKeyAgreeRecipientInfoGenerator(
                         CMSAlgorithm.ECDH_SHA256KDF,
-                        SESSION_SENDER_KEY_PAIR.private,
-                        SESSION_SENDER_KEY_PAIR.public,
+                        SENDER_SESSION_KEY_PAIR.privateKey,
+                        SENDER_SESSION_KEY_PAIR.sessionKey.publicKey,
                         CMSAlgorithm.AES128_WRAP
                     ).setProvider(BC_PROVIDER)
                 recipientInfoGenerator.addRecipient(

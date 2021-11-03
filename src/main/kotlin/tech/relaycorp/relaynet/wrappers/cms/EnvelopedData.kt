@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.wrappers.cms
 
-import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.interfaces.ECKey
 import java.security.spec.MGF1ParameterSpec
@@ -35,21 +34,22 @@ import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.OIDs
 import tech.relaycorp.relaynet.SessionKey
-import tech.relaycorp.relaynet.SymmetricEncryption
+import tech.relaycorp.relaynet.SessionKeyPair
+import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 // CBC mode is temporary. See: https://github.com/relaycorp/relayverse/issues/16
-private val cmsContentEncryptionAlgorithm = mapOf(
-    SymmetricEncryption.AES_128 to CMSAlgorithm.AES128_CBC,
-    SymmetricEncryption.AES_192 to CMSAlgorithm.AES192_CBC,
-    SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_CBC
+private val CMS_CONTENT_ENCRYPTION_ALGORITHMS = mapOf(
+    SymmetricCipher.AES_128 to CMSAlgorithm.AES128_CBC,
+    SymmetricCipher.AES_192 to CMSAlgorithm.AES192_CBC,
+    SymmetricCipher.AES_256 to CMSAlgorithm.AES256_CBC
 )
-internal val KEY_WRAP_ALGORITHMS = mapOf(
-    SymmetricEncryption.AES_128 to CMSAlgorithm.AES128_WRAP,
-    SymmetricEncryption.AES_192 to CMSAlgorithm.AES192_WRAP,
-    SymmetricEncryption.AES_256 to CMSAlgorithm.AES256_WRAP
+internal val CMS_KW_ALGORITHMS = mapOf(
+    SymmetricCipher.AES_128 to CMSAlgorithm.AES128_WRAP,
+    SymmetricCipher.AES_192 to CMSAlgorithm.AES192_WRAP,
+    SymmetricCipher.AES_256 to CMSAlgorithm.AES256_WRAP
 )
 
 internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
@@ -126,12 +126,12 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         fun encrypt(
             plaintext: ByteArray,
             recipientCertificate: Certificate,
-            symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128
+            symmetricCipher: SymmetricCipher = SymmetricCipher.AES_128
         ): SessionlessEnvelopedData {
             val recipientInfoGenerator = makeRecipientInfoGenerator(recipientCertificate)
             val bcEnvelopedData = bcEncrypt(
                 plaintext,
-                symmetricEncryptionAlgorithm,
+                symmetricCipher,
                 recipientInfoGenerator
             )
             return SessionlessEnvelopedData(bcEnvelopedData)
@@ -191,25 +191,24 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         fun encrypt(
             plaintext: ByteArray,
             recipientKey: SessionKey,
-            originatorKeyId: ByteArray,
-            originatorKeyPair: KeyPair,
-            symmetricEncryptionAlgorithm: SymmetricEncryption = SymmetricEncryption.AES_128,
+            senderKeyPair: SessionKeyPair,
+            symmetricCipher: SymmetricCipher = SymmetricCipher.AES_128,
             hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
         ): SessionEnvelopedData {
             val recipientInfoGenerator = makeRecipientInfoGenerator(
-                originatorKeyPair,
-                symmetricEncryptionAlgorithm,
+                senderKeyPair,
+                symmetricCipher,
                 hashingAlgorithm
             )
             recipientInfoGenerator.addRecipient(recipientKey.keyId, recipientKey.publicKey)
             val unprotectedAttrs = Hashtable<ASN1ObjectIdentifier, Attribute>()
             unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
                 OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
-                DERSet(DEROctetString(originatorKeyId))
+                DERSet(DEROctetString(senderKeyPair.sessionKey.keyId))
             )
             val bcEnvelopedData = bcEncrypt(
                 plaintext,
-                symmetricEncryptionAlgorithm,
+                symmetricCipher,
                 recipientInfoGenerator,
                 AttributeTable(unprotectedAttrs),
             )
@@ -217,16 +216,16 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         }
 
         private fun makeRecipientInfoGenerator(
-            originatorKeyPair: KeyPair,
-            symmetricEncryptionAlgorithm: SymmetricEncryption,
+            originatorKeyPair: SessionKeyPair,
+            symmetricCipher: SymmetricCipher,
             hashingAlgorithm: HashingAlgorithm
         ): JceKeyAgreeRecipientInfoGenerator {
             val ecdhAlgorithm = ecdhAlgorithmByHashingAlgorithm[hashingAlgorithm]
-            val keyWrapCipher = KEY_WRAP_ALGORITHMS[symmetricEncryptionAlgorithm]
+            val keyWrapCipher = CMS_KW_ALGORITHMS[symmetricCipher]
             return JceKeyAgreeRecipientInfoGenerator(
                 ecdhAlgorithm,
-                originatorKeyPair.private,
-                originatorKeyPair.public,
+                originatorKeyPair.privateKey,
+                originatorKeyPair.sessionKey.publicKey,
                 keyWrapCipher
             )
                 .setUserKeyingMaterial(generateRandomOctets(64))
@@ -279,7 +278,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
 
 private fun bcEncrypt(
     plaintext: ByteArray,
-    symmetricEncryptionAlgorithm: SymmetricEncryption,
+    symmetricCipher: SymmetricCipher,
     recipientInfoGenerator: RecipientInfoGenerator,
     unprotectedAttrs: AttributeTable? = null
 ): CMSEnvelopedData {
@@ -296,7 +295,7 @@ private fun bcEncrypt(
 
     val msg = CMSProcessableByteArray(plaintext)
     val contentEncryptionAlgorithm =
-        cmsContentEncryptionAlgorithm[symmetricEncryptionAlgorithm]
+        CMS_CONTENT_ENCRYPTION_ALGORITHMS[symmetricCipher]
     val encryptorBuilder =
         JceCMSContentEncryptorBuilder(contentEncryptionAlgorithm).setProvider(BC_PROVIDER)
     return cmsEnvelopedDataGenerator.generate(msg, encryptorBuilder.build())

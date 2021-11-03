@@ -10,7 +10,7 @@ package tech.relaycorp.relaynet
  */
 
 /**
- * Supported hashing algorithms
+ * Supported hashing algorithms.
  */
 enum class HashingAlgorithm {
     SHA256,
@@ -19,9 +19,9 @@ enum class HashingAlgorithm {
 }
 
 /**
- * Supported block ciphers
+ * Supported symmetric ciphers.
  */
-enum class SymmetricEncryption {
+enum class SymmetricCipher {
     AES_128,
     AES_192,
     AES_256

@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
-import tech.relaycorp.relaynet.SymmetricEncryption
+import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.utils.CERTIFICATE
 import tech.relaycorp.relaynet.utils.KEY_PAIR
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
@@ -37,14 +37,14 @@ internal class EncryptedPayloadTest {
 
             val payloadCmsEnvelopedData = EnvelopedData.deserialize(payloadSerialized)
             assertEquals(
-                PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricEncryption.AES_128],
+                PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricCipher.AES_128],
                 payloadCmsEnvelopedData.bcEnvelopedData.encryptionAlgOID
             )
         }
 
         @ParameterizedTest(name = "{0} should be used if explicitly requested")
         @EnumSource
-        fun `Encryption algorithm can be customized`(algorithm: SymmetricEncryption) {
+        fun `Encryption algorithm can be customized`(algorithm: SymmetricCipher) {
             val payload = StubEncryptedPayload(payloadPlaintext)
 
             val payloadSerialized = payload.encrypt(CERTIFICATE, algorithm)

@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet.ramf
+package tech.relaycorp.relaynet.utils
 
 import tech.relaycorp.relaynet.messages.payloads.Payload
 
