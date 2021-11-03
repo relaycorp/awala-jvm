@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import tech.relaycorp.relaynet.utils.CERTIFICATE
+import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
 import tech.relaycorp.relaynet.utils.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -35,7 +35,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
         fun `Optional arguments should be honored`() {
             val id = "the-id"
             val ttl = 1234
-            val senderCertChain = setOf(CERTIFICATE)
+            val senderCertChain = setOf(ID_CERTIFICATE)
             val date = ZonedDateTime.now()
 
             val message = messageConstructor(

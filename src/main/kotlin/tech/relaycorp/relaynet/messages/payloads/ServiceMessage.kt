@@ -2,7 +2,7 @@ package tech.relaycorp.relaynet.messages.payloads
 
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
-import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
@@ -14,15 +14,15 @@ class ServiceMessage(val type: String, val content: ByteArray) : EncryptedPayloa
     }
 
     companion object {
-        @Throws(InvalidMessageException::class)
+        @Throws(InvalidPayloadException::class)
         fun deserialize(serialization: ByteArray): ServiceMessage {
             val sequence = try {
                 ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("Service message is not a DER sequence", exc)
+                throw InvalidPayloadException("Service message is not a DER sequence", exc)
             }
             if (sequence.size < 2) {
-                throw InvalidMessageException(
+                throw InvalidPayloadException(
                     "Service message sequence should have at least two items (got ${sequence.size})"
                 )
             }

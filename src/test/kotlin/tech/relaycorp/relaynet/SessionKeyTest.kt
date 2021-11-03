@@ -16,7 +16,7 @@ import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 class SessionKeyTest {
     @Nested
     inner class Equals {
-        private val stubSessionKey = SessionKey.generate().sessionKey
+        private val stubSessionKey = SessionKeyPair.generate().sessionKey
 
         @Test
         fun `Null should not equal`() {
@@ -56,7 +56,7 @@ class SessionKeyTest {
 
     @Nested
     inner class HashCode {
-        private val stubSessionKey = SessionKey.generate().sessionKey
+        private val stubSessionKey = SessionKeyPair.generate().sessionKey
 
         @Test
         fun `Different key ids should produce different hash codes`() {
@@ -86,14 +86,14 @@ class SessionKeyTest {
     inner class Generate {
         @Test
         fun `keyId should be randomly generated, 64-bit ByteArray`() {
-            val (sessionKey) = SessionKey.generate()
+            val (sessionKey) = SessionKeyPair.generate()
 
             assertEquals(8, sessionKey.keyId.size)
         }
 
         @Test
         fun `privateKey should correspond to public key`() {
-            val sessionKeyGeneration = SessionKey.generate()
+            val sessionKeyGeneration = SessionKeyPair.generate()
 
             val ecPrivateKey = sessionKeyGeneration.privateKey as BCECPrivateKey
             val ecPublicKey = sessionKeyGeneration.sessionKey.publicKey as BCECPublicKey
@@ -103,7 +103,7 @@ class SessionKeyTest {
 
         @Test
         fun `Key pair should use P-256 by default`() {
-            val (sessionKey) = SessionKey.generate()
+            val (sessionKey) = SessionKeyPair.generate()
 
             assertEquals(
                 "P-256",
@@ -114,7 +114,7 @@ class SessionKeyTest {
         @ParameterizedTest(name = "Key pair should use {0} if explicitly requested")
         @EnumSource
         fun explicitCurveName(curve: ECDHCurve) {
-            val (sessionKey) = SessionKey.generate(curve)
+            val (sessionKey) = SessionKeyPair.generate(curve)
 
             val curveName = ECDH_CURVE_MAP[curve]
             assertEquals(

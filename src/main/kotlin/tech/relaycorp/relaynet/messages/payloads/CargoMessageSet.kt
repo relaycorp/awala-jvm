@@ -2,7 +2,7 @@ package tech.relaycorp.relaynet.messages.payloads
 
 import org.bouncycastle.asn1.ASN1Encodable
 import org.bouncycastle.asn1.DEROctetString
-import tech.relaycorp.relaynet.ramf.RAMFException
+import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
@@ -31,7 +31,7 @@ class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
             val items = try {
                 ASN1Utils.deserializeHomogeneousSequence<DEROctetString>(serialization)
             } catch (exc: ASN1Exception) {
-                throw RAMFException("Invalid CargoMessageSet", exc)
+                throw InvalidPayloadException("Invalid CargoMessageSet", exc)
             }
             val messages = items.map { it.octets }
             return CargoMessageSet(messages.toTypedArray())

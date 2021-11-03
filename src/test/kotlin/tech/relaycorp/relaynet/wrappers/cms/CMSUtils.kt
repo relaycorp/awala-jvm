@@ -4,7 +4,7 @@ import org.bouncycastle.asn1.cms.ContentInfo
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers
 import org.bouncycastle.cms.CMSSignedData
 import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.SymmetricEncryption
+import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.utils.parseDer
 
 fun parseCmsSignedData(serialization: ByteArray): CMSSignedData {
@@ -21,7 +21,7 @@ val HASHING_ALGORITHM_OIDS = mapOf(
 )
 
 val PAYLOAD_SYMMETRIC_CIPHER_OIDS = mapOf(
-    SymmetricEncryption.AES_128 to "2.16.840.1.101.3.4.1.2",
-    SymmetricEncryption.AES_192 to "2.16.840.1.101.3.4.1.22",
-    SymmetricEncryption.AES_256 to "2.16.840.1.101.3.4.1.42"
+    SymmetricCipher.AES_128 to "2.16.840.1.101.3.4.1.2",
+    SymmetricCipher.AES_192 to "2.16.840.1.101.3.4.1.22",
+    SymmetricCipher.AES_256 to "2.16.840.1.101.3.4.1.42"
 )

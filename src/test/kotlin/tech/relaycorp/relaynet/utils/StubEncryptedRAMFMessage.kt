@@ -1,12 +1,12 @@
-package tech.relaycorp.relaynet.ramf
+package tech.relaycorp.relaynet.utils
 
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.time.ZonedDateTime
-import tech.relaycorp.relaynet.messages.payloads.StubEncryptedPayload
+import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
+import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
+import tech.relaycorp.relaynet.ramf.RAMFSerializer
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
-
-internal val STUB_SERIALIZER = RAMFSerializer(32, 0)
 
 internal class StubEncryptedRAMFMessage(
     recipientAddress: String,
@@ -17,7 +17,7 @@ internal class StubEncryptedRAMFMessage(
     ttl: Int? = null,
     senderCertificateChain: Set<Certificate>? = null
 ) : EncryptedRAMFMessage<StubEncryptedPayload>(
-    STUB_SERIALIZER,
+    SERIALIZER,
     recipientAddress,
     payload,
     senderCertificate,
@@ -30,10 +30,12 @@ internal class StubEncryptedRAMFMessage(
         StubEncryptedPayload(payloadPlaintext.toString(Charset.forName("ASCII")))
 
     companion object : RAMFMessageCompanion<StubEncryptedRAMFMessage> {
+        internal val SERIALIZER = RAMFSerializer(32, 0)
+
         override fun deserialize(serialization: ByteArray) =
-            STUB_SERIALIZER.deserialize(serialization, ::StubEncryptedRAMFMessage)
+            SERIALIZER.deserialize(serialization, ::StubEncryptedRAMFMessage)
 
         override fun deserialize(serialization: InputStream) =
-            STUB_SERIALIZER.deserialize(serialization, ::StubEncryptedRAMFMessage)
+            SERIALIZER.deserialize(serialization, ::StubEncryptedRAMFMessage)
     }
 }

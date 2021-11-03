@@ -14,6 +14,7 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
 import tech.relaycorp.relaynet.utils.assertDateIsAlmostNow
 import tech.relaycorp.relaynet.utils.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
@@ -243,7 +244,8 @@ class RAMFMessageTest {
                 setOf(stubCaCertificate)
             )
 
-            val serialization = STUB_SERIALIZER.serialize(message, senderKeyPair.private)
+            val serialization =
+                StubEncryptedRAMFMessage.SERIALIZER.serialize(message, senderKeyPair.private)
 
             val messageDeserialized = StubEncryptedRAMFMessage.deserialize(serialization)
             // TODO: Implement RAMFMessage.equals() and use it here

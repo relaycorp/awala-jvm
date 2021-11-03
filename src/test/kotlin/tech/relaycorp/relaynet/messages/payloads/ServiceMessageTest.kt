@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 import org.bouncycastle.asn1.DERNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
@@ -45,7 +45,7 @@ internal class ServiceMessageTest {
         fun `Serialization should be DER sequence`() {
             val invalidSerialization = "foo".toByteArray()
 
-            val exception = assertThrows<InvalidMessageException> {
+            val exception = assertThrows<InvalidPayloadException> {
                 ServiceMessage.deserialize(invalidSerialization)
             }
 
@@ -58,7 +58,7 @@ internal class ServiceMessageTest {
             val invalidSerialization =
                 ASN1Utils.serializeSequence(arrayOf(DERNull.INSTANCE), false)
 
-            val exception = assertThrows<InvalidMessageException> {
+            val exception = assertThrows<InvalidPayloadException> {
                 ServiceMessage.deserialize(invalidSerialization)
             }
 
