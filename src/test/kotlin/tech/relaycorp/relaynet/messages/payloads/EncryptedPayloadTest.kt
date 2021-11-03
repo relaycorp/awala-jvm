@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
@@ -20,8 +20,8 @@ internal class EncryptedPayloadTest {
     inner class Encrypt {
         private val payloadPlaintext = "plaintext"
 
-        private val recipientSessionKeyPair = SessionKey.generate()
-        private val senderSessionKeyPair = SessionKey.generate()
+        private val recipientSessionKeyPair = SessionKeyPair.generate()
+        private val senderSessionKeyPair = SessionKeyPair.generate()
 
         @Test
         fun `Payload should be encrypted with the specified recipient key`() {

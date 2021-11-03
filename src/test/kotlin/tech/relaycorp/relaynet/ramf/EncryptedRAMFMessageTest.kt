@@ -3,7 +3,7 @@ package tech.relaycorp.relaynet.ramf
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
 import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
@@ -11,8 +11,8 @@ import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
 internal class EncryptedRAMFMessageTest {
     private val recipientAddress = "04334"
 
-    private val recipientSessionKeyPair = SessionKey.generate()
-    private val senderSessionKeyPair = SessionKey.generate()
+    private val recipientSessionKeyPair = SessionKeyPair.generate()
+    private val senderSessionKeyPair = SessionKeyPair.generate()
 
     @Nested
     inner class UnwrapPayload {

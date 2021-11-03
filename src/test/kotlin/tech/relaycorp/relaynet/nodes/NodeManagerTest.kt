@@ -19,7 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.ECDHCurve
 import tech.relaycorp.relaynet.HashingAlgorithm
-import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
@@ -35,7 +35,7 @@ class NodeManagerTest {
     private val payload = StubEncryptedPayload("the payload")
 
     private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
-    private val peerSessionKeyPair = SessionKey.generate()
+    private val peerSessionKeyPair = SessionKeyPair.generate()
     private val peerSessionKey = peerSessionKeyPair.sessionKey
     private val peerSessionPrivateKey = peerSessionKeyPair.privateKey
 
@@ -136,7 +136,7 @@ class NodeManagerTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
             publicKeyStore.clear()
 
-            val exception = assertThrows<NodeManagerException> {
+            val exception = assertThrows<MissingSessionKeyException> {
                 manager.wrapMessagePayload(payload, peerPrivateAddress)
             }
 

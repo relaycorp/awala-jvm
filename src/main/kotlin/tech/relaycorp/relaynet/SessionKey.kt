@@ -5,9 +5,7 @@ import java.security.PublicKey
 import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 
-data class SessionKeyPair(val sessionKey: SessionKey, val privateKey: PrivateKey)
-
-data class SessionKey(val keyId: ByteArray, val publicKey: PublicKey) {
+data class SessionKeyPair(val sessionKey: SessionKey, val privateKey: PrivateKey) {
     companion object {
         fun generate(curve: ECDHCurve = ECDHCurve.P256): SessionKeyPair {
             val keyId = generateRandomOctets(8)
@@ -18,7 +16,9 @@ data class SessionKey(val keyId: ByteArray, val publicKey: PublicKey) {
             )
         }
     }
+}
 
+data class SessionKey(val keyId: ByteArray, val publicKey: PublicKey) {
     override fun equals(other: Any?): Boolean {
         if (other !is SessionKey) return false
 

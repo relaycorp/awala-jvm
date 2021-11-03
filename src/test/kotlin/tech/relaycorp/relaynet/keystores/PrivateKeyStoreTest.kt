@@ -9,7 +9,7 @@ import org.bouncycastle.util.encoders.Base64
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -19,7 +19,7 @@ class PrivateKeyStoreTest {
     private val identityPrivateKey = KeyPairSet.PRIVATE_GW.private
     private val identityCertificate = PDACertPath.PRIVATE_GW
 
-    private val sessionKeyGeneration = SessionKey.generate()
+    private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKeyIdBase64 = Base64.toBase64String(sessionKeyGeneration.sessionKey.keyId)
 
     private val peerPrivateAddress = PDACertPath.PUBLIC_GW.subjectPrivateAddress

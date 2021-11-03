@@ -43,7 +43,7 @@ import org.junit.jupiter.params.provider.EnumSource
 import tech.relaycorp.relaynet.BC_PROVIDER
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.OIDs
-import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -55,9 +55,9 @@ private val PLAINTEXT = "hello".toByteArray()
 
 private val ORIGINATOR_KEY_ID_OID = ASN1ObjectIdentifier("0.4.0.127.0.17.0.1.0")
 
-private val SENDER_SESSION_KEY_PAIR = SessionKey.generate()
+private val SENDER_SESSION_KEY_PAIR = SessionKeyPair.generate()
 
-private val RECIPIENT_SESSION_KEY_PAIR = SessionKey.generate()
+private val RECIPIENT_SESSION_KEY_PAIR = SessionKeyPair.generate()
 private val RECIPIENT_SESSION_KEY = RECIPIENT_SESSION_KEY_PAIR.sessionKey
 private val RECIPIENT_SESSION_PRIVATE_KEY = RECIPIENT_SESSION_KEY_PAIR.privateKey
 

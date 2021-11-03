@@ -2,7 +2,7 @@ package tech.relaycorp.relaynet.messages
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.messages.payloads.ServiceMessage
 import tech.relaycorp.relaynet.ramf.RAMFSpecializationTestCase
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -15,8 +15,8 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     0x00,
     Parcel.Companion
 ) {
-    private val recipientSessionKeyPair = SessionKey.generate()
-    private val senderSessionKeyPair = SessionKey.generate()
+    private val recipientSessionKeyPair = SessionKeyPair.generate()
+    private val senderSessionKeyPair = SessionKeyPair.generate()
 
     @Test
     fun `Payload deserialization should be delegated to ServiceMessage`() {
