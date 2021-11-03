@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.utils.CERTIFICATE
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
+import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
 import tech.relaycorp.relaynet.utils.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 

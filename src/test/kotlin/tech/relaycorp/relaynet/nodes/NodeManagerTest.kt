@@ -24,7 +24,8 @@ import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
-import tech.relaycorp.relaynet.utils.StubPayload
+import tech.relaycorp.relaynet.utils.StubEncryptedPayload
+import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
 import tech.relaycorp.relaynet.wrappers.ECDH_CURVE_MAP
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.PAYLOAD_SYMMETRIC_CIPHER_OIDS
@@ -32,7 +33,12 @@ import tech.relaycorp.relaynet.wrappers.cms.SessionEnvelopedData
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NodeManagerTest {
+    private val payload = StubEncryptedPayload("the payload")
+
     private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
+    private val peerSessionKeyPair = SessionKey.generate()
+    private val peerSessionKey = peerSessionKeyPair.sessionKey
+    private val peerSessionPrivateKey = peerSessionKeyPair.privateKey
 
     private val privateKeyStore = MockPrivateKeyStore()
     private val publicKeyStore = MockSessionPublicKeyStore()
@@ -117,12 +123,6 @@ class NodeManagerTest {
 
     @Nested
     inner class WrapMessagePayload {
-        private val payload = StubPayload("the payload")
-
-        private val peerSessionKeyGeneration = SessionKey.generate()
-        private val peerSessionKey = peerSessionKeyGeneration.sessionKey
-        private val peerSessionPrivateKey = peerSessionKeyGeneration.privateKey
-
         @BeforeEach
         fun registerPeerSessionKey() = runBlockingTest {
             publicKeyStore.save(
