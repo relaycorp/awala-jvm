@@ -10,7 +10,7 @@ import tech.relaycorp.relaynet.wrappers.cms.SessionEnvelopedData
 abstract class NodeManager<P : Payload>(
     private val privateKeyStore: PrivateKeyStore,
     private val sessionPublicKeyStore: SessionPublicKeyStore,
-    private val cryptoOptions: NodeCryptoOptions = NodeCryptoOptions(),
+    private val cryptoOptions: NodeCryptoOptions,
 ) {
     suspend fun generateSessionKeyPair(peerPrivateAddress: String? = null): SessionKeyPair {
         val keyGeneration = SessionKey.generate(this.cryptoOptions.ecdhCurve)
