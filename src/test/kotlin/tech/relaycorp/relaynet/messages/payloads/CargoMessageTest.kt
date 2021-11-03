@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
-import tech.relaycorp.relaynet.utils.CERTIFICATE
-import tech.relaycorp.relaynet.utils.KEY_PAIR
+import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
+import tech.relaycorp.relaynet.utils.ID_KEY_PAIR
 
 class CargoMessageTest {
     @Nested
@@ -16,8 +16,8 @@ class CargoMessageTest {
 
         @Test
         fun `Parcels should be correctly classified as such`() {
-            val parcel = Parcel(recipientEndpointAddress, "".toByteArray(), CERTIFICATE)
-            val parcelSerialized = parcel.serialize(KEY_PAIR.private)
+            val parcel = Parcel(recipientEndpointAddress, "".toByteArray(), ID_CERTIFICATE)
+            val parcelSerialized = parcel.serialize(ID_KEY_PAIR.private)
 
             val cargoMessage = CargoMessage(parcelSerialized)
 

@@ -3,30 +3,29 @@ package tech.relaycorp.relaynet.ramf
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import tech.relaycorp.relaynet.utils.CERTIFICATE
+import tech.relaycorp.relaynet.SessionKey
+import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
 import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
-import tech.relaycorp.relaynet.utils.issueStubCertificate
-import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 internal class EncryptedRAMFMessageTest {
     private val recipientAddress = "04334"
 
+    private val recipientSessionKeyPair = SessionKey.generate()
+    private val senderSessionKeyPair = SessionKey.generate()
+
     @Nested
     inner class UnwrapPayload {
         @Test
-        fun `SessionlessEnvelopedData payload should be decrypted`() {
+        fun `SessionEnvelopedData payload should be decrypted`() {
             val payload = StubEncryptedPayload("the payload")
-            val recipientKeyPair = generateRSAKeyPair()
-            val recipientCertificate =
-                issueStubCertificate(recipientKeyPair.public, recipientKeyPair.private)
             val message = StubEncryptedRAMFMessage(
                 recipientAddress,
-                payload.encrypt(recipientCertificate),
-                CERTIFICATE
+                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                ID_CERTIFICATE
             )
 
-            val plaintextDeserialized = message.unwrapPayload(recipientKeyPair.private)
+            val plaintextDeserialized = message.unwrapPayload(recipientSessionKeyPair.privateKey)
 
             assertEquals(payload.payload, plaintextDeserialized.payload)
         }

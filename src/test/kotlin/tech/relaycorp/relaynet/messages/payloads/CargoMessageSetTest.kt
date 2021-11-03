@@ -10,8 +10,8 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
 import tech.relaycorp.relaynet.ramf.RAMFException
-import tech.relaycorp.relaynet.utils.CERTIFICATE
-import tech.relaycorp.relaynet.utils.KEY_PAIR
+import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
+import tech.relaycorp.relaynet.utils.ID_KEY_PAIR
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 internal class CargoMessageSetTest {
@@ -139,8 +139,8 @@ internal class CargoMessageSetTest {
         fun `Encapsulated messages should be wrapped in CargoMessage instances`() {
             val recipientEndpointAddress = "https://foo.relaycorp.tech"
             val parcelSerialized =
-                Parcel(recipientEndpointAddress, "".toByteArray(), CERTIFICATE)
-                    .serialize(KEY_PAIR.private)
+                Parcel(recipientEndpointAddress, "".toByteArray(), ID_CERTIFICATE)
+                    .serialize(ID_KEY_PAIR.private)
             val pcaSerialized =
                 ParcelCollectionAck("0deadbeef", recipientEndpointAddress, "parcel-id")
                     .serialize()

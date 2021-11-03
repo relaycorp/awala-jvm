@@ -5,7 +5,6 @@ import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.messages.payloads.EncryptedPayload
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedDataException
-import tech.relaycorp.relaynet.wrappers.cms.SessionlessEnvelopedData
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
@@ -36,7 +35,7 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
      */
     @Throws(RAMFException::class, EnvelopedDataException::class)
     fun unwrapPayload(privateKey: PrivateKey): P {
-        val envelopedData = EnvelopedData.deserialize(payload) as SessionlessEnvelopedData
+        val envelopedData = EnvelopedData.deserialize(payload)
         val plaintext = envelopedData.decrypt(privateKey)
         return deserializePayload(plaintext)
     }
