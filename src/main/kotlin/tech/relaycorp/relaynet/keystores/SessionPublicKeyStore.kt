@@ -6,16 +6,22 @@ import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 
 abstract class SessionPublicKeyStore {
     @Throws(KeyStoreBackendException::class)
-    suspend fun save(key: SessionKey, peerPrivateAddress: String, creationTime: ZonedDateTime) {
+    suspend fun save(
+        key: SessionKey,
+        peerPrivateAddress: String,
+        creationTime: ZonedDateTime = ZonedDateTime.now()
+    ) {
+        val creationTimestamp = creationTime.toEpochSecond()
+
         val existingKeyData = retrieveKeyDataOrWrapException(peerPrivateAddress)
-        if (existingKeyData != null && creationTime < existingKeyData.creationTime) {
+        if (existingKeyData != null && creationTimestamp < existingKeyData.creationTimestamp) {
             return
         }
 
         val keyData = SessionPublicKeyData(
             key.keyId,
             key.publicKey.encoded,
-            creationTime
+            creationTimestamp
         )
         try {
             saveKeyData(keyData, peerPrivateAddress)
