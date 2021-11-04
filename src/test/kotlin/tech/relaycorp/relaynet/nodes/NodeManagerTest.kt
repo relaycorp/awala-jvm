@@ -316,7 +316,7 @@ class NodeManagerTest {
 
             assertEquals(peerSessionKey, publicKeyStore.retrieve(peerPrivateAddress))
             val storedKey = publicKeyStore.keys[peerPrivateAddress]!!
-            assertEquals(message.creationDate, storedKey.creationTime)
+            assertEquals(message.creationDate.toEpochSecond(), storedKey.creationTimestamp)
         }
     }
 }

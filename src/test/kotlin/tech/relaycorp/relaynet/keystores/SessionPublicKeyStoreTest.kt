@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.keystores
 
+import java.time.ZoneId
+import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -14,7 +16,7 @@ import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 @OptIn(ExperimentalCoroutinesApi::class)
 class SessionPublicKeyStoreTest {
     private val peerPrivateAddress = "0deadbeef"
-    private val creationTime: ZonedDateTime = ZonedDateTime.now()
+    private val creationTime: ZonedDateTime = ZonedDateTime.now(UTC).withNano(0)
 
     private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKey = sessionKeyGeneration.sessionKey
@@ -25,13 +27,12 @@ class SessionPublicKeyStoreTest {
         fun `Key data should be saved if there is no prior key for recipient`() = runBlockingTest {
             val store = MockSessionPublicKeyStore()
 
-            store.save(sessionKey, peerPrivateAddress, creationTime)
+            store.save(sessionKey, peerPrivateAddress)
 
             assertTrue(store.keys.containsKey(peerPrivateAddress))
             val keyData = store.keys[peerPrivateAddress]!!
             assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
-            assertEquals(creationTime, keyData.creationTime)
         }
 
         @Test
@@ -45,7 +46,7 @@ class SessionPublicKeyStoreTest {
             val keyData = store.keys[peerPrivateAddress]!!
             assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
-            assertEquals(creationTime, keyData.creationTime)
+            assertEquals(creationTime.toEpochSecond(), keyData.creationTimestamp)
         }
 
         @Test
@@ -59,7 +60,7 @@ class SessionPublicKeyStoreTest {
             val keyData = store.keys[peerPrivateAddress]!!
             assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
-            assertEquals(creationTime, keyData.creationTime)
+            assertEquals(creationTime.toEpochSecond(), keyData.creationTimestamp)
         }
 
         @Test
@@ -86,6 +87,46 @@ class SessionPublicKeyStoreTest {
 
             assertEquals(exception.message, "Failed to save session key")
             assertEquals(exception.cause, backendException)
+        }
+
+        @Nested
+        inner class CreationTime {
+            @Test
+            fun `Now should be used by default`() = runBlockingTest {
+                val now = ZonedDateTime.now(UTC)
+                val store = MockSessionPublicKeyStore()
+
+                store.save(sessionKey, peerPrivateAddress)
+
+                val keyData = store.keys[peerPrivateAddress]!!
+                val creationTimestamp = keyData.creationTimestamp
+                assertTrue(now.toEpochSecond() <= creationTimestamp)
+                assertTrue(creationTimestamp <= ZonedDateTime.now(UTC).toEpochSecond())
+            }
+
+            @Test
+            fun `Any explicit time should be honored`() = runBlockingTest {
+                val store = MockSessionPublicKeyStore()
+
+                store.save(sessionKey, peerPrivateAddress, creationTime)
+
+                val keyData = store.keys[peerPrivateAddress]!!
+                assertEquals(creationTime.toEpochSecond(), keyData.creationTimestamp)
+            }
+
+            @Test
+            fun `Time should be stored as UTC`() = runBlockingTest {
+                val creationTime = ZonedDateTime.now(ZoneId.of("America/Caracas")).minusDays(1)
+                val store = MockSessionPublicKeyStore()
+
+                store.save(sessionKey, peerPrivateAddress, creationTime)
+
+                val keyData = store.keys[peerPrivateAddress]!!
+                assertEquals(
+                    creationTime.withZoneSameInstant(UTC).toEpochSecond(),
+                    keyData.creationTimestamp
+                )
+            }
         }
     }
 
