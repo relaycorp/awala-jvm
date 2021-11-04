@@ -79,6 +79,7 @@ $dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyData/keyDer/#/
 $dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyData/keyId/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-data/key-id.html
 $dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/index.html
 $dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore/SessionPublicKeyStore/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/-session-public-key-store.html
+$dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore/delete/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/delete.html
 $dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore/retrieve/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/retrieve.html
 $dokka.location:tech.relaycorp.relaynet.keystores/SessionPublicKeyStore/save/#tech.relaycorp.relaynet.SessionKey#kotlin.String#java.time.ZonedDateTime/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-session-public-key-store/save.html
 $dokka.location:tech.relaycorp.relaynet.messages.control////PointingToDeclaration/awala/tech.relaycorp.relaynet.messages.control/index.html
