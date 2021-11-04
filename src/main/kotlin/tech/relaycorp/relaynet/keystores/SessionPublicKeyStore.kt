@@ -35,6 +35,12 @@ abstract class SessionPublicKeyStore {
         return SessionKey(keyData.keyId, sessionPublicKey)
     }
 
+    /**
+     * Delete the session key for [peerPrivateAddress], if it exists.
+     */
+    @Throws(KeyStoreBackendException::class)
+    abstract suspend fun delete(peerPrivateAddress: String)
+
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveKeyData(
         keyData: SessionPublicKeyData,
