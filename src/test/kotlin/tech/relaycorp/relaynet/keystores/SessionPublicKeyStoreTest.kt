@@ -63,32 +63,6 @@ class SessionPublicKeyStoreTest {
             assertEquals(creationTime.toEpochSecond(), keyData.creationTimestamp)
         }
 
-        @Test
-        fun `Any error while retrieving existing key should be wrapped`() = runBlockingTest {
-            val backendException = Exception("Something went wrong")
-            val store = MockSessionPublicKeyStore(retrievalException = backendException)
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.save(sessionKey, peerPrivateAddress, creationTime)
-            }
-
-            assertEquals(exception.message, "Failed to retrieve key")
-            assertEquals(exception.cause, backendException)
-        }
-
-        @Test
-        fun `Any error while saving existing key should be wrapped`() = runBlockingTest {
-            val backendException = Exception("Something went wrong")
-            val store = MockSessionPublicKeyStore(backendException)
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.save(sessionKey, peerPrivateAddress, creationTime)
-            }
-
-            assertEquals(exception.message, "Failed to save session key")
-            assertEquals(exception.cause, backendException)
-        }
-
         @Nested
         inner class CreationTime {
             @Test
@@ -150,19 +124,6 @@ class SessionPublicKeyStoreTest {
                 assertThrows<MissingKeyException> { (store.retrieve(peerPrivateAddress)) }
 
             assertEquals("There is no session key for $peerPrivateAddress", exception.message)
-        }
-
-        @Test
-        fun `Retrieval errors should be wrapped`() = runBlockingTest {
-            val backendException = Exception("whoops")
-            val store = MockSessionPublicKeyStore(retrievalException = backendException)
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.retrieve(peerPrivateAddress)
-            }
-
-            assertEquals(exception.message, "Failed to retrieve key")
-            assertEquals(exception.cause, backendException)
         }
     }
 }

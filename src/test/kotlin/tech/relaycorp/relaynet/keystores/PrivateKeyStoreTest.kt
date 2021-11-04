@@ -41,19 +41,6 @@ class PrivateKeyStoreTest {
             )
             assertNull(keyData.peerPrivateAddress)
         }
-
-        @Test
-        fun `Errors should be wrapped`() = runBlockingTest {
-            val backendException = Exception("cannot save")
-            val store = MockPrivateKeyStore(backendException)
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.saveIdentityKey(identityPrivateKey, identityCertificate)
-            }
-
-            assertEquals("Failed to save key", exception.message)
-            assertEquals(backendException, exception.cause)
-        }
     }
 
     @Nested
@@ -99,19 +86,6 @@ class PrivateKeyStoreTest {
                 "Identity key pair $privateAddress is missing certificate",
                 exception.message
             )
-        }
-
-        @Test
-        fun `Errors should be wrapped`() = runBlockingTest {
-            val backendException = Exception("oh noes")
-            val store = MockPrivateKeyStore(retrievalException = backendException)
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)
-            }
-
-            assertEquals("Failed to retrieve key", exception.message)
-            assertEquals(backendException, exception.cause)
         }
     }
 
@@ -160,23 +134,6 @@ class PrivateKeyStoreTest {
 
             val keyData = store.keys["s-$sessionKeyIdBase64"]!!
             assertEquals(peerPrivateAddress, keyData.peerPrivateAddress)
-        }
-
-        @Test
-        fun `Errors should be wrapped`() = runBlockingTest {
-            val backendException = Exception("oh noes")
-            val store = MockPrivateKeyStore(backendException)
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.saveSessionKey(
-                    sessionKeyGeneration.privateKey,
-                    sessionKeyGeneration.sessionKey.keyId,
-                    peerPrivateAddress
-                )
-            }
-
-            assertEquals("Failed to save key", exception.message)
-            assertEquals(backendException, exception.cause)
         }
     }
 
@@ -259,22 +216,6 @@ class PrivateKeyStoreTest {
                 "There is no session key for $peerPrivateAddress",
                 exception.message
             )
-        }
-
-        @Test
-        fun `Errors should be wrapped`() = runBlockingTest {
-            val backendException = Exception("oh noes")
-            val store = MockPrivateKeyStore(retrievalException = backendException)
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.retrieveSessionKey(
-                    sessionKeyGeneration.sessionKey.keyId,
-                    peerPrivateAddress
-                )
-            }
-
-            assertEquals("Failed to retrieve key", exception.message)
-            assertEquals(backendException, exception.cause)
         }
     }
 }

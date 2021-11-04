@@ -10,12 +10,12 @@ abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
     suspend fun saveIdentityKey(privateKey: PrivateKey, certificate: Certificate) {
         val keyData = PrivateKeyData(privateKey.encoded, certificate.serialize())
-        saveKeyDataOrWrapError(keyData, "i-${certificate.subjectPrivateAddress}")
+        saveKeyData(keyData, "i-${certificate.subjectPrivateAddress}")
     }
 
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun retrieveIdentityKey(privateAddress: String): IdentityKeyPair {
-        val keyData = retrieveKeyDataOrWrapError("i-$privateAddress")
+        val keyData = retrieveKeyData("i-$privateAddress")
             ?: throw MissingKeyException("There is no identity key for $privateAddress")
 
         if (keyData.certificateDer == null) {
@@ -37,12 +37,12 @@ abstract class PrivateKeyStore {
         peerPrivatAddress: String? = null
     ) {
         val keyData = PrivateKeyData(privateKey.encoded, peerPrivateAddress = peerPrivatAddress)
-        saveKeyDataOrWrapError(keyData, formatSessionKeyId(keyId))
+        saveKeyData(keyData, formatSessionKeyId(keyId))
     }
 
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun retrieveSessionKey(keyId: ByteArray, peerPrivateAddress: String): PrivateKey {
-        val keyData = retrieveKeyDataOrWrapError(formatSessionKeyId(keyId))
+        val keyData = retrieveKeyData(formatSessionKeyId(keyId))
             ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
         if (
             keyData.peerPrivateAddress != null && keyData.peerPrivateAddress != peerPrivateAddress
@@ -56,27 +56,9 @@ abstract class PrivateKeyStore {
 
     private fun formatSessionKeyId(keyId: ByteArray) = "s-${Base64.toBase64String(keyId)}"
 
+    @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveKeyData(keyData: PrivateKeyData, keyId: String)
 
+    @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun retrieveKeyData(keyId: String): PrivateKeyData?
-
-    @Throws(KeyStoreBackendException::class)
-    private suspend fun saveKeyDataOrWrapError(keyData: PrivateKeyData, keyId: String) {
-        try {
-            saveKeyData(keyData, keyId)
-        } catch (exc: Throwable) {
-            throw KeyStoreBackendException("Failed to save key", exc)
-        }
-    }
-
-    @Throws(KeyStoreBackendException::class)
-    private suspend fun retrieveKeyDataOrWrapError(keyId: String): PrivateKeyData? {
-        val keyData = try {
-            retrieveKeyData(keyId)
-        } catch (exc: Throwable) {
-            throw KeyStoreBackendException("Failed to retrieve key", exc)
-        }
-
-        return keyData
-    }
 }
