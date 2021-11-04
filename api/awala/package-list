@@ -58,6 +58,7 @@ $dokka.location:tech.relaycorp.relaynet.keystores/IdentityKeyPair/IdentityKeyPai
 $dokka.location:tech.relaycorp.relaynet.keystores/IdentityKeyPair/certificate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-identity-key-pair/certificate.html
 $dokka.location:tech.relaycorp.relaynet.keystores/IdentityKeyPair/privateKey/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-identity-key-pair/private-key.html
 $dokka.location:tech.relaycorp.relaynet.keystores/KeyStoreBackendException///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-key-store-backend-exception/index.html
+$dokka.location:tech.relaycorp.relaynet.keystores/KeyStoreBackendException/KeyStoreBackendException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-key-store-backend-exception/-key-store-backend-exception.html
 $dokka.location:tech.relaycorp.relaynet.keystores/MissingKeyException///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-missing-key-exception/index.html
 $dokka.location:tech.relaycorp.relaynet.keystores/MissingKeyException/MissingKeyException/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-missing-key-exception/-missing-key-exception.html
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-data/index.html
