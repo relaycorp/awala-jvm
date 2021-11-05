@@ -15,12 +15,16 @@ abstract class NodeManager<P : Payload>(
     private val sessionPublicKeyStore: SessionPublicKeyStore,
     private val cryptoOptions: NodeCryptoOptions,
 ) {
-    suspend fun generateSessionKeyPair(peerPrivateAddress: String? = null): SessionKeyPair {
+    suspend fun generateSessionKeyPair(
+        privateAddress: String,
+        peerPrivateAddress: String? = null
+    ): SessionKeyPair {
         val keyGeneration = SessionKeyPair.generate(this.cryptoOptions.ecdhCurve)
         privateKeyStore.saveSessionKey(
             keyGeneration.privateKey,
             keyGeneration.sessionKey.keyId,
-            peerPrivateAddress
+            privateAddress,
+            peerPrivateAddress,
         )
         return keyGeneration
     }
@@ -32,14 +36,16 @@ abstract class NodeManager<P : Payload>(
      *
      * @param payload
      * @param peerPrivateAddress
+     * @param privateAddress
      */
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun <P : EncryptedPayload> wrapMessagePayload(
         payload: P,
-        peerPrivateAddress: String
+        peerPrivateAddress: String,
+        privateAddress: String,
     ): ByteArray {
         val recipientSessionKey = sessionPublicKeyStore.retrieve(peerPrivateAddress)
-        val senderSessionKeyPair = generateSessionKeyPair(peerPrivateAddress)
+        val senderSessionKeyPair = generateSessionKeyPair(privateAddress, peerPrivateAddress)
         return payload.encrypt(
             recipientSessionKey,
             senderSessionKeyPair,

@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.ramf
 
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -35,6 +36,7 @@ internal class EncryptedRAMFMessageTest {
             privateKeyStore.saveSessionKey(
                 recipientSessionKeyPair.privateKey,
                 recipientSessionKeyPair.sessionKey.keyId,
+                recipientPrivateAddress,
                 senderPrivateAddress,
             )
         }
@@ -108,6 +110,21 @@ internal class EncryptedRAMFMessageTest {
             val (_, senderSessionKey) = message.unwrapPayload(privateKeyStore)
 
             assertEquals(senderSessionKeyPair.sessionKey, senderSessionKey)
+        }
+
+        @Test
+        fun `Messages bound for a public node shouldn't be supported`() = runBlockingTest {
+            val message = StubEncryptedRAMFMessage(
+                "https://example.com",
+                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                PDACertPath.PDA,
+            )
+
+            val exception = assertThrows<NotImplementedError> {
+                message.unwrapPayload(privateKeyStore)
+            }
+
+            assertContains(exception.message!!, "Public recipients are not currently supported")
         }
     }
 }

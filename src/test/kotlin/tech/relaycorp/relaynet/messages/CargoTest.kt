@@ -31,6 +31,7 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
             recipientSessionKeyPair.privateKey,
             recipientSessionKeyPair.sessionKey.keyId,
             CDACertPath.PRIVATE_GW.subjectPrivateAddress,
+            CDACertPath.PUBLIC_GW.subjectPrivateAddress,
         )
     }
 
@@ -38,9 +39,9 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
     fun `Payload deserialization should be delegated to CargoMessageSet`() = runBlockingTest {
         val cargoMessageSet = CargoMessageSet(arrayOf("msg1".toByteArray(), "msg2".toByteArray()))
         val cargo = Cargo(
-            "https://gb.relaycorp.tech",
+            CDACertPath.PRIVATE_GW.subjectPrivateAddress,
             cargoMessageSet.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-            CDACertPath.PRIVATE_GW
+            CDACertPath.PUBLIC_GW
         )
 
         val (payloadDeserialized) = cargo.unwrapPayload(privateKeyStore)

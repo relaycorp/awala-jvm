@@ -16,13 +16,14 @@ import tech.relaycorp.relaynet.utils.PDACertPath
 
 @ExperimentalCoroutinesApi
 class PrivateKeyStoreTest {
-    private val identityPrivateKey = KeyPairSet.PRIVATE_GW.private
-    private val identityCertificate = PDACertPath.PRIVATE_GW
+    private val identityPrivateKey = KeyPairSet.PRIVATE_ENDPOINT.private
+    private val identityCertificate = PDACertPath.PRIVATE_ENDPOINT
 
     private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKeyIdBase64 = Base64.toBase64String(sessionKeyGeneration.sessionKey.keyId)
 
-    private val peerPrivateAddress = PDACertPath.PUBLIC_GW.subjectPrivateAddress
+    private val ownPrivateAddress = identityCertificate.subjectPrivateAddress
+    private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
 
     @Nested
     inner class SaveIdentityKey {
@@ -32,8 +33,10 @@ class PrivateKeyStoreTest {
 
             store.saveIdentityKey(identityPrivateKey, identityCertificate)
 
-            assertTrue(store.keys.containsKey("i-${identityCertificate.subjectPrivateAddress}"))
-            val keyData = store.keys["i-${identityCertificate.subjectPrivateAddress}"]!!
+            val privateAddress = identityCertificate.subjectPrivateAddress
+            assertTrue(store.keys.containsKey(privateAddress))
+            assertTrue(store.keys[privateAddress]!!.containsKey("i-$privateAddress"))
+            val keyData = store.keys[privateAddress]!!["i-$privateAddress"]!!
             assertEquals(identityPrivateKey.encoded.asList(), keyData.privateKeyDer.asList())
             assertEquals(
                 identityCertificate.serialize().asList(),
@@ -74,8 +77,8 @@ class PrivateKeyStoreTest {
         fun `Error should be thrown if certificate is missing`() = runBlockingTest {
             val store = MockPrivateKeyStore()
             val privateAddress = identityCertificate.subjectPrivateAddress
-            store.keys["i-$privateAddress"] = PrivateKeyData(
-                identityPrivateKey.encoded
+            store.keys[privateAddress] = mutableMapOf(
+                "i-$privateAddress" to PrivateKeyData(identityPrivateKey.encoded)
             )
 
             val exception = assertThrows<KeyStoreBackendException> {
@@ -97,11 +100,13 @@ class PrivateKeyStoreTest {
 
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
-                sessionKeyGeneration.sessionKey.keyId
+                sessionKeyGeneration.sessionKey.keyId,
+                ownPrivateAddress,
             )
 
-            assertTrue(store.keys.containsKey("s-$sessionKeyIdBase64"))
-            val keyData = store.keys["s-$sessionKeyIdBase64"]!!
+            assertTrue(store.keys.containsKey(ownPrivateAddress))
+            assertTrue(store.keys[ownPrivateAddress]!!.containsKey("s-$sessionKeyIdBase64"))
+            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdBase64"]!!
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
                 keyData.privateKeyDer.asList()
@@ -115,10 +120,11 @@ class PrivateKeyStoreTest {
 
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
-                sessionKeyGeneration.sessionKey.keyId
+                sessionKeyGeneration.sessionKey.keyId,
+                ownPrivateAddress,
             )
 
-            val keyData = store.keys["s-$sessionKeyIdBase64"]!!
+            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdBase64"]!!
             assertNull(keyData.peerPrivateAddress)
         }
 
@@ -129,10 +135,11 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
+                ownPrivateAddress,
                 peerPrivateAddress
             )
 
-            val keyData = store.keys["s-$sessionKeyIdBase64"]!!
+            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdBase64"]!!
             assertEquals(peerPrivateAddress, keyData.peerPrivateAddress)
         }
     }
@@ -145,10 +152,12 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
+                ownPrivateAddress,
             )
 
             val sessionKey = store.retrieveSessionKey(
                 sessionKeyGeneration.sessionKey.keyId,
+                ownPrivateAddress,
                 "not $peerPrivateAddress"
             )
 
@@ -164,12 +173,14 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
+                ownPrivateAddress,
                 peerPrivateAddress
             )
 
             val sessionKey = store.retrieveSessionKey(
                 sessionKeyGeneration.sessionKey.keyId,
-                peerPrivateAddress
+                ownPrivateAddress,
+                peerPrivateAddress,
             )
 
             assertEquals(
@@ -184,6 +195,7 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
+                ownPrivateAddress,
                 peerPrivateAddress
             )
             val invalidPeerPrivateAddress = "not $peerPrivateAddress"
@@ -191,6 +203,7 @@ class PrivateKeyStoreTest {
             val exception = assertThrows<MissingKeyException> {
                 store.retrieveSessionKey(
                     sessionKeyGeneration.sessionKey.keyId,
+                    ownPrivateAddress,
                     invalidPeerPrivateAddress
                 )
             }
@@ -208,7 +221,8 @@ class PrivateKeyStoreTest {
             val exception = assertThrows<MissingKeyException> {
                 store.retrieveSessionKey(
                     sessionKeyGeneration.sessionKey.keyId,
-                    peerPrivateAddress
+                    ownPrivateAddress,
+                    peerPrivateAddress,
                 )
             }
 

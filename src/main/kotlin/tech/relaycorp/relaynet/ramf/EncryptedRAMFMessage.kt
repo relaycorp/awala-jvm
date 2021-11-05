@@ -36,20 +36,29 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
      *      `privateKey` is invalid.
      * @throws MissingKeyException if the session key doesn't exist.
      * @throws InvalidPayloadException if the plaintext is invalid.
+     * @throws NotImplementedError if the recipient address is public.
      */
     @Throws(
         InvalidPayloadException::class,
         MissingKeyException::class,
         EnvelopedDataException::class,
+        NotImplementedError::class
     )
     suspend fun unwrapPayload(privateKeyStore: PrivateKeyStore): PayloadUnwrapping<P> {
+        if (!isRecipientAddressPrivate) {
+            // Fix is part of https://github.com/relaycorp/relayverse/issues/19
+            TODO("Public recipients are not currently supported")
+        }
         val envelopedData = EnvelopedData.deserialize(payload)
         if (envelopedData !is SessionEnvelopedData) {
             throw InvalidPayloadException("SessionlessEnvelopedData is no longer supported")
         }
         val keyId = envelopedData.getRecipientKeyId()
-        val privateKey =
-            privateKeyStore.retrieveSessionKey(keyId.id, senderCertificate.subjectPrivateAddress)
+        val privateKey = privateKeyStore.retrieveSessionKey(
+            keyId.id,
+            recipientAddress,
+            senderCertificate.subjectPrivateAddress
+        )
         val plaintext = envelopedData.decrypt(privateKey)
         val payload = deserializePayload(plaintext)
         return PayloadUnwrapping(payload, envelopedData.getOriginatorKey())
