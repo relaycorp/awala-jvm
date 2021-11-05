@@ -30,6 +30,7 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
         privateKeyStore.saveSessionKey(
             recipientSessionKeyPair.privateKey,
             recipientSessionKeyPair.sessionKey.keyId,
+            PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
             PDACertPath.PDA.subjectPrivateAddress,
         )
     }
@@ -38,7 +39,7 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     fun `Payload deserialization should be delegated to ServiceMessage`() = runBlockingTest {
         val serviceMessage = ServiceMessage("the type", "the content".toByteArray())
         val parcel = Parcel(
-            "https://gb.relaycorp.tech",
+            PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
             serviceMessage.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
             PDACertPath.PDA
         )

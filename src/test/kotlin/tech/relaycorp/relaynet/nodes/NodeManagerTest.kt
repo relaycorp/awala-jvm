@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.nodes
 
-import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -35,6 +34,8 @@ import tech.relaycorp.relaynet.wrappers.cms.SessionEnvelopedData
 class NodeManagerTest {
     private val payload = StubEncryptedPayload("the payload")
 
+    private val ownPrivateAddress = PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress
+
     private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
     private val peerSessionKeyPair = SessionKeyPair.generate()
     private val peerSessionKey = peerSessionKeyPair.sessionKey
@@ -56,10 +57,11 @@ class NodeManagerTest {
         fun `Key should not be bound to any peer by default`() = runBlockingTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
-            val (sessionKey, privateKey) = manager.generateSessionKeyPair()
+            val (sessionKey, privateKey) = manager.generateSessionKeyPair(ownPrivateAddress)
 
             val sessionKeyForDifferentPeer = privateKeyStore.retrieveSessionKey(
                 sessionKey.keyId,
+                ownPrivateAddress,
                 "insert any address here"
             )
             assertNotNull(sessionKeyForDifferentPeer)
@@ -73,12 +75,16 @@ class NodeManagerTest {
         fun `Key should be bound to a peer if explicitly set`() = runBlockingTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
-            val (sessionKey, privateKey) = manager.generateSessionKeyPair(peerPrivateAddress)
+            val (sessionKey, privateKey) = manager.generateSessionKeyPair(
+                ownPrivateAddress,
+                peerPrivateAddress
+            )
 
             // We should get the key with the right peer
             val sessionKeyForDifferentPeer = privateKeyStore.retrieveSessionKey(
                 sessionKey.keyId,
-                peerPrivateAddress
+                ownPrivateAddress,
+                peerPrivateAddress,
             )
             assertEquals(
                 privateKey.encoded.asList(),
@@ -88,7 +94,8 @@ class NodeManagerTest {
             assertThrows<MissingKeyException> {
                 privateKeyStore.retrieveSessionKey(
                     sessionKey.keyId,
-                    "not $peerPrivateAddress"
+                    ownPrivateAddress,
+                    "not $peerPrivateAddress",
                 )
             }
         }
@@ -124,11 +131,7 @@ class NodeManagerTest {
     inner class WrapMessagePayload {
         @BeforeEach
         fun registerPeerSessionKey() = runBlockingTest {
-            publicKeyStore.save(
-                peerSessionKey,
-                peerPrivateAddress,
-                ZonedDateTime.now()
-            )
+            publicKeyStore.save(peerSessionKey, peerPrivateAddress)
         }
 
         @Test
@@ -137,7 +140,7 @@ class NodeManagerTest {
             publicKeyStore.clear()
 
             val exception = assertThrows<MissingKeyException> {
-                manager.wrapMessagePayload(payload, peerPrivateAddress)
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
             }
 
             assertEquals("There is no session key for $peerPrivateAddress", exception.message)
@@ -147,7 +150,8 @@ class NodeManagerTest {
         fun `Payload should be encrypted with the recipient's key`() = runBlockingTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
-            val ciphertext = manager.wrapMessagePayload(payload, peerPrivateAddress)
+            val ciphertext =
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             assertTrue(envelopedData is SessionEnvelopedData)
@@ -166,14 +170,16 @@ class NodeManagerTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
             assertEquals(0, privateKeyStore.keys.size)
 
-            val ciphertext = manager.wrapMessagePayload(payload, peerPrivateAddress)
+            val ciphertext =
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             assertTrue(envelopedData is SessionEnvelopedData)
             assertNotNull(
                 privateKeyStore.retrieveSessionKey(
                     envelopedData.getOriginatorKey().keyId,
-                    peerPrivateAddress
+                    ownPrivateAddress,
+                    peerPrivateAddress,
                 )
             )
         }
@@ -182,7 +188,8 @@ class NodeManagerTest {
         fun `The new ephemeral session key of the sender should be bound`() = runBlockingTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
-            val ciphertext = manager.wrapMessagePayload(payload, peerPrivateAddress)
+            val ciphertext =
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             assertTrue(envelopedData is SessionEnvelopedData)
@@ -190,7 +197,8 @@ class NodeManagerTest {
             assertThrows<MissingKeyException> {
                 privateKeyStore.retrieveSessionKey(
                     keyId,
-                    "not $peerPrivateAddress"
+                    ownPrivateAddress,
+                    "not $peerPrivateAddress",
                 )
             }
         }
@@ -199,7 +207,8 @@ class NodeManagerTest {
         fun `Cipher AES-128 should be used by default`() = runBlockingTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
-            val ciphertext = manager.wrapMessagePayload(payload, peerPrivateAddress)
+            val ciphertext =
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             assertEquals(
@@ -217,7 +226,8 @@ class NodeManagerTest {
                 NodeCryptoOptions(symmetricCipher = cipher)
             )
 
-            val ciphertext = manager.wrapMessagePayload(payload, peerPrivateAddress)
+            val ciphertext =
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             assertEquals(
@@ -230,7 +240,8 @@ class NodeManagerTest {
         fun `SHA-256 should be used in KDF by default`() = runBlockingTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
-            val ciphertext = manager.wrapMessagePayload(payload, peerPrivateAddress)
+            val ciphertext =
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -252,7 +263,8 @@ class NodeManagerTest {
                 NodeCryptoOptions(hashingAlgorithm = algorithm)
             )
 
-            val ciphertext = manager.wrapMessagePayload(payload, peerPrivateAddress)
+            val ciphertext =
+                manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)
 
             val envelopedData = EnvelopedData.deserialize(ciphertext)
             val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
@@ -286,6 +298,7 @@ class NodeManagerTest {
             privateKeyStore.saveSessionKey(
                 ownSessionKeyPair.privateKey,
                 ownSessionKeyPair.sessionKey.keyId,
+                ownPrivateAddress,
                 peerPrivateAddress,
             )
         }
