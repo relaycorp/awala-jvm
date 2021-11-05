@@ -20,7 +20,7 @@ class PrivateKeyStoreTest {
     private val identityCertificate = PDACertPath.PRIVATE_ENDPOINT
 
     private val sessionKeyGeneration = SessionKeyPair.generate()
-    private val sessionKeyIdBase64 = Hex.toHexString(sessionKeyGeneration.sessionKey.keyId)
+    private val sessionKeyIdHex = Hex.toHexString(sessionKeyGeneration.sessionKey.keyId)
 
     private val ownPrivateAddress = identityCertificate.subjectPrivateAddress
     private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
@@ -105,8 +105,8 @@ class PrivateKeyStoreTest {
             )
 
             assertTrue(store.keys.containsKey(ownPrivateAddress))
-            assertTrue(store.keys[ownPrivateAddress]!!.containsKey("s-$sessionKeyIdBase64"))
-            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdBase64"]!!
+            assertTrue(store.keys[ownPrivateAddress]!!.containsKey("s-$sessionKeyIdHex"))
+            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdHex"]!!
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
                 keyData.privateKeyDer.asList()
@@ -124,7 +124,7 @@ class PrivateKeyStoreTest {
                 ownPrivateAddress,
             )
 
-            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdBase64"]!!
+            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdHex"]!!
             assertNull(keyData.peerPrivateAddress)
         }
 
@@ -139,7 +139,7 @@ class PrivateKeyStoreTest {
                 peerPrivateAddress
             )
 
-            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdBase64"]!!
+            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdHex"]!!
             assertEquals(peerPrivateAddress, keyData.peerPrivateAddress)
         }
     }
