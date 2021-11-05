@@ -1,7 +1,7 @@
 package tech.relaycorp.relaynet.keystores
 
 import java.security.PrivateKey
-import org.bouncycastle.util.encoders.Base64
+import org.bouncycastle.util.encoders.Hex
 import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -60,7 +60,7 @@ abstract class PrivateKeyStore {
         return keyData.privateKeyDer.deserializeECKeyPair().private
     }
 
-    private fun formatSessionKeyId(keyId: ByteArray) = "s-${Base64.toBase64String(keyId)}"
+    private fun formatSessionKeyId(keyId: ByteArray) = "s-${Hex.toHexString(keyId)}"
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveKeyData(

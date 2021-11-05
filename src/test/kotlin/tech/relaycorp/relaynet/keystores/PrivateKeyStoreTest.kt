@@ -5,7 +5,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import org.bouncycastle.util.encoders.Base64
+import org.bouncycastle.util.encoders.Hex
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,7 +20,7 @@ class PrivateKeyStoreTest {
     private val identityCertificate = PDACertPath.PRIVATE_ENDPOINT
 
     private val sessionKeyGeneration = SessionKeyPair.generate()
-    private val sessionKeyIdBase64 = Base64.toBase64String(sessionKeyGeneration.sessionKey.keyId)
+    private val sessionKeyIdBase64 = Hex.toHexString(sessionKeyGeneration.sessionKey.keyId)
 
     private val ownPrivateAddress = identityCertificate.subjectPrivateAddress
     private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
