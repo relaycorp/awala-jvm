@@ -168,7 +168,7 @@ class NodeManagerTest {
         @Test
         fun `The new ephemeral session key of the sender should be stored`() = runBlockingTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
-            assertEquals(0, privateKeyStore.keys.size)
+            assertEquals(0, privateKeyStore.sessionKeys.size)
 
             val ciphertext =
                 manager.wrapMessagePayload(payload, peerPrivateAddress, ownPrivateAddress)

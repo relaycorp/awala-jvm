@@ -34,15 +34,13 @@ class PrivateKeyStoreTest {
             store.saveIdentityKey(identityPrivateKey, identityCertificate)
 
             val privateAddress = identityCertificate.subjectPrivateAddress
-            assertTrue(store.keys.containsKey(privateAddress))
-            assertTrue(store.keys[privateAddress]!!.containsKey("i-$privateAddress"))
-            val keyData = store.keys[privateAddress]!!["i-$privateAddress"]!!
+            assertTrue(store.identityKeys.containsKey(privateAddress))
+            val keyData = store.identityKeys[privateAddress]!!
             assertEquals(identityPrivateKey.encoded.asList(), keyData.privateKeyDer.asList())
             assertEquals(
                 identityCertificate.serialize().asList(),
-                keyData.certificateDer!!.asList()
+                keyData.certificateDer.asList()
             )
-            assertNull(keyData.peerPrivateAddress)
         }
     }
 
@@ -72,22 +70,28 @@ class PrivateKeyStoreTest {
                 exception.message
             )
         }
+    }
+
+    @Nested
+    inner class RetrieveAllIdentityKeys {
+        @Test
+        fun `No key pair should be returned if there are none`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            assertEquals(0, store.retrieveAllIdentityKeys().size)
+        }
 
         @Test
-        fun `Error should be thrown if certificate is missing`() = runBlockingTest {
+        fun `All stored key pairs should be returned`() = runBlockingTest {
             val store = MockPrivateKeyStore()
-            val privateAddress = identityCertificate.subjectPrivateAddress
-            store.keys[privateAddress] = mutableMapOf(
-                "i-$privateAddress" to PrivateKeyData(identityPrivateKey.encoded)
-            )
+            store.saveIdentityKey(identityPrivateKey, identityCertificate)
 
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.retrieveIdentityKey(privateAddress)
-            }
+            val allIdentityKeys = store.retrieveAllIdentityKeys()
 
+            assertEquals(1, allIdentityKeys.size)
             assertEquals(
-                "Identity key pair $privateAddress is missing certificate",
-                exception.message
+                IdentityKeyPair(identityPrivateKey, identityCertificate),
+                allIdentityKeys.first()
             )
         }
     }
@@ -104,14 +108,13 @@ class PrivateKeyStoreTest {
                 ownPrivateAddress,
             )
 
-            assertTrue(store.keys.containsKey(ownPrivateAddress))
-            assertTrue(store.keys[ownPrivateAddress]!!.containsKey("s-$sessionKeyIdHex"))
-            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdHex"]!!
+            assertTrue(store.sessionKeys.containsKey(ownPrivateAddress))
+            assertTrue(store.sessionKeys[ownPrivateAddress]!!.containsKey(sessionKeyIdHex))
+            val keyData = store.sessionKeys[ownPrivateAddress]!![sessionKeyIdHex]!!
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
                 keyData.privateKeyDer.asList()
             )
-            assertNull(keyData.certificateDer)
         }
 
         @Test
@@ -124,7 +127,7 @@ class PrivateKeyStoreTest {
                 ownPrivateAddress,
             )
 
-            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdHex"]!!
+            val keyData = store.sessionKeys[ownPrivateAddress]!![sessionKeyIdHex]!!
             assertNull(keyData.peerPrivateAddress)
         }
 
@@ -139,7 +142,7 @@ class PrivateKeyStoreTest {
                 peerPrivateAddress
             )
 
-            val keyData = store.keys[ownPrivateAddress]!!["s-$sessionKeyIdHex"]!!
+            val keyData = store.sessionKeys[ownPrivateAddress]!![sessionKeyIdHex]!!
             assertEquals(peerPrivateAddress, keyData.peerPrivateAddress)
         }
     }
