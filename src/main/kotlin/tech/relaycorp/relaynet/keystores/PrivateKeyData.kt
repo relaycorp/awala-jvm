@@ -1,7 +1,13 @@
 package tech.relaycorp.relaynet.keystores
 
-data class PrivateKeyData(
-    val privateKeyDer: ByteArray,
-    val certificateDer: ByteArray? = null,
-    val peerPrivateAddress: String? = null
-)
+sealed class PrivateKeyData(val privateKeyDer: ByteArray)
+
+class IdentityPrivateKeyData(
+    privateKeyDer: ByteArray,
+    val certificateDer: ByteArray,
+) : PrivateKeyData(privateKeyDer)
+
+class SessionPrivateKeyData(
+    privateKeyDer: ByteArray,
+    val peerPrivateAddress: String? = null,
+) : PrivateKeyData(privateKeyDer)
