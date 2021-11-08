@@ -35,6 +35,8 @@ class MockPrivateKeyStore(
         return identityKeys[privateAddress]
     }
 
+    override suspend fun retrieveAllIdentityKeyData() = identityKeys.values.toList()
+
     override suspend fun saveSessionKeyData(
         keyId: String,
         keyData: SessionPrivateKeyData,

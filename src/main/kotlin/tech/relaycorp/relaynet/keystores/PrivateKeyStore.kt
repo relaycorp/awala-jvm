@@ -27,16 +27,20 @@ abstract class PrivateKeyStore {
         val keyData = retrieveIdentityKeyData(privateAddress)
             ?: throw MissingKeyException("There is no identity key for $privateAddress")
 
-        return IdentityKeyPair(
-            keyData.privateKeyDer.deserializeRSAKeyPair().private,
-            Certificate.deserialize(keyData.certificateDer)
-        )
+        return keyData.toIdentityPrivateKey()
     }
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun retrieveIdentityKeyData(
         privateAddress: String,
     ): IdentityPrivateKeyData?
+
+    @Throws(KeyStoreBackendException::class)
+    suspend fun retrieveAllIdentityKeys(): List<IdentityKeyPair> =
+        retrieveAllIdentityKeyData().map { it.toIdentityPrivateKey() }
+
+    @Throws(KeyStoreBackendException::class)
+    protected abstract suspend fun retrieveAllIdentityKeyData(): List<IdentityPrivateKeyData>
 
     @Throws(KeyStoreBackendException::class)
     suspend fun saveSessionKey(
@@ -81,4 +85,9 @@ abstract class PrivateKeyStore {
     ): SessionPrivateKeyData?
 
     private fun formatSessionKeyId(keyId: ByteArray) = Hex.toHexString(keyId)
+
+    private fun IdentityPrivateKeyData.toIdentityPrivateKey() = IdentityKeyPair(
+        privateKeyDer.deserializeRSAKeyPair().private,
+        Certificate.deserialize(certificateDer)
+    )
 }

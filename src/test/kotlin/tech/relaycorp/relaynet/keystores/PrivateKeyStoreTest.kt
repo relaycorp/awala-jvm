@@ -73,6 +73,30 @@ class PrivateKeyStoreTest {
     }
 
     @Nested
+    inner class RetrieveAllIdentityKeys {
+        @Test
+        fun `No key pair should be returned if there are none`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            assertEquals(0, store.retrieveAllIdentityKeys().size)
+        }
+
+        @Test
+        fun `All stored key pairs should be returned`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+
+            val allIdentityKeys = store.retrieveAllIdentityKeys()
+
+            assertEquals(1, allIdentityKeys.size)
+            assertEquals(
+                IdentityKeyPair(identityPrivateKey, identityCertificate),
+                allIdentityKeys.first()
+            )
+        }
+    }
+
+    @Nested
     inner class SaveSessionKey {
         @Test
         fun `Key should be stored`() = runBlockingTest {
