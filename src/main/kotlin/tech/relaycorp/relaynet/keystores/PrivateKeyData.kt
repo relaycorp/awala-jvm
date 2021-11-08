@@ -6,8 +6,3 @@ class IdentityPrivateKeyData(
     privateKeyDer: ByteArray,
     val certificateDer: ByteArray,
 ) : PrivateKeyData(privateKeyDer)
-
-class SessionPrivateKeyData(
-    privateKeyDer: ByteArray,
-    val peerPrivateAddress: String?,
-) : PrivateKeyData(privateKeyDer)

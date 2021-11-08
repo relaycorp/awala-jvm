@@ -3,7 +3,6 @@ package tech.relaycorp.relaynet.utils
 import tech.relaycorp.relaynet.keystores.IdentityPrivateKeyData
 import tech.relaycorp.relaynet.keystores.KeyStoreBackendException
 import tech.relaycorp.relaynet.keystores.PrivateKeyStore
-import tech.relaycorp.relaynet.keystores.SessionPrivateKeyData
 
 class MockPrivateKeyStore(
     private val savingException: Throwable? = null,
@@ -11,7 +10,8 @@ class MockPrivateKeyStore(
 ) : PrivateKeyStore() {
     val identityKeys: MutableMap<String, IdentityPrivateKeyData> = mutableMapOf()
 
-    val sessionKeys: MutableMap<String, MutableMap<String, SessionPrivateKeyData>> = mutableMapOf()
+    val sessionKeys: MutableMap<String, MutableMap<String, MutableMap<String, ByteArray>>> =
+        mutableMapOf()
 
     fun clear() {
         identityKeys.clear()
@@ -41,22 +41,26 @@ class MockPrivateKeyStore(
 
     override suspend fun retrieveAllIdentityKeyData() = identityKeys.values.toList()
 
-    override suspend fun saveSessionKeyData(
+    override suspend fun saveSessionKeySerialized(
         keyId: String,
-        keyData: SessionPrivateKeyData,
-        privateAddress: String
+        keySerialized: ByteArray,
+        privateAddress: String,
+        peerPrivateAddress: String?
     ) {
         if (savingException != null) {
             throw KeyStoreBackendException("Saving session keys isn't supported", savingException)
         }
         sessionKeys.putIfAbsent(privateAddress, mutableMapOf())
-        sessionKeys[privateAddress]!![keyId] = keyData
+        val peerKey = peerPrivateAddress ?: "unbound"
+        sessionKeys[privateAddress]!!.putIfAbsent(peerKey, mutableMapOf())
+        sessionKeys[privateAddress]!![peerKey]!![keyId] = keySerialized
     }
 
-    override suspend fun retrieveSessionKeyData(
+    override suspend fun retrieveSessionKeySerialized(
         keyId: String,
-        privateAddress: String
-    ): SessionPrivateKeyData? {
+        privateAddress: String,
+        peerPrivateAddress: String,
+    ): ByteArray? {
         if (retrievalException != null) {
             throw KeyStoreBackendException(
                 "Retrieving session keys isn't supported",
@@ -64,6 +68,7 @@ class MockPrivateKeyStore(
             )
         }
 
-        return sessionKeys[privateAddress]?.get(keyId)
+        return sessionKeys[privateAddress]?.get(peerPrivateAddress)?.get(keyId)
+            ?: sessionKeys[privateAddress]?.get("unbound")?.get(keyId)
     }
 }
