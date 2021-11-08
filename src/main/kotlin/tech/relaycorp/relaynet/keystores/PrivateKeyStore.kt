@@ -2,9 +2,11 @@ package tech.relaycorp.relaynet.keystores
 
 import java.security.PrivateKey
 import org.bouncycastle.util.encoders.Hex
+import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
@@ -69,12 +71,17 @@ abstract class PrivateKeyStore {
         privateAddress: String,
         peerPrivateAddress: String
     ): PrivateKey {
+        val keyIdString = formatSessionKeyId(keyId)
         val privateKeySerialized = retrieveSessionKeySerialized(
-            formatSessionKeyId(keyId),
+            keyIdString,
             privateAddress,
             peerPrivateAddress
         ) ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
-        return privateKeySerialized.deserializeECKeyPair().private
+        return try {
+            privateKeySerialized.deserializeECKeyPair().private
+        } catch (exc: KeyException) {
+            throw KeyStoreBackendException("Session key $keyIdString is malformed", exc)
+        }
     }
 
     @Throws(KeyStoreBackendException::class)
@@ -86,8 +93,14 @@ abstract class PrivateKeyStore {
 
     private fun formatSessionKeyId(keyId: ByteArray) = Hex.toHexString(keyId)
 
-    private fun IdentityPrivateKeyData.toIdentityPrivateKey() = IdentityKeyPair(
-        privateKeyDer.deserializeRSAKeyPair().private,
-        Certificate.deserialize(certificateDer)
-    )
+    private fun IdentityPrivateKeyData.toIdentityPrivateKey() = try {
+        IdentityKeyPair(
+            privateKeyDer.deserializeRSAKeyPair().private,
+            Certificate.deserialize(certificateDer)
+        )
+    } catch (exc: KeyException) {
+        throw KeyStoreBackendException("Private key is malformed", exc)
+    } catch (exc: CertificateException) {
+        throw KeyStoreBackendException("Certificate is malformed", exc)
+    }
 }
