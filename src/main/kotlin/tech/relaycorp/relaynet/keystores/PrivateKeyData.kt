@@ -9,5 +9,5 @@ class IdentityPrivateKeyData(
 
 class SessionPrivateKeyData(
     privateKeyDer: ByteArray,
-    val peerPrivateAddress: String? = null,
+    val peerPrivateAddress: String?,
 ) : PrivateKeyData(privateKeyDer)

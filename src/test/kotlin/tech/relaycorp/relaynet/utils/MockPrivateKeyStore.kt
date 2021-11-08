@@ -1,6 +1,7 @@
 package tech.relaycorp.relaynet.utils
 
 import tech.relaycorp.relaynet.keystores.IdentityPrivateKeyData
+import tech.relaycorp.relaynet.keystores.KeyStoreBackendException
 import tech.relaycorp.relaynet.keystores.PrivateKeyStore
 import tech.relaycorp.relaynet.keystores.SessionPrivateKeyData
 
@@ -22,14 +23,17 @@ class MockPrivateKeyStore(
         keyData: IdentityPrivateKeyData
     ) {
         if (savingException != null) {
-            throw savingException
+            throw KeyStoreBackendException("Saving identity keys isn't supported", savingException)
         }
         identityKeys[privateAddress] = keyData
     }
 
     override suspend fun retrieveIdentityKeyData(privateAddress: String): IdentityPrivateKeyData? {
         if (retrievalException != null) {
-            throw retrievalException
+            throw KeyStoreBackendException(
+                "Retrieving identity keys isn't supported",
+                savingException
+            )
         }
 
         return identityKeys[privateAddress]
@@ -43,7 +47,7 @@ class MockPrivateKeyStore(
         privateAddress: String
     ) {
         if (savingException != null) {
-            throw savingException
+            throw KeyStoreBackendException("Saving session keys isn't supported", savingException)
         }
         sessionKeys.putIfAbsent(privateAddress, mutableMapOf())
         sessionKeys[privateAddress]!![keyId] = keyData
@@ -54,7 +58,10 @@ class MockPrivateKeyStore(
         privateAddress: String
     ): SessionPrivateKeyData? {
         if (retrievalException != null) {
-            throw retrievalException
+            throw KeyStoreBackendException(
+                "Retrieving session keys isn't supported",
+                savingException
+            )
         }
 
         return sessionKeys[privateAddress]?.get(keyId)
