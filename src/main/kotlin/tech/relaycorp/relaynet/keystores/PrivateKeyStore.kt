@@ -48,16 +48,19 @@ abstract class PrivateKeyStore {
         keyId: ByteArray,
         privateAddress: String,
         peerPrivateAddress: String? = null
-    ) {
-        val keyData = SessionPrivateKeyData(privateKey.encoded, peerPrivateAddress)
-        saveSessionKeyData(formatSessionKeyId(keyId), keyData, privateAddress)
-    }
+    ) = saveSessionKeySerialized(
+        formatSessionKeyId(keyId),
+        privateKey.encoded,
+        privateAddress,
+        peerPrivateAddress
+    )
 
     @Throws(KeyStoreBackendException::class)
-    protected abstract suspend fun saveSessionKeyData(
+    protected abstract suspend fun saveSessionKeySerialized(
         keyId: String,
-        keyData: SessionPrivateKeyData,
+        keySerialized: ByteArray,
         privateAddress: String,
+        peerPrivateAddress: String?,
     )
 
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
@@ -66,23 +69,20 @@ abstract class PrivateKeyStore {
         privateAddress: String,
         peerPrivateAddress: String
     ): PrivateKey {
-        val keyData = retrieveSessionKeyData(formatSessionKeyId(keyId), privateAddress)
-            ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
-        if (
-            keyData.peerPrivateAddress != null && keyData.peerPrivateAddress != peerPrivateAddress
-        ) {
-            throw MissingKeyException(
-                "Session key is bound to ${keyData.peerPrivateAddress} (not $peerPrivateAddress)"
-            )
-        }
-        return keyData.privateKeyDer.deserializeECKeyPair().private
+        val privateKeySerialized = retrieveSessionKeySerialized(
+            formatSessionKeyId(keyId),
+            privateAddress,
+            peerPrivateAddress
+        ) ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
+        return privateKeySerialized.deserializeECKeyPair().private
     }
 
     @Throws(KeyStoreBackendException::class)
-    protected abstract suspend fun retrieveSessionKeyData(
+    protected abstract suspend fun retrieveSessionKeySerialized(
         keyId: String,
-        privateAddress: String
-    ): SessionPrivateKeyData?
+        privateAddress: String,
+        peerPrivateAddress: String,
+    ): ByteArray?
 
     private fun formatSessionKeyId(keyId: ByteArray) = Hex.toHexString(keyId)
 

@@ -1,7 +1,6 @@
 package tech.relaycorp.relaynet.keystores
 
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -109,12 +108,7 @@ class PrivateKeyStoreTest {
             )
 
             assertTrue(store.sessionKeys.containsKey(ownPrivateAddress))
-            assertTrue(store.sessionKeys[ownPrivateAddress]!!.containsKey(sessionKeyIdHex))
-            val keyData = store.sessionKeys[ownPrivateAddress]!![sessionKeyIdHex]!!
-            assertEquals(
-                sessionKeyGeneration.privateKey.encoded.asList(),
-                keyData.privateKeyDer.asList()
-            )
+            assertTrue(store.sessionKeys[ownPrivateAddress]!!.containsKey("unbound"))
         }
 
         @Test
@@ -127,8 +121,12 @@ class PrivateKeyStoreTest {
                 ownPrivateAddress,
             )
 
-            val keyData = store.sessionKeys[ownPrivateAddress]!![sessionKeyIdHex]!!
-            assertNull(keyData.peerPrivateAddress)
+            val keySerialized =
+                store.sessionKeys[ownPrivateAddress]!!["unbound"]!![sessionKeyIdHex]!!
+            assertEquals(
+                sessionKeyGeneration.privateKey.encoded.asList(),
+                keySerialized.asList()
+            )
         }
 
         @Test
@@ -142,8 +140,12 @@ class PrivateKeyStoreTest {
                 peerPrivateAddress
             )
 
-            val keyData = store.sessionKeys[ownPrivateAddress]!![sessionKeyIdHex]!!
-            assertEquals(peerPrivateAddress, keyData.peerPrivateAddress)
+            val keySerialized =
+                store.sessionKeys[ownPrivateAddress]!![peerPrivateAddress]!![sessionKeyIdHex]!!
+            assertEquals(
+                sessionKeyGeneration.privateKey.encoded.asList(),
+                keySerialized.asList()
+            )
         }
     }
 
@@ -189,31 +191,6 @@ class PrivateKeyStoreTest {
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
                 sessionKey.encoded.asList()
-            )
-        }
-
-        @Test
-        fun `Keys bound to another peer should not be returned`() = runBlockingTest {
-            val store = MockPrivateKeyStore()
-            store.saveSessionKey(
-                sessionKeyGeneration.privateKey,
-                sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
-                peerPrivateAddress
-            )
-            val invalidPeerPrivateAddress = "not $peerPrivateAddress"
-
-            val exception = assertThrows<MissingKeyException> {
-                store.retrieveSessionKey(
-                    sessionKeyGeneration.sessionKey.keyId,
-                    ownPrivateAddress,
-                    invalidPeerPrivateAddress
-                )
-            }
-
-            assertEquals(
-                "Session key is bound to $peerPrivateAddress (not $invalidPeerPrivateAddress)",
-                exception.message
             )
         }
 
