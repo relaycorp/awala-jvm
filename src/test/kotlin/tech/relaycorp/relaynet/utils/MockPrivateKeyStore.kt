@@ -25,6 +25,13 @@ class MockPrivateKeyStore(
         if (savingException != null) {
             throw KeyStoreBackendException("Saving identity keys isn't supported", savingException)
         }
+        setIdentityKey(privateAddress, keyData)
+    }
+
+    /**
+     * Set an identity key, bypassing all the usual validation.
+     */
+    fun setIdentityKey(privateAddress: String, keyData: IdentityPrivateKeyData) {
         identityKeys[privateAddress] = keyData
     }
 
@@ -50,6 +57,18 @@ class MockPrivateKeyStore(
         if (savingException != null) {
             throw KeyStoreBackendException("Saving session keys isn't supported", savingException)
         }
+        setSessionKey(privateAddress, peerPrivateAddress, keyId, keySerialized)
+    }
+
+    /**
+     * Set a session key, bypassing all the usual validation.
+     */
+    fun setSessionKey(
+        privateAddress: String,
+        peerPrivateAddress: String?,
+        keyId: String,
+        keySerialized: ByteArray
+    ) {
         sessionKeys.putIfAbsent(privateAddress, mutableMapOf())
         val peerKey = peerPrivateAddress ?: "unbound"
         sessionKeys[privateAddress]!!.putIfAbsent(peerKey, mutableMapOf())

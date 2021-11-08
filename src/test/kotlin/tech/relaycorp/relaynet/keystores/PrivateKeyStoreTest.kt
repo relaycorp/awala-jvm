@@ -12,6 +12,8 @@ import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.wrappers.KeyException
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 @ExperimentalCoroutinesApi
 class PrivateKeyStoreTest {
@@ -68,6 +70,40 @@ class PrivateKeyStoreTest {
                 "There is no identity key for ${identityCertificate.subjectPrivateAddress}",
                 exception.message
             )
+        }
+
+        @Test
+        fun `Malformed private keys should be refused`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            val privateAddress = identityCertificate.subjectPrivateAddress
+            store.setIdentityKey(
+                privateAddress,
+                IdentityPrivateKeyData("malformed".toByteArray(), identityCertificate.serialize())
+            )
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.retrieveIdentityKey(privateAddress)
+            }
+
+            assertEquals("Private key is malformed", exception.message)
+            assertTrue(exception.cause is KeyException)
+        }
+
+        @Test
+        fun `Malformed certificates should be refused`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            val privateAddress = identityCertificate.subjectPrivateAddress
+            store.setIdentityKey(
+                privateAddress,
+                IdentityPrivateKeyData(identityPrivateKey.encoded, "malformed".toByteArray())
+            )
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.retrieveIdentityKey(privateAddress)
+            }
+
+            assertEquals("Certificate is malformed", exception.message)
+            assertTrue(exception.cause is CertificateException)
         }
     }
 
@@ -210,6 +246,29 @@ class PrivateKeyStoreTest {
                 "There is no session key for $peerPrivateAddress",
                 exception.message
             )
+        }
+
+        @Test
+        fun `Malformed private keys should be refused`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+            val privateAddress = identityCertificate.subjectPrivateAddress
+            store.setSessionKey(
+                privateAddress,
+                null,
+                sessionKeyIdHex,
+                "malformed".toByteArray()
+            )
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.retrieveSessionKey(
+                    sessionKeyGeneration.sessionKey.keyId,
+                    privateAddress,
+                    peerPrivateAddress
+                )
+            }
+
+            assertEquals("Session key $sessionKeyIdHex is malformed", exception.message)
+            assertTrue(exception.cause is KeyException)
         }
     }
 }
