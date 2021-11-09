@@ -206,6 +206,8 @@ $dokka.location:tech.relaycorp.relaynet.messages/ParcelCollectionAck/recipientEn
 $dokka.location:tech.relaycorp.relaynet.messages/ParcelCollectionAck/senderEndpointPrivateAddress/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-parcel-collection-ack/sender-endpoint-private-address.html
 $dokka.location:tech.relaycorp.relaynet.messages/ParcelCollectionAck/serialize/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-parcel-collection-ack/serialize.html
 $dokka.location:tech.relaycorp.relaynet.nodes////PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/index.html
+$dokka.location:tech.relaycorp.relaynet.nodes/EndpointManager///PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-endpoint-manager/index.html
+$dokka.location:tech.relaycorp.relaynet.nodes/EndpointManager/EndpointManager/#tech.relaycorp.relaynet.keystores.PrivateKeyStore#tech.relaycorp.relaynet.keystores.SessionPublicKeyStore#tech.relaycorp.relaynet.nodes.NodeCryptoOptions/PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-endpoint-manager/-endpoint-manager.html
 $dokka.location:tech.relaycorp.relaynet.nodes/NodeCryptoOptions///PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-node-crypto-options/index.html
 $dokka.location:tech.relaycorp.relaynet.nodes/NodeCryptoOptions/NodeCryptoOptions/#tech.relaycorp.relaynet.ECDHCurve#tech.relaycorp.relaynet.SymmetricCipher#tech.relaycorp.relaynet.HashingAlgorithm/PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-node-crypto-options/-node-crypto-options.html
 $dokka.location:tech.relaycorp.relaynet.nodes/NodeCryptoOptions/ecdhCurve/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-node-crypto-options/ecdh-curve.html
