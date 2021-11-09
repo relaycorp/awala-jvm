@@ -5,7 +5,7 @@ import java.util.regex.Pattern
 internal object DNS {
     // Taken from https://owasp.org/www-community/OWASP_Validation_Regex_Repository
     private val domainNameRegex = Pattern.compile(
-        "^([a-z0-9]([a-z0-9\\-]{0,61}[a-z0-9])?\\.)+[a-z]{2,6}\$",
+        "^([a-z0-9]([a-z0-9\\-]{0,61}[a-z0-9])?\\.)+(xn--[a-z0-9-]{2,24}|[a-z]{2,24})\$",
         Pattern.CASE_INSENSITIVE
     )
 
