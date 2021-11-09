@@ -91,7 +91,7 @@ class MockPrivateKeyStore(
             ?: sessionKeys[privateAddress]?.get("unbound")?.get(keyId)
     }
 
-    override suspend fun deleteNodeKeys(privateAddress: String) {
+    override suspend fun deleteKeys(privateAddress: String) {
         identityKeys.remove(privateAddress)
         sessionKeys.remove(privateAddress)
     }

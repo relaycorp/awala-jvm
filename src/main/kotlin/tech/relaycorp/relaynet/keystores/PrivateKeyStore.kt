@@ -90,7 +90,7 @@ abstract class PrivateKeyStore {
      * This is a no-op if the node doesn't exist.
      */
     @Throws(KeyStoreBackendException::class)
-    abstract suspend fun deleteNodeKeys(privateAddress: String)
+    abstract suspend fun deleteKeys(privateAddress: String)
 
     /**
      * Delete the session keys for the peer identified by [peerPrivateAddress].
