@@ -84,6 +84,22 @@ abstract class PrivateKeyStore {
         }
     }
 
+    /**
+     * Delete the identity and session keys for the node identified by [privateAddress].
+     *
+     * This is a no-op if the node doesn't exist.
+     */
+    @Throws(KeyStoreBackendException::class)
+    abstract suspend fun deleteNodeKeys(privateAddress: String)
+
+    /**
+     * Delete the session keys for the peer identified by [peerPrivateAddress].
+     *
+     * This is a no-op if the peer doesn't exist.
+     */
+    @Throws(KeyStoreBackendException::class)
+    abstract suspend fun deleteSessionKeysForPeer(peerPrivateAddress: String)
+
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun retrieveSessionKeySerialized(
         keyId: String,

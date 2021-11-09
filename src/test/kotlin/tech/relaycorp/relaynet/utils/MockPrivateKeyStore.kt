@@ -90,4 +90,15 @@ class MockPrivateKeyStore(
         return sessionKeys[privateAddress]?.get(peerPrivateAddress)?.get(keyId)
             ?: sessionKeys[privateAddress]?.get("unbound")?.get(keyId)
     }
+
+    override suspend fun deleteNodeKeys(privateAddress: String) {
+        identityKeys.remove(privateAddress)
+        sessionKeys.remove(privateAddress)
+    }
+
+    override suspend fun deleteSessionKeysForPeer(peerPrivateAddress: String) {
+        sessionKeys.values.forEach {
+            it.remove(peerPrivateAddress)
+        }
+    }
 }
