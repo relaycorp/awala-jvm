@@ -39,5 +39,16 @@ class DNSTest {
         fun `Third-level domains should be valid`() {
             assertTrue(DNS.isValidDomainName("foo.relaycorp.tech"))
         }
+
+        @Test
+        fun `Long TLDs should be supported`() {
+            assertTrue(DNS.isValidDomainName("example.thisisalongtld"))
+        }
+
+        @Test
+        fun `Punycode TLDs should be supported`() {
+            assertTrue(DNS.isValidDomainName("example.XN--11B4C3D"))
+            assertTrue(DNS.isValidDomainName("example.XN--VERMGENSBERATUNG-PWB"))
+        }
     }
 }
