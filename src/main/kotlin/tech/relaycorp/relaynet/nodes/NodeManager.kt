@@ -13,7 +13,7 @@ import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 abstract class NodeManager<P : Payload>(
     private val privateKeyStore: PrivateKeyStore,
     private val sessionPublicKeyStore: SessionPublicKeyStore,
-    private val cryptoOptions: NodeCryptoOptions,
+    internal val cryptoOptions: NodeCryptoOptions,
 ) {
     suspend fun generateSessionKeyPair(
         privateAddress: String,
