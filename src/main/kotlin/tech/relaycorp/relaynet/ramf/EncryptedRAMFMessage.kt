@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.ramf
 
+import java.security.PrivateKey
 import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.keystores.MissingKeyException
 import tech.relaycorp.relaynet.keystores.PrivateKeyStore
@@ -49,16 +50,33 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
             // Fix is part of https://github.com/relaycorp/relayverse/issues/19
             TODO("Public recipients are not currently supported")
         }
-        val envelopedData = EnvelopedData.deserialize(payload)
-        if (envelopedData !is SessionEnvelopedData) {
-            throw InvalidPayloadException("SessionlessEnvelopedData is no longer supported")
-        }
+        val envelopedData = deserializeEnvelopedData()
         val keyId = envelopedData.getRecipientKeyId()
         val privateKey = privateKeyStore.retrieveSessionKey(
             keyId.id,
             recipientAddress,
             senderCertificate.subjectPrivateAddress
         )
+        return unwrapEnvelopedData(envelopedData, privateKey)
+    }
+
+    /**
+     * Decrypt and deserialize payload.
+     *
+     * @throws EnvelopedDataException if the CMS EnvelopedData value is invalid or the
+     *      `privateKey` is invalid.
+     * @throws InvalidPayloadException if the plaintext is invalid.
+     */
+    @Throws(InvalidPayloadException::class, EnvelopedDataException::class)
+    fun unwrapPayload(privateKey: PrivateKey): PayloadUnwrapping<P> {
+        val envelopedData = deserializeEnvelopedData()
+        return unwrapEnvelopedData(envelopedData, privateKey)
+    }
+
+    private fun unwrapEnvelopedData(
+        envelopedData: SessionEnvelopedData,
+        privateKey: PrivateKey
+    ): PayloadUnwrapping<P> {
         val plaintext = envelopedData.decrypt(privateKey)
         val payload = deserializePayload(plaintext)
         return PayloadUnwrapping(payload, envelopedData.getOriginatorKey())
@@ -66,6 +84,14 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
 
     @Throws(InvalidPayloadException::class)
     protected abstract fun deserializePayload(payloadPlaintext: ByteArray): P
+
+    private fun deserializeEnvelopedData(): SessionEnvelopedData {
+        val envelopedData = EnvelopedData.deserialize(payload)
+        if (envelopedData !is SessionEnvelopedData) {
+            throw InvalidPayloadException("SessionlessEnvelopedData is no longer supported")
+        }
+        return envelopedData
+    }
 
     companion object {
         // Per the RAMF spec
