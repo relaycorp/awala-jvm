@@ -223,6 +223,7 @@ $dokka.location:tech.relaycorp.relaynet.nodes/NodeManager/wrapMessagePayload/#Ty
 $dokka.location:tech.relaycorp.relaynet.ramf////PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/EncryptedRAMFMessage.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-encrypted-r-a-m-f-message/-companion/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/EncryptedRAMFMessage///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-encrypted-r-a-m-f-message/index.html
+$dokka.location:tech.relaycorp.relaynet.ramf/EncryptedRAMFMessage/unwrapPayload/#java.security.PrivateKey/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-encrypted-r-a-m-f-message/unwrap-payload.html
 $dokka.location:tech.relaycorp.relaynet.ramf/EncryptedRAMFMessage/unwrapPayload/#tech.relaycorp.relaynet.keystores.PrivateKeyStore/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-encrypted-r-a-m-f-message/unwrap-payload.html
 $dokka.location:tech.relaycorp.relaynet.ramf/InvalidPayloadException///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-invalid-payload-exception/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/InvalidPayloadException/InvalidPayloadException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-invalid-payload-exception/-invalid-payload-exception.html
