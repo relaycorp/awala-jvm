@@ -83,7 +83,7 @@ class MockPrivateKeyStore(
         if (retrievalException != null) {
             throw KeyStoreBackendException(
                 "Retrieving session keys isn't supported",
-                savingException
+                retrievalException
             )
         }
 
