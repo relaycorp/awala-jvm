@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.InvalidMessageException
@@ -44,6 +45,29 @@ class PrivateNodeRegistrationTest {
                 PDACertPath.PRIVATE_GW.serialize().asList(),
                 gatewayCertificateASN1.octets.asList()
             )
+        }
+
+        @Nested
+        inner class SessionKey {
+            @Test
+            @Disabled
+            fun `Session key should be absent from serialization if it does not exist`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Session key should be a CONSTRUCTED value`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Key id should be serialized`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Public key should be serialized`() {
+            }
         }
     }
 
@@ -114,7 +138,7 @@ class PrivateNodeRegistrationTest {
         }
 
         @Test
-        fun `Valid registration should be accepted`() {
+        fun `Valid registration without session key should be accepted`() {
             val registration =
                 PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
             val serialization = registration.serialize()
@@ -129,6 +153,24 @@ class PrivateNodeRegistrationTest {
                 PDACertPath.PRIVATE_GW,
                 registrationDeserialized.gatewayCertificate
             )
+        }
+
+        @Nested
+        inner class SessionKey {
+            @Test
+            @Disabled
+            fun `SEQUENCE should contain at least two items`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Session key should be a valid ECDH public key`() {
+            }
+
+            @Test
+            @Disabled
+            fun `Valid registration with session key should be accepted`() {
+            }
         }
     }
 }
