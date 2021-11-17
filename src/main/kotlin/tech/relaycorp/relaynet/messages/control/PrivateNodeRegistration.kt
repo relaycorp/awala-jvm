@@ -84,33 +84,34 @@ class PrivateNodeRegistration(
                     exc
                 )
             }
-            val gatewaySessionKey = if (2 <= sequence.size) {
-                val sessionKeySequence = DERSequence.getInstance(sequence[2], false)
-                if (sessionKeySequence.size() < 2) {
-                    throw InvalidMessageException(
-                        "Session key SEQUENCE should have at least 2 items " +
-                            "(got ${sessionKeySequence.size()})"
-                    )
-                }
-                val sessionKeyId = ASN1Utils.getOctetString(
-                    sessionKeySequence.getObjectAt(0) as ASN1TaggedObject,
-                ).octets
-
-                val sessionPublicKeyASN1 =
-                    ASN1Utils.getOctetString(sessionKeySequence.getObjectAt(1) as ASN1TaggedObject)
-                val sessionPublicKey = try {
-                    sessionPublicKeyASN1.octets.deserializeECPublicKey()
-                } catch (exc: KeyException) {
-                    throw InvalidMessageException(
-                        "Session key is not a valid ECDH public key",
-                        exc
-                    )
-                }
-                SessionKey(sessionKeyId, sessionPublicKey)
-            } else {
-                null
-            }
+            val gatewaySessionKey =
+                if (2 <= sequence.size) getSessionKeyFromSequence(sequence[2]) else null
             return PrivateNodeRegistration(nodeCertificate, gatewayCertificate, gatewaySessionKey)
+        }
+
+        private fun getSessionKeyFromSequence(sessionKeyASN1: ASN1TaggedObject): SessionKey {
+            val sessionKeySequence = DERSequence.getInstance(sessionKeyASN1, false)
+            if (sessionKeySequence.size() < 2) {
+                throw InvalidMessageException(
+                    "Session key SEQUENCE should have at least 2 items " +
+                        "(got ${sessionKeySequence.size()})"
+                )
+            }
+            val sessionKeyId = ASN1Utils.getOctetString(
+                sessionKeySequence.getObjectAt(0) as ASN1TaggedObject,
+            ).octets
+
+            val sessionPublicKeyASN1 =
+                ASN1Utils.getOctetString(sessionKeySequence.getObjectAt(1) as ASN1TaggedObject)
+            val sessionPublicKey = try {
+                sessionPublicKeyASN1.octets.deserializeECPublicKey()
+            } catch (exc: KeyException) {
+                throw InvalidMessageException(
+                    "Session key is not a valid ECDH public key",
+                    exc
+                )
+            }
+            return SessionKey(sessionKeyId, sessionPublicKey)
         }
 
         @Throws(CertificateException::class)
