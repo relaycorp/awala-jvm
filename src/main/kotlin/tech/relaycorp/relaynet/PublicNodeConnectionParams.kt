@@ -1,7 +1,6 @@
 package tech.relaycorp.relaynet
 
 import java.security.PublicKey
-import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
@@ -21,7 +20,7 @@ class PublicNodeConnectionParams(
     fun serialize(): ByteArray {
         val sessionKeyASN1 = ASN1Utils.makeSequence(
             listOf(
-                ASN1Integer(sessionKey.keyId),
+                DEROctetString(sessionKey.keyId),
                 DEROctetString(sessionKey.publicKey.encoded)
             ),
             false
