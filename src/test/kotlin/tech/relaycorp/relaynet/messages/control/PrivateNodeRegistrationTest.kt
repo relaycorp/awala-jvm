@@ -7,18 +7,20 @@ import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class PrivateNodeRegistrationTest {
-    private val sessionKey = (SessionKeyPair.generate()).sessionKey
+    private val gatewaySessionKey = (SessionKeyPair.generate()).sessionKey
 
     @Nested
     inner class Serialize {
@@ -53,7 +55,7 @@ class PrivateNodeRegistrationTest {
         }
 
         @Nested
-        inner class SessionKey {
+        inner class GatewaySessionKey {
             @Test
             fun `Session key should be absent from serialization if it does not exist`() {
                 val registration =
@@ -70,7 +72,7 @@ class PrivateNodeRegistrationTest {
                 val registration = PrivateNodeRegistration(
                     PDACertPath.PRIVATE_ENDPOINT,
                     PDACertPath.PRIVATE_GW,
-                    sessionKey
+                    gatewaySessionKey
                 )
 
                 val serialization = registration.serialize()
@@ -79,7 +81,7 @@ class PrivateNodeRegistrationTest {
                 val sessionKeyASN1 = ASN1Sequence.getInstance(sequence[2], false)
                 val keyIdASN1 =
                     ASN1Utils.getOctetString(sessionKeyASN1.getObjectAt(0) as ASN1TaggedObject)
-                assertEquals(sessionKey.keyId.asList(), keyIdASN1.octets.asList())
+                assertEquals(gatewaySessionKey.keyId.asList(), keyIdASN1.octets.asList())
             }
 
             @Test
@@ -87,7 +89,7 @@ class PrivateNodeRegistrationTest {
                 val registration = PrivateNodeRegistration(
                     PDACertPath.PRIVATE_ENDPOINT,
                     PDACertPath.PRIVATE_GW,
-                    sessionKey
+                    gatewaySessionKey
                 )
 
                 val serialization = registration.serialize()
@@ -97,7 +99,7 @@ class PrivateNodeRegistrationTest {
                 val sessionPublicKeyASN1 =
                     ASN1Utils.getOctetString(sessionKeyASN1.getObjectAt(1) as ASN1TaggedObject)
                 assertEquals(
-                    sessionKey.publicKey.encoded.asList(),
+                    gatewaySessionKey.publicKey.encoded.asList(),
                     sessionPublicKeyASN1.octets.asList()
                 )
             }
@@ -189,20 +191,66 @@ class PrivateNodeRegistrationTest {
         }
 
         @Nested
-        inner class SessionKey {
+        inner class GatewaySessionKey {
             @Test
-            @Disabled
             fun `SEQUENCE should contain at least two items`() {
+                val invalidSerialization = ASN1Utils.serializeSequence(
+                    listOf(
+                        DEROctetString(PDACertPath.PRIVATE_ENDPOINT.serialize()),
+                        DEROctetString(PDACertPath.PRIVATE_GW.serialize()),
+                        ASN1Utils.makeSequence(listOf(DEROctetString(gatewaySessionKey.keyId)))
+                    ),
+                    false
+                )
+
+                val exception = assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistration.deserialize(invalidSerialization)
+                }
+
+                assertEquals(
+                    "Session key SEQUENCE should have at least 2 items (got 1)",
+                    exception.message
+                )
             }
 
             @Test
-            @Disabled
             fun `Session key should be a valid ECDH public key`() {
+                val invalidRegistration = PrivateNodeRegistration(
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    PDACertPath.PRIVATE_GW,
+                    SessionKey(
+                        gatewaySessionKey.keyId,
+                        KeyPairSet.PRIVATE_ENDPOINT.public, // Invalid: Not an ECDH key.
+                    )
+                )
+                val invalidSerialization = invalidRegistration.serialize()
+
+                val exception = assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistration.deserialize(invalidSerialization)
+                }
+
+                assertEquals(
+                    "Session key is not a valid ECDH public key",
+                    exception.message
+                )
+                assertTrue(exception.cause is KeyException)
             }
 
             @Test
-            @Disabled
             fun `Valid registration with session key should be accepted`() {
+                val registration = PrivateNodeRegistration(
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    PDACertPath.PRIVATE_GW,
+                    gatewaySessionKey
+                )
+                val serialization = registration.serialize()
+
+                val registrationDeserialized = PrivateNodeRegistration.deserialize(serialization)
+
+                assertEquals(
+                    gatewaySessionKey,
+                    registrationDeserialized.gatewaySessionKey
+                )
             }
         }
     }
