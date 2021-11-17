@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.messages.control
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
@@ -188,6 +189,7 @@ class PrivateNodeRegistrationTest {
                 PDACertPath.PRIVATE_GW,
                 registrationDeserialized.gatewayCertificate
             )
+            assertNull(registrationDeserialized.gatewaySessionKey)
         }
 
         @Nested

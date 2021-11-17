@@ -85,7 +85,7 @@ class PrivateNodeRegistration(
                 )
             }
             val gatewaySessionKey =
-                if (2 <= sequence.size) getSessionKeyFromSequence(sequence[2]) else null
+                if (3 <= sequence.size) getSessionKeyFromSequence(sequence[2]) else null
             return PrivateNodeRegistration(nodeCertificate, gatewayCertificate, gatewaySessionKey)
         }
 
