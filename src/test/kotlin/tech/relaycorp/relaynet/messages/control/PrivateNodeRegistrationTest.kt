@@ -3,11 +3,14 @@ package tech.relaycorp.relaynet.messages.control
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
@@ -15,6 +18,8 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class PrivateNodeRegistrationTest {
+    private val sessionKey = (SessionKeyPair.generate()).sessionKey
+
     @Nested
     inner class Serialize {
         @Test
@@ -50,23 +55,51 @@ class PrivateNodeRegistrationTest {
         @Nested
         inner class SessionKey {
             @Test
-            @Disabled
             fun `Session key should be absent from serialization if it does not exist`() {
+                val registration =
+                    PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
+
+                val serialization = registration.serialize()
+
+                val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                assertEquals(2, sequence.size)
             }
 
             @Test
-            @Disabled
-            fun `Session key should be a CONSTRUCTED value`() {
-            }
-
-            @Test
-            @Disabled
             fun `Key id should be serialized`() {
+                val registration = PrivateNodeRegistration(
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    PDACertPath.PRIVATE_GW,
+                    sessionKey
+                )
+
+                val serialization = registration.serialize()
+
+                val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                val sessionKeyASN1 = ASN1Sequence.getInstance(sequence[2], false)
+                val keyIdASN1 =
+                    ASN1Utils.getOctetString(sessionKeyASN1.getObjectAt(0) as ASN1TaggedObject)
+                assertEquals(sessionKey.keyId.asList(), keyIdASN1.octets.asList())
             }
 
             @Test
-            @Disabled
             fun `Public key should be serialized`() {
+                val registration = PrivateNodeRegistration(
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    PDACertPath.PRIVATE_GW,
+                    sessionKey
+                )
+
+                val serialization = registration.serialize()
+
+                val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                val sessionKeyASN1 = ASN1Sequence.getInstance(sequence[2], false)
+                val sessionPublicKeyASN1 =
+                    ASN1Utils.getOctetString(sessionKeyASN1.getObjectAt(1) as ASN1TaggedObject)
+                assertEquals(
+                    sessionKey.publicKey.encoded.asList(),
+                    sessionPublicKeyASN1.octets.asList()
+                )
             }
         }
     }
