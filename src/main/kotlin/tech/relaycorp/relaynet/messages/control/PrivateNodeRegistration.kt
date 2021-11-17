@@ -2,9 +2,13 @@ package tech.relaycorp.relaynet.messages.control
 
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERSequence
+import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
+import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
@@ -16,10 +20,12 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
  *
  * @param privateNodeCertificate The certificate of the private node
  * @param gatewayCertificate The certificate of the gateway acting as server
+ * @param gatewaySessionKey The session key of the gateway acting as server
  */
 class PrivateNodeRegistration(
     val privateNodeCertificate: Certificate,
-    val gatewayCertificate: Certificate
+    val gatewayCertificate: Certificate,
+    val gatewaySessionKey: SessionKey? = null,
 ) {
     /**
      * Serialize registration.
@@ -27,10 +33,22 @@ class PrivateNodeRegistration(
     fun serialize(): ByteArray {
         val nodeCertificateASN1 = DEROctetString(privateNodeCertificate.serialize())
         val gatewayCertificateASN1 = DEROctetString(gatewayCertificate.serialize())
-        return ASN1Utils.serializeSequence(
-            listOf(nodeCertificateASN1, gatewayCertificateASN1),
-            false
-        )
+        val gatewaySessionKeyASN1 = if (gatewaySessionKey != null) {
+            ASN1Utils.makeSequence(
+                listOf(
+                    DEROctetString(gatewaySessionKey.keyId),
+                    DEROctetString(gatewaySessionKey.publicKey.encoded),
+                ),
+                false
+            )
+        } else {
+            null
+        }
+        val rootSequence = listOf(
+            nodeCertificateASN1,
+            gatewayCertificateASN1
+        ) + listOfNotNull(gatewaySessionKeyASN1)
+        return ASN1Utils.serializeSequence(rootSequence, false)
     }
 
     companion object {
@@ -66,7 +84,34 @@ class PrivateNodeRegistration(
                     exc
                 )
             }
-            return PrivateNodeRegistration(nodeCertificate, gatewayCertificate)
+            val gatewaySessionKey =
+                if (3 <= sequence.size) getSessionKeyFromSequence(sequence[2]) else null
+            return PrivateNodeRegistration(nodeCertificate, gatewayCertificate, gatewaySessionKey)
+        }
+
+        private fun getSessionKeyFromSequence(sessionKeyASN1: ASN1TaggedObject): SessionKey {
+            val sessionKeySequence = DERSequence.getInstance(sessionKeyASN1, false)
+            if (sessionKeySequence.size() < 2) {
+                throw InvalidMessageException(
+                    "Session key SEQUENCE should have at least 2 items " +
+                        "(got ${sessionKeySequence.size()})"
+                )
+            }
+            val sessionKeyId = ASN1Utils.getOctetString(
+                sessionKeySequence.getObjectAt(0) as ASN1TaggedObject,
+            ).octets
+
+            val sessionPublicKeyASN1 =
+                ASN1Utils.getOctetString(sessionKeySequence.getObjectAt(1) as ASN1TaggedObject)
+            val sessionPublicKey = try {
+                sessionPublicKeyASN1.octets.deserializeECPublicKey()
+            } catch (exc: KeyException) {
+                throw InvalidMessageException(
+                    "Session key is not a valid ECDH public key",
+                    exc
+                )
+            }
+            return SessionKey(sessionKeyId, sessionPublicKey)
         }
 
         @Throws(CertificateException::class)
