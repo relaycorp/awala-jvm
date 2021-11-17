@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSet
@@ -807,7 +806,12 @@ class SessionEnvelopedDataTest {
                     val unprotectedAttrs = AttributeHashtable()
                     unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
                         OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
-                        DERSet(arrayOf(ASN1Integer(3), ASN1Integer(5)))
+                        DERSet(
+                            arrayOf(
+                                DEROctetString("foo".toByteArray()),
+                                DEROctetString("bar".toByteArray())
+                            )
+                        )
                     )
                     val envelopedDataSerialized = generateEnvelopedData(unprotectedAttrs)
 
