@@ -8,7 +8,7 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 /**
  * Cargo message set.
  */
-class CargoMessageSet(val messages: Array<ByteArray>) : EncryptedPayload() {
+class CargoMessageSet(val messages: Array<ByteArray>) : GatewayEncryptedPayload() {
     /**
      * Serialize cargo message set.
      */
