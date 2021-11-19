@@ -2,11 +2,11 @@ package tech.relaycorp.relaynet.messages
 
 import java.io.InputStream
 import java.time.ZonedDateTime
-import tech.relaycorp.relaynet.messages.payloads.EmptyPayload
+import tech.relaycorp.relaynet.messages.payloads.CargoCollectionRequest
+import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
 import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
 import tech.relaycorp.relaynet.ramf.RAMFSerializer
-import tech.relaycorp.relaynet.ramf.UnencryptedRAMFMessage
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 private val SERIALIZER = RAMFSerializer(0x44, 0x00)
@@ -22,7 +22,7 @@ class CargoCollectionAuthorization(
     creationDate: ZonedDateTime? = null,
     ttl: Int? = null,
     senderCertificateChain: Set<Certificate>? = null
-) : UnencryptedRAMFMessage<EmptyPayload>(
+) : EncryptedRAMFMessage<CargoCollectionRequest>(
     SERIALIZER,
     recipientAddress,
     payload,
@@ -32,7 +32,8 @@ class CargoCollectionAuthorization(
     ttl,
     senderCertificateChain
 ) {
-    override fun deserializePayload() = EmptyPayload.deserialize(payload)
+    override fun deserializePayload(payloadPlaintext: ByteArray) =
+        CargoCollectionRequest.deserialize(payloadPlaintext)
 
     companion object : RAMFMessageCompanion<CargoCollectionAuthorization> {
         /**
