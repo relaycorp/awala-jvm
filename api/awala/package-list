@@ -194,7 +194,6 @@ $dokka.location:tech.relaycorp.relaynet.messages/CargoCollectionAuthorization.Co
 $dokka.location:tech.relaycorp.relaynet.messages/CargoCollectionAuthorization.Companion/deserialize/#kotlin.ByteArray/PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-cargo-collection-authorization/-companion/deserialize.html
 $dokka.location:tech.relaycorp.relaynet.messages/CargoCollectionAuthorization///PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-cargo-collection-authorization/index.html
 $dokka.location:tech.relaycorp.relaynet.messages/CargoCollectionAuthorization/CargoCollectionAuthorization/#kotlin.String#kotlin.ByteArray#tech.relaycorp.relaynet.wrappers.x509.Certificate#kotlin.String?#java.time.ZonedDateTime?#kotlin.Int?#kotlin.collections.Set[tech.relaycorp.relaynet.wrappers.x509.Certificate]?/PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-cargo-collection-authorization/-cargo-collection-authorization.html
-$dokka.location:tech.relaycorp.relaynet.messages/CargoCollectionAuthorization/deserializePayload/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-cargo-collection-authorization/deserialize-payload.html
 $dokka.location:tech.relaycorp.relaynet.messages/InvalidMessageException///PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-invalid-message-exception/index.html
 $dokka.location:tech.relaycorp.relaynet.messages/InvalidMessageException/InvalidMessageException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-invalid-message-exception/-invalid-message-exception.html
 $dokka.location:tech.relaycorp.relaynet.messages/Parcel.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet.messages/-parcel/-companion/index.html
@@ -251,8 +250,6 @@ $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/validate/#tech.relaycor
 $dokka.location:tech.relaycorp.relaynet.ramf/RecipientAddressType.PRIVATE///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-recipient-address-type/-p-r-i-v-a-t-e/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RecipientAddressType.PUBLIC///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-recipient-address-type/-p-u-b-l-i-c/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RecipientAddressType///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-recipient-address-type/index.html
-$dokka.location:tech.relaycorp.relaynet.ramf/UnencryptedRAMFMessage///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-unencrypted-r-a-m-f-message/index.html
-$dokka.location:tech.relaycorp.relaynet.ramf/UnencryptedRAMFMessage/deserializePayload/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-unencrypted-r-a-m-f-message/deserialize-payload.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.asn1////PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.asn1/index.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.asn1/ASN1Exception///PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.asn1/-a-s-n1-exception/index.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.asn1/ASN1Exception/ASN1Exception/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.asn1/-a-s-n1-exception/-a-s-n1-exception.html
