@@ -4,5 +4,5 @@ sealed class PrivateKeyData(val privateKeyDer: ByteArray)
 
 class IdentityPrivateKeyData(
     privateKeyDer: ByteArray,
-    val certificateDer: ByteArray,
+    val certificatesDer: List<ByteArray>,
 ) : PrivateKeyData(privateKeyDer)

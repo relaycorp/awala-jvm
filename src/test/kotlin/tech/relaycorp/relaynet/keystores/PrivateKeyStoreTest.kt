@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.keystores
 
+import java.lang.IllegalArgumentException
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,6 +20,7 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 class PrivateKeyStoreTest {
     private val identityPrivateKey = KeyPairSet.PRIVATE_ENDPOINT.private
     private val identityCertificate = PDACertPath.PRIVATE_ENDPOINT
+    private val altIdentityCertificate = PDACertPath.PRIVATE_GW
 
     private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKeyIdHex = Hex.toHexString(sessionKeyGeneration.sessionKey.keyId)
@@ -32,16 +34,49 @@ class PrivateKeyStoreTest {
         fun `Key should be stored`() = runBlockingTest {
             val store = MockPrivateKeyStore()
 
-            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+            store.saveIdentityKey(identityPrivateKey, listOf(identityCertificate))
 
             val privateAddress = identityCertificate.subjectPrivateAddress
             assertTrue(store.identityKeys.containsKey(privateAddress))
             val keyData = store.identityKeys[privateAddress]!!
             assertEquals(identityPrivateKey.encoded.asList(), keyData.privateKeyDer.asList())
             assertEquals(
-                identityCertificate.serialize().asList(),
-                keyData.certificateDer.asList()
+                listOf(identityCertificate.serialize().asList()),
+                keyData.certificatesDer.map { it.asList() }
             )
+        }
+
+        @Test
+        fun `Key with multiple certificates should be stored`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            store.saveIdentityKey(
+                identityPrivateKey,
+                listOf(identityCertificate, altIdentityCertificate)
+            )
+
+            val privateAddress = identityCertificate.subjectPrivateAddress
+            assertTrue(store.identityKeys.containsKey(privateAddress))
+            val keyData = store.identityKeys[privateAddress]!!
+            assertEquals(identityPrivateKey.encoded.asList(), keyData.privateKeyDer.asList())
+            assertEquals(
+                listOf(
+                    identityCertificate.serialize().asList(),
+                    altIdentityCertificate.serialize().asList()
+                ),
+                keyData.certificatesDer.map { it.asList() }
+            )
+        }
+
+        @Test
+        fun `Key without certificate should be refused`() = runBlockingTest {
+            val store = MockPrivateKeyStore()
+
+            val exception = assertThrows<IllegalArgumentException> {
+                store.saveIdentityKey(identityPrivateKey, emptyList())
+            }
+
+            assertEquals("Certificate list cannot be empty", exception.message)
         }
     }
 
@@ -50,12 +85,12 @@ class PrivateKeyStoreTest {
         @Test
         fun `Existing key pair should be returned`() = runBlockingTest {
             val store = MockPrivateKeyStore()
-            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+            store.saveIdentityKey(identityPrivateKey, listOf(identityCertificate))
 
             val idKeyPair = store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)
 
             assertEquals(identityPrivateKey.encoded.asList(), idKeyPair.privateKey.encoded.asList())
-            assertEquals(identityCertificate, idKeyPair.certificate)
+            assertEquals(identityCertificate, idKeyPair.certificates.first())
         }
 
         @Test
@@ -78,7 +113,10 @@ class PrivateKeyStoreTest {
             val privateAddress = identityCertificate.subjectPrivateAddress
             store.setIdentityKey(
                 privateAddress,
-                IdentityPrivateKeyData("malformed".toByteArray(), identityCertificate.serialize())
+                IdentityPrivateKeyData(
+                    "malformed".toByteArray(),
+                    listOf(identityCertificate.serialize())
+                )
             )
 
             val exception = assertThrows<KeyStoreBackendException> {
@@ -95,7 +133,10 @@ class PrivateKeyStoreTest {
             val privateAddress = identityCertificate.subjectPrivateAddress
             store.setIdentityKey(
                 privateAddress,
-                IdentityPrivateKeyData(identityPrivateKey.encoded, "malformed".toByteArray())
+                IdentityPrivateKeyData(
+                    identityPrivateKey.encoded,
+                    listOf("malformed".toByteArray())
+                )
             )
 
             val exception = assertThrows<KeyStoreBackendException> {
@@ -119,13 +160,13 @@ class PrivateKeyStoreTest {
         @Test
         fun `All stored key pairs should be returned`() = runBlockingTest {
             val store = MockPrivateKeyStore()
-            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+            store.saveIdentityKey(identityPrivateKey, listOf(identityCertificate))
 
             val allIdentityKeys = store.retrieveAllIdentityKeys()
 
             assertEquals(1, allIdentityKeys.size)
             assertEquals(
-                IdentityKeyPair(identityPrivateKey, identityCertificate),
+                IdentityKeyPair(identityPrivateKey, listOf(identityCertificate)),
                 allIdentityKeys.first()
             )
         }

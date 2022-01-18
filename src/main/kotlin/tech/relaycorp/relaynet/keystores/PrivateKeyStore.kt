@@ -9,13 +9,16 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 abstract class PrivateKeyStore {
-    @Throws(KeyStoreBackendException::class)
-    suspend fun saveIdentityKey(privateKey: PrivateKey, certificate: Certificate) {
+    @Throws(IllegalArgumentException::class, KeyStoreBackendException::class)
+    suspend fun saveIdentityKey(privateKey: PrivateKey, certificates: List<Certificate>) {
+        val firstCertificate = certificates.firstOrNull()
+            ?: throw IllegalArgumentException("Certificate list cannot be empty")
+
         val keyData = IdentityPrivateKeyData(
             privateKey.encoded,
-            certificate.serialize()
+            certificates.map { it.serialize() }
         )
-        saveIdentityKeyData(certificate.subjectPrivateAddress, keyData)
+        saveIdentityKeyData(firstCertificate.subjectPrivateAddress, keyData)
     }
 
     @Throws(KeyStoreBackendException::class)
@@ -27,8 +30,9 @@ abstract class PrivateKeyStore {
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun retrieveIdentityKey(privateAddress: String): IdentityKeyPair {
         val keyData = retrieveIdentityKeyData(privateAddress)
-            ?: throw MissingKeyException("There is no identity key for $privateAddress")
-
+        if (keyData == null || keyData.certificatesDer.isEmpty()) {
+            throw MissingKeyException("There is no identity key for $privateAddress")
+        }
         return keyData.toIdentityPrivateKey()
     }
 
@@ -112,7 +116,7 @@ abstract class PrivateKeyStore {
     private fun IdentityPrivateKeyData.toIdentityPrivateKey() = try {
         IdentityKeyPair(
             privateKeyDer.deserializeRSAKeyPair().private,
-            Certificate.deserialize(certificateDer)
+            certificatesDer.map { Certificate.deserialize(it) }
         )
     } catch (exc: KeyException) {
         throw KeyStoreBackendException("Private key is malformed", exc)
