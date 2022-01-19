@@ -247,10 +247,19 @@ class KeysTest {
     @Nested
     inner class PrivateAddress {
         @Test
-        fun `Private node address should be calculated`() {
+        fun `Private node address should be calculated from public key`() {
             val keyPair = generateRSAKeyPair()
 
             val privateAddress = keyPair.public.privateAddress
+
+            assertEquals("0${sha256Hex(keyPair.public.encoded)}", privateAddress)
+        }
+
+        @Test
+        fun `Private node address should be calculated from private key`() {
+            val keyPair = generateRSAKeyPair()
+
+            val privateAddress = keyPair.private.privateAddress
 
             assertEquals("0${sha256Hex(keyPair.public.encoded)}", privateAddress)
         }

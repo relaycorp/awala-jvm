@@ -110,3 +110,15 @@ fun generateECDHKeyPair(curve: ECDHCurve = ECDHCurve.P256): KeyPair {
  */
 val PublicKey.privateAddress: String
     get() = "0${getSHA256DigestHex(this.encoded)}"
+
+/**
+ * Derive private address for Relaynet node from its private key.
+ */
+val PrivateKey.privateAddress: String
+    get() {
+        val rsaPrivateKey = this as RSAPrivateCrtKey
+        val keyFactory = KeyFactory.getInstance("RSA", BC_PROVIDER)
+        val publicKeySpec = RSAPublicKeySpec(rsaPrivateKey.modulus, rsaPrivateKey.publicExponent)
+        val publicKey = keyFactory.generatePublic(publicKeySpec)
+        return publicKey.privateAddress
+    }
