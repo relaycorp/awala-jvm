@@ -11,7 +11,6 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
-import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.privateAddress
 
@@ -22,8 +21,8 @@ class PrivateKeyStoreTest {
     private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKeyIdHex = Hex.toHexString(sessionKeyGeneration.sessionKey.keyId)
 
-    private val ownPrivateAddress = PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress
-    private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
+    private val ownPrivateAddress = KeyPairSet.PRIVATE_ENDPOINT.public.privateAddress
+    private val peerPrivateAddress = KeyPairSet.PDA_GRANTEE.public.privateAddress
 
     @Nested
     inner class SaveIdentityKey {

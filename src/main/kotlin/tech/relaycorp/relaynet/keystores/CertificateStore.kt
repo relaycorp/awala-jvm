@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.keystores
 import java.time.ZonedDateTime
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERSequence
+import org.bouncycastle.asn1.DLTaggedObject
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
@@ -34,7 +35,7 @@ abstract class CertificateStore {
     suspend fun retrieveAll(subjectPrivateAddress: String): List<CertificationPath> =
         retrieveData(subjectPrivateAddress)
             .map { it.toCertificationPath() }
-            .filter { it.leafCertificate.expiryDate < ZonedDateTime.now() }
+            .filter { it.leafCertificate.expiryDate >= ZonedDateTime.now() }
 
     protected abstract suspend fun retrieveData(
         subjectPrivateAddress: String
@@ -60,15 +61,12 @@ abstract class CertificateStore {
     private fun ByteArray.toCertificationPath(): CertificationPath {
         val pathEncoded = ASN1Utils.deserializeHeterogeneousSequence(this)
 
-        val leafCertificate = pathEncoded.first().encoded.toCertificate()
-
-        val chainEncoded = DERSequence.getInstance(pathEncoded[1], false)
-        val chain = chainEncoded.objects.asSequence().toList()
-            .map { (it as ASN1TaggedObject).encoded.toCertificate() }
+        val leafCertificate = pathEncoded[0].toCertificate()
+        val chain = pathEncoded.copyOfRange(1, pathEncoded.size).map { it.toCertificate() }
 
         return CertificationPath(leafCertificate, chain)
     }
 
-    private fun ByteArray.toCertificate() =
-        Certificate.deserialize(this)
+    private fun ASN1TaggedObject.toCertificate() =
+        Certificate.deserialize(`object`.encoded)
 }
