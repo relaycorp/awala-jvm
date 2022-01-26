@@ -6,7 +6,6 @@ import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.privateAddress
-import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
@@ -110,7 +109,5 @@ abstract class PrivateKeyStore {
         privateKeyDer.deserializeRSAKeyPair().private
     } catch (exc: KeyException) {
         throw KeyStoreBackendException("Private key is malformed", exc)
-    } catch (exc: CertificateException) {
-        throw KeyStoreBackendException("Certificate is malformed", exc)
     }
 }

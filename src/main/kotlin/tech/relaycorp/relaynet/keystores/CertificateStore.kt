@@ -22,7 +22,7 @@ abstract class CertificateStore {
     protected abstract suspend fun saveData(
         subjectPrivateAddress: String,
         leafCertificateExpiryDate: ZonedDateTime,
-        certificationPathData: ByteArray
+        certificationPathData: ByteArray,
     )
 
     @Throws(KeyStoreBackendException::class)

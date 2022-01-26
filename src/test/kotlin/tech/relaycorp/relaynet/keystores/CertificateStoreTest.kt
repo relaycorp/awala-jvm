@@ -9,9 +9,11 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockCertificateStore
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 @ExperimentalCoroutinesApi
@@ -40,6 +42,17 @@ class CertificateStoreTest {
 
     @Nested
     inner class Save {
+        @Test
+        fun `Certificate should be stored`() = runBlockingTest {
+            val store = MockCertificateStore()
+
+            store.save(certificate)
+
+            assertTrue(store.data.containsKey(certificate.subjectPrivateAddress))
+            val certificationPaths = store.data[certificate.subjectPrivateAddress]!!
+            assertEquals(1, certificationPaths.size)
+        }
+
         @Test
         fun `Certification path should be stored`() = runBlockingTest {
             val store = MockCertificateStore()
@@ -113,6 +126,36 @@ class CertificateStoreTest {
                 allCertificationPaths.map { it.leafCertificate },
                 aboutToExpireCertificate
             )
+        }
+
+        @Test
+        fun `Malformed certification path should throw KeyStoreBackendException`() =
+            runBlockingTest {
+                val store = MockCertificateStore()
+                store.data[certificate.subjectPrivateAddress] = listOf(
+                    Pair(ZonedDateTime.now().plusDays(1), "malformed".toByteArray())
+                )
+
+                val exception = assertThrows<KeyStoreBackendException> {
+                    store.retrieveAll(certificate.subjectPrivateAddress)
+                }
+                assertEquals("Malformed certification path", exception.message)
+            }
+
+        @Test
+        fun `Empty certification path should throw KeyStoreBackendException`() = runBlockingTest {
+            val store = MockCertificateStore()
+            store.data[certificate.subjectPrivateAddress] = listOf(
+                Pair(
+                    ZonedDateTime.now().plusDays(1),
+                    ASN1Utils.serializeSequence(emptyList())
+                )
+            )
+
+            val exception = assertThrows<KeyStoreBackendException> {
+                store.retrieveAll(certificate.subjectPrivateAddress)
+            }
+            assertEquals("Empty certification path", exception.message)
         }
     }
 
