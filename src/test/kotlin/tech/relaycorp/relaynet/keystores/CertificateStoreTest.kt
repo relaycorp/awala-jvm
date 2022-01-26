@@ -98,7 +98,6 @@ class CertificateStoreTest {
         fun `All stored non-expired certification paths should be returned`() = runBlockingTest {
             val store = MockCertificateStore()
 
-
             store.save(certificate, certificateChain)
             store.save(aboutToExpireCertificate, certificateChain)
             store.save(expiredCertificate, certificateChain)
@@ -106,8 +105,14 @@ class CertificateStoreTest {
             val allCertificationPaths = store.retrieveAll(certificate.subjectPrivateAddress)
 
             assertEquals(2, allCertificationPaths.size)
-            assertContains(allCertificationPaths.map { it.leafCertificate }, certificate)
-            assertContains(allCertificationPaths.map { it.leafCertificate }, aboutToExpireCertificate)
+            assertContains(
+                allCertificationPaths.map { it.leafCertificate },
+                certificate
+            )
+            assertContains(
+                allCertificationPaths.map { it.leafCertificate },
+                aboutToExpireCertificate
+            )
         }
     }
 

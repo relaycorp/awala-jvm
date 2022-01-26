@@ -2,8 +2,7 @@ package tech.relaycorp.relaynet.keystores
 
 import java.time.ZonedDateTime
 import org.bouncycastle.asn1.ASN1TaggedObject
-import org.bouncycastle.asn1.DERSequence
-import org.bouncycastle.asn1.DLTaggedObject
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
@@ -58,8 +57,17 @@ abstract class CertificateStore {
     private fun Certificate.toASN1() =
         certificateHolder.toASN1Structure()
 
+    @Throws(KeyStoreBackendException::class)
     private fun ByteArray.toCertificationPath(): CertificationPath {
-        val pathEncoded = ASN1Utils.deserializeHeterogeneousSequence(this)
+        val pathEncoded = try {
+            ASN1Utils.deserializeHeterogeneousSequence(this)
+        } catch (exception: ASN1Exception) {
+            throw KeyStoreBackendException("Malformed certification path", exception)
+        }
+
+        if (pathEncoded.isEmpty()) {
+            throw KeyStoreBackendException("Empty certification path")
+        }
 
         val leafCertificate = pathEncoded[0].toCertificate()
         val chain = pathEncoded.copyOfRange(1, pathEncoded.size).map { it.toCertificate() }

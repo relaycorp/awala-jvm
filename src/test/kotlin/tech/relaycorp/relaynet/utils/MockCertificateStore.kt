@@ -21,7 +21,7 @@ class MockCertificateStore(
         }
         data[subjectPrivateAddress] =
             data[subjectPrivateAddress].orEmpty() +
-                    listOf(Pair(leafCertificateExpiryDate, certificationPathData))
+            listOf(Pair(leafCertificateExpiryDate, certificationPathData))
     }
 
     override suspend fun retrieveData(subjectPrivateAddress: String): List<ByteArray> {
@@ -33,7 +33,6 @@ class MockCertificateStore(
         }
         return data[subjectPrivateAddress].orEmpty().map { it.second }
     }
-
 
     override suspend fun deleteExpired() {
         data.forEach { (key, pairs) ->
