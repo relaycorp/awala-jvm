@@ -11,20 +11,18 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
-import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.wrappers.KeyException
-import tech.relaycorp.relaynet.wrappers.x509.CertificateException
+import tech.relaycorp.relaynet.wrappers.privateAddress
 
 @ExperimentalCoroutinesApi
 class PrivateKeyStoreTest {
     private val identityPrivateKey = KeyPairSet.PRIVATE_ENDPOINT.private
-    private val identityCertificate = PDACertPath.PRIVATE_ENDPOINT
 
     private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKeyIdHex = Hex.toHexString(sessionKeyGeneration.sessionKey.keyId)
 
-    private val ownPrivateAddress = identityCertificate.subjectPrivateAddress
-    private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
+    private val ownPrivateAddress = KeyPairSet.PRIVATE_ENDPOINT.public.privateAddress
+    private val peerPrivateAddress = KeyPairSet.PDA_GRANTEE.public.privateAddress
 
     @Nested
     inner class SaveIdentityKey {
@@ -32,16 +30,12 @@ class PrivateKeyStoreTest {
         fun `Key should be stored`() = runBlockingTest {
             val store = MockPrivateKeyStore()
 
-            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+            store.saveIdentityKey(identityPrivateKey)
 
-            val privateAddress = identityCertificate.subjectPrivateAddress
+            val privateAddress = identityPrivateKey.privateAddress
             assertTrue(store.identityKeys.containsKey(privateAddress))
             val keyData = store.identityKeys[privateAddress]!!
             assertEquals(identityPrivateKey.encoded.asList(), keyData.privateKeyDer.asList())
-            assertEquals(
-                identityCertificate.serialize().asList(),
-                keyData.certificateDer.asList()
-            )
         }
     }
 
@@ -50,12 +44,11 @@ class PrivateKeyStoreTest {
         @Test
         fun `Existing key pair should be returned`() = runBlockingTest {
             val store = MockPrivateKeyStore()
-            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+            store.saveIdentityKey(identityPrivateKey)
 
-            val idKeyPair = store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)
+            val idPrivateKey = store.retrieveIdentityKey(identityPrivateKey.privateAddress)
 
-            assertEquals(identityPrivateKey.encoded.asList(), idKeyPair.privateKey.encoded.asList())
-            assertEquals(identityCertificate, idKeyPair.certificate)
+            assertEquals(identityPrivateKey.encoded.asList(), idPrivateKey.encoded.asList())
         }
 
         @Test
@@ -63,11 +56,11 @@ class PrivateKeyStoreTest {
             val store = MockPrivateKeyStore()
 
             val exception = assertThrows<MissingKeyException> {
-                store.retrieveIdentityKey(identityCertificate.subjectPrivateAddress)
+                store.retrieveIdentityKey(identityPrivateKey.privateAddress)
             }
 
             assertEquals(
-                "There is no identity key for ${identityCertificate.subjectPrivateAddress}",
+                "There is no identity key for ${identityPrivateKey.privateAddress}",
                 exception.message
             )
         }
@@ -75,10 +68,10 @@ class PrivateKeyStoreTest {
         @Test
         fun `Malformed private keys should be refused`() = runBlockingTest {
             val store = MockPrivateKeyStore()
-            val privateAddress = identityCertificate.subjectPrivateAddress
+            val privateAddress = identityPrivateKey.privateAddress
             store.setIdentityKey(
                 privateAddress,
-                IdentityPrivateKeyData("malformed".toByteArray(), identityCertificate.serialize())
+                PrivateKeyData("malformed".toByteArray())
             )
 
             val exception = assertThrows<KeyStoreBackendException> {
@@ -87,23 +80,6 @@ class PrivateKeyStoreTest {
 
             assertEquals("Private key is malformed", exception.message)
             assertTrue(exception.cause is KeyException)
-        }
-
-        @Test
-        fun `Malformed certificates should be refused`() = runBlockingTest {
-            val store = MockPrivateKeyStore()
-            val privateAddress = identityCertificate.subjectPrivateAddress
-            store.setIdentityKey(
-                privateAddress,
-                IdentityPrivateKeyData(identityPrivateKey.encoded, "malformed".toByteArray())
-            )
-
-            val exception = assertThrows<KeyStoreBackendException> {
-                store.retrieveIdentityKey(privateAddress)
-            }
-
-            assertEquals("Certificate is malformed", exception.message)
-            assertTrue(exception.cause is CertificateException)
         }
     }
 
@@ -119,13 +95,13 @@ class PrivateKeyStoreTest {
         @Test
         fun `All stored key pairs should be returned`() = runBlockingTest {
             val store = MockPrivateKeyStore()
-            store.saveIdentityKey(identityPrivateKey, identityCertificate)
+            store.saveIdentityKey(identityPrivateKey)
 
             val allIdentityKeys = store.retrieveAllIdentityKeys()
 
             assertEquals(1, allIdentityKeys.size)
             assertEquals(
-                IdentityKeyPair(identityPrivateKey, identityCertificate),
+                identityPrivateKey,
                 allIdentityKeys.first()
             )
         }
@@ -251,9 +227,8 @@ class PrivateKeyStoreTest {
         @Test
         fun `Malformed private keys should be refused`() = runBlockingTest {
             val store = MockPrivateKeyStore()
-            val privateAddress = identityCertificate.subjectPrivateAddress
             store.setSessionKey(
-                privateAddress,
+                ownPrivateAddress,
                 null,
                 sessionKeyIdHex,
                 "malformed".toByteArray()
@@ -262,7 +237,7 @@ class PrivateKeyStoreTest {
             val exception = assertThrows<KeyStoreBackendException> {
                 store.retrieveSessionKey(
                     sessionKeyGeneration.sessionKey.keyId,
-                    privateAddress,
+                    ownPrivateAddress,
                     peerPrivateAddress
                 )
             }

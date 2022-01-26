@@ -5,27 +5,23 @@ import org.bouncycastle.util.encoders.Hex
 import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
-import tech.relaycorp.relaynet.wrappers.x509.CertificateException
+import tech.relaycorp.relaynet.wrappers.privateAddress
 
 abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
-    suspend fun saveIdentityKey(privateKey: PrivateKey, certificate: Certificate) {
-        val keyData = IdentityPrivateKeyData(
-            privateKey.encoded,
-            certificate.serialize()
-        )
-        saveIdentityKeyData(certificate.subjectPrivateAddress, keyData)
+    suspend fun saveIdentityKey(privateKey: PrivateKey) {
+        val keyData = PrivateKeyData(privateKey.encoded)
+        saveIdentityKeyData(privateKey.privateAddress, keyData)
     }
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveIdentityKeyData(
         privateAddress: String,
-        keyData: IdentityPrivateKeyData
+        keyData: PrivateKeyData
     )
 
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
-    suspend fun retrieveIdentityKey(privateAddress: String): IdentityKeyPair {
+    suspend fun retrieveIdentityKey(privateAddress: String): PrivateKey {
         val keyData = retrieveIdentityKeyData(privateAddress)
             ?: throw MissingKeyException("There is no identity key for $privateAddress")
 
@@ -35,14 +31,14 @@ abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun retrieveIdentityKeyData(
         privateAddress: String,
-    ): IdentityPrivateKeyData?
+    ): PrivateKeyData?
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveAllIdentityKeys(): List<IdentityKeyPair> =
+    suspend fun retrieveAllIdentityKeys(): List<PrivateKey> =
         retrieveAllIdentityKeyData().map { it.toIdentityPrivateKey() }
 
     @Throws(KeyStoreBackendException::class)
-    protected abstract suspend fun retrieveAllIdentityKeyData(): List<IdentityPrivateKeyData>
+    protected abstract suspend fun retrieveAllIdentityKeyData(): List<PrivateKeyData>
 
     @Throws(KeyStoreBackendException::class)
     suspend fun saveSessionKey(
@@ -109,14 +105,9 @@ abstract class PrivateKeyStore {
 
     private fun formatSessionKeyId(keyId: ByteArray) = Hex.toHexString(keyId)
 
-    private fun IdentityPrivateKeyData.toIdentityPrivateKey() = try {
-        IdentityKeyPair(
-            privateKeyDer.deserializeRSAKeyPair().private,
-            Certificate.deserialize(certificateDer)
-        )
+    private fun PrivateKeyData.toIdentityPrivateKey() = try {
+        privateKeyDer.deserializeRSAKeyPair().private
     } catch (exc: KeyException) {
         throw KeyStoreBackendException("Private key is malformed", exc)
-    } catch (exc: CertificateException) {
-        throw KeyStoreBackendException("Certificate is malformed", exc)
     }
 }
