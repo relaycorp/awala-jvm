@@ -3,7 +3,6 @@ package tech.relaycorp.relaynet.messages
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Sequence
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
@@ -71,7 +70,7 @@ class CertificateRotationTest {
             val chainSequence = ASN1Sequence.getInstance(sequenceItems[1], false)
             assertEquals(1, chainSequence.size())
             val issuerSerialized =
-                ASN1Utils.getOctetString(chainSequence.first() as ASN1TaggedObject).octets
+                DEROctetString.getInstance(chainSequence.first()).octets
             assertEquals(issuerCertificate, Certificate.deserialize(issuerSerialized))
         }
     }
@@ -161,7 +160,7 @@ class CertificateRotationTest {
                 listOf(
                     DEROctetString(subjectCertificate.serialize()),
                     ASN1Utils.makeSequence(
-                        listOf(DERVisibleString("malformed")), false
+                        listOf(DEROctetString("malformed".toByteArray()))
                     )
                 ),
                 false
@@ -173,6 +172,26 @@ class CertificateRotationTest {
 
             assertEquals("Chain contains malformed certificate", exception.message)
             assertTrue(exception.cause is CertificateException)
+        }
+
+        @Test
+        fun `Chain certificates should be OCTET STRINGs`() {
+            val serialization = CertificateRotation.FORMAT_SIGNATURE + ASN1Utils.serializeSequence(
+                listOf(
+                    DEROctetString(subjectCertificate.serialize()),
+                    ASN1Utils.makeSequence(
+                        listOf(DERVisibleString("malformed"))
+                    )
+                ),
+                false
+            )
+
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize(serialization)
+            }
+
+            assertEquals("Chain contains malformed certificate", exception.message)
+            assertTrue(exception.cause is IllegalArgumentException)
         }
 
         @Test
