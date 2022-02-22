@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.messages
 
-import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
@@ -11,8 +10,7 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 class CertificateRotation(val subjectCertificate: Certificate, val chain: List<Certificate>) {
     fun serialize(): ByteArray {
         val chainSequence = ASN1Utils.makeSequence(
-            chain.map { DEROctetString(it.serialize()) },
-            false
+            chain.map { DEROctetString(it.serialize()) }
         )
         val sequence = ASN1Utils.serializeSequence(
             listOf(
@@ -72,9 +70,11 @@ class CertificateRotation(val subjectCertificate: Certificate, val chain: List<C
                 throw InvalidMessageException("Chain is malformed", exc)
             }
             val chain = try {
-                chainSequence.map { ASN1Utils.getOctetString(it as ASN1TaggedObject) }
+                chainSequence.map { DEROctetString.getInstance(it) }
                     .map { Certificate.deserialize(it.octets) }
             } catch (exc: CertificateException) {
+                throw InvalidMessageException("Chain contains malformed certificate", exc)
+            } catch (exc: IllegalArgumentException) {
                 throw InvalidMessageException("Chain contains malformed certificate", exc)
             }
 
