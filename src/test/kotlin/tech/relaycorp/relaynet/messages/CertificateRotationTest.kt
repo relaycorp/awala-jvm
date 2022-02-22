@@ -1,13 +1,19 @@
 package tech.relaycorp.relaynet.messages
 
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
+import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class CertificateRotationTest {
     private val subjectCertificate = PDACertPath.PRIVATE_GW
@@ -24,8 +30,7 @@ class CertificateRotationTest {
             val serialization = rotation.serialize()
 
             assertEquals(
-                formatSignature.asList(),
-                serialization.slice(0..9)
+                formatSignature.asList(), serialization.slice(0..9)
             )
         }
 
@@ -68,6 +73,128 @@ class CertificateRotationTest {
             val issuerSerialized =
                 ASN1Utils.getOctetString(chainSequence.first() as ASN1TaggedObject).octets
             assertEquals(issuerCertificate, Certificate.deserialize(issuerSerialized))
+        }
+    }
+
+    @Nested
+    inner class Deserialize {
+        @Test
+        fun `Serialization should be long enough to potentially contain format signature`() {
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize("RelaynetP".toByteArray())
+            }
+
+            assertEquals("Message is too short to contain format signature", exception.message)
+        }
+
+        @Test
+        fun `Serialization should start with format signature`() {
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize("RelaynetP0".toByteArray())
+            }
+
+            assertEquals("Format signature is not that of a CertificateRotation", exception.message)
+        }
+
+        @Test
+        fun `Serialization should contain a DER sequence`() {
+            val serialization = CertificateRotation.FORMAT_SIGNATURE + byteArrayOf(1)
+
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize(serialization)
+            }
+
+            assertEquals("Serialization does not contain valid DER sequence", exception.message)
+            assertTrue(exception.cause is ASN1Exception)
+        }
+
+        @Test
+        fun `Serialization should contain a sequence of a least 2 items`() {
+            val serialization = CertificateRotation.FORMAT_SIGNATURE + ASN1Utils.serializeSequence(
+                listOf(DERVisibleString("the subject cert")), false
+            )
+
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize(serialization)
+            }
+
+            assertEquals("Sequence should contain at least 2 items", exception.message)
+        }
+
+        @Test
+        fun `Malformed subject certificate should be refused`() {
+            val serialization = CertificateRotation.FORMAT_SIGNATURE + ASN1Utils.serializeSequence(
+                listOf(
+                    DERVisibleString("malformed"), ASN1Utils.makeSequence(emptyList(), false)
+                ),
+                false
+            )
+
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize(serialization)
+            }
+
+            assertEquals("Subject certificate is malformed", exception.message)
+            assertTrue(exception.cause is CertificateException)
+        }
+
+        @Test
+        fun `Malformed chain should be refused`() {
+            val serialization = CertificateRotation.FORMAT_SIGNATURE + ASN1Utils.serializeSequence(
+                listOf(
+                    DEROctetString(subjectCertificate.serialize()), DERVisibleString("malformed")
+                ),
+                false
+            )
+
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize(serialization)
+            }
+
+            assertEquals("Chain is malformed", exception.message)
+            assertTrue(exception.cause is IllegalArgumentException)
+        }
+
+        @Test
+        fun `Malformed chain certificate should be refused`() {
+            val serialization = CertificateRotation.FORMAT_SIGNATURE + ASN1Utils.serializeSequence(
+                listOf(
+                    DEROctetString(subjectCertificate.serialize()),
+                    ASN1Utils.makeSequence(
+                        listOf(DERVisibleString("malformed")), false
+                    )
+                ),
+                false
+            )
+
+            val exception = assertThrows<InvalidMessageException> {
+                CertificateRotation.deserialize(serialization)
+            }
+
+            assertEquals("Chain contains malformed certificate", exception.message)
+            assertTrue(exception.cause is CertificateException)
+        }
+
+        @Test
+        fun `A new instance should be returned if serialization is valid`() {
+            val rotation = CertificateRotation(subjectCertificate, listOf(issuerCertificate))
+            val serialization = rotation.serialize()
+
+            val rotationDeserialized = CertificateRotation.deserialize(serialization)
+
+            assertEquals(subjectCertificate, rotationDeserialized.subjectCertificate)
+            assertEquals(1, rotationDeserialized.chain.size)
+            assertEquals(issuerCertificate, rotationDeserialized.chain.first())
+        }
+
+        @Test
+        fun `Chain should be empty if sub-sequence is empty`() {
+            val rotation = CertificateRotation(subjectCertificate, emptyList())
+            val serialization = rotation.serialize()
+
+            val rotationDeserialized = CertificateRotation.deserialize(serialization)
+
+            assertEquals(0, rotationDeserialized.chain.size)
         }
     }
 }
