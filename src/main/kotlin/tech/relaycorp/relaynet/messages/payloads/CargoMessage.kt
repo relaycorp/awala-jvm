@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.messages.payloads
 
+import tech.relaycorp.relaynet.messages.CertificateRotation
 import tech.relaycorp.relaynet.messages.PARCEL_SERIALIZER
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
 import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
@@ -25,7 +26,8 @@ class CargoMessage(val messageSerialized: ByteArray) {
 
     enum class Type(internal val formatSignature: List<Byte>) {
         PARCEL(PARCEL_SERIALIZER.formatSignature.asList()),
-        PCA(ParcelCollectionAck.FORMAT_SIGNATURE.asList())
+        PCA(ParcelCollectionAck.FORMAT_SIGNATURE.asList()),
+        CERTIFICATE_ROTATION(CertificateRotation.FORMAT_SIGNATURE.asList())
     }
 
     companion object {
