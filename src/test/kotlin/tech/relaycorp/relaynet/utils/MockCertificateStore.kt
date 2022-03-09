@@ -9,25 +9,26 @@ class MockCertificateStore(
     private val retrievalException: Throwable? = null,
 ) : CertificateStore() {
 
-    val data: MutableMap<Pair<Scope, String>, List<Pair<ZonedDateTime, ByteArray>>> = mutableMapOf()
+    val data: MutableMap<Pair<String, String>, List<Pair<ZonedDateTime, ByteArray>>> =
+        mutableMapOf()
 
     override suspend fun saveData(
-        scope: Scope,
         subjectPrivateAddress: String,
         leafCertificateExpiryDate: ZonedDateTime,
-        certificationPathData: ByteArray
+        certificationPathData: ByteArray,
+        issuerPrivateAddress: String
     ) {
         if (savingException != null) {
             throw KeyStoreBackendException("Saving certificates isn't supported", savingException)
         }
-        data[scope to subjectPrivateAddress] =
-            data[scope to subjectPrivateAddress].orEmpty() +
+        data[subjectPrivateAddress to issuerPrivateAddress] =
+            data[subjectPrivateAddress to issuerPrivateAddress].orEmpty() +
             listOf(Pair(leafCertificateExpiryDate, certificationPathData))
     }
 
     override suspend fun retrieveData(
-        scope: Scope,
-        subjectPrivateAddress: String
+        subjectPrivateAddress: String,
+        issuerPrivateAddress: String
     ): List<ByteArray> {
         if (retrievalException != null) {
             throw KeyStoreBackendException(
@@ -35,7 +36,7 @@ class MockCertificateStore(
                 retrievalException
             )
         }
-        return data[scope to subjectPrivateAddress].orEmpty().map { it.second }
+        return data[subjectPrivateAddress to issuerPrivateAddress].orEmpty().map { it.second }
     }
 
     override suspend fun deleteExpired() {
@@ -44,7 +45,7 @@ class MockCertificateStore(
         }
     }
 
-    override fun delete(scope: Scope, subjectPrivateAddress: String) {
-        data.remove(scope to subjectPrivateAddress)
+    override fun delete(subjectPrivateAddress: String, issuerPrivateAddress: String) {
+        data.remove(subjectPrivateAddress to issuerPrivateAddress)
     }
 }
