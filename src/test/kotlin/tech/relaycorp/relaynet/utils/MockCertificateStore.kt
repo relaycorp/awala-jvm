@@ -9,29 +9,34 @@ class MockCertificateStore(
     private val retrievalException: Throwable? = null,
 ) : CertificateStore() {
 
-    val data: MutableMap<String, List<Pair<ZonedDateTime, ByteArray>>> = mutableMapOf()
+    val data: MutableMap<Pair<String, String>, List<Pair<ZonedDateTime, ByteArray>>> =
+        mutableMapOf()
 
     override suspend fun saveData(
         subjectPrivateAddress: String,
         leafCertificateExpiryDate: ZonedDateTime,
-        certificationPathData: ByteArray
+        certificationPathData: ByteArray,
+        issuerPrivateAddress: String
     ) {
         if (savingException != null) {
             throw KeyStoreBackendException("Saving certificates isn't supported", savingException)
         }
-        data[subjectPrivateAddress] =
-            data[subjectPrivateAddress].orEmpty() +
+        data[subjectPrivateAddress to issuerPrivateAddress] =
+            data[subjectPrivateAddress to issuerPrivateAddress].orEmpty() +
             listOf(Pair(leafCertificateExpiryDate, certificationPathData))
     }
 
-    override suspend fun retrieveData(subjectPrivateAddress: String): List<ByteArray> {
+    override suspend fun retrieveData(
+        subjectPrivateAddress: String,
+        issuerPrivateAddress: String
+    ): List<ByteArray> {
         if (retrievalException != null) {
             throw KeyStoreBackendException(
                 "Retrieving certificates isn't supported",
                 retrievalException
             )
         }
-        return data[subjectPrivateAddress].orEmpty().map { it.second }
+        return data[subjectPrivateAddress to issuerPrivateAddress].orEmpty().map { it.second }
     }
 
     override suspend fun deleteExpired() {
@@ -40,7 +45,7 @@ class MockCertificateStore(
         }
     }
 
-    override fun delete(subjectPrivateAddress: String) {
-        data.remove(subjectPrivateAddress)
+    override fun delete(subjectPrivateAddress: String, issuerPrivateAddress: String) {
+        data.remove(subjectPrivateAddress to issuerPrivateAddress)
     }
 }

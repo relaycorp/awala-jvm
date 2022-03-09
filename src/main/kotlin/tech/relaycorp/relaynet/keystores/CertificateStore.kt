@@ -9,13 +9,18 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 abstract class CertificateStore {
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun save(certificate: Certificate, chain: List<Certificate> = emptyList()) {
+    suspend fun save(
+        certificate: Certificate,
+        chain: List<Certificate> = emptyList(),
+        issuerPrivateAddress: String
+    ) {
         if (certificate.expiryDate < ZonedDateTime.now()) return
 
         saveData(
             certificate.subjectPrivateAddress,
             certificate.expiryDate,
-            CertificationPath(certificate, chain).toData()
+            CertificationPath(certificate, chain).toData(),
+            issuerPrivateAddress
         )
     }
 
@@ -23,28 +28,36 @@ abstract class CertificateStore {
         subjectPrivateAddress: String,
         leafCertificateExpiryDate: ZonedDateTime,
         certificationPathData: ByteArray,
+        issuerPrivateAddress: String,
     )
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveLatest(subjectPrivateAddress: String): CertificationPath? =
-        retrieveAll(subjectPrivateAddress)
+    suspend fun retrieveLatest(
+        subjectPrivateAddress: String,
+        issuerPrivateAddress: String
+    ): CertificationPath? =
+        retrieveAll(subjectPrivateAddress, issuerPrivateAddress)
             .maxByOrNull { it.leafCertificate.expiryDate }
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveAll(subjectPrivateAddress: String): List<CertificationPath> =
-        retrieveData(subjectPrivateAddress)
+    suspend fun retrieveAll(
+        subjectPrivateAddress: String,
+        issuerPrivateAddress: String
+    ): List<CertificationPath> =
+        retrieveData(subjectPrivateAddress, issuerPrivateAddress)
             .map { it.toCertificationPath() }
             .filter { it.leafCertificate.expiryDate >= ZonedDateTime.now() }
 
     protected abstract suspend fun retrieveData(
-        subjectPrivateAddress: String
+        subjectPrivateAddress: String,
+        issuerPrivateAddress: String
     ): List<ByteArray>
 
     @Throws(KeyStoreBackendException::class)
     abstract suspend fun deleteExpired()
 
     @Throws(KeyStoreBackendException::class)
-    abstract fun delete(subjectPrivateAddress: String)
+    abstract fun delete(subjectPrivateAddress: String, issuerPrivateAddress: String)
 
     // Helpers
 
