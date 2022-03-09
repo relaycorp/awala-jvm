@@ -8,11 +8,21 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 abstract class CertificateStore {
 
+    enum class Scope(val value: String) {
+        PDA("pda"),
+        CDA("cda")
+    }
+
     @Throws(KeyStoreBackendException::class)
-    suspend fun save(certificate: Certificate, chain: List<Certificate> = emptyList()) {
+    suspend fun save(
+        scope: Scope,
+        certificate: Certificate,
+        chain: List<Certificate> = emptyList()
+    ) {
         if (certificate.expiryDate < ZonedDateTime.now()) return
 
         saveData(
+            scope,
             certificate.subjectPrivateAddress,
             certificate.expiryDate,
             CertificationPath(certificate, chain).toData()
@@ -20,23 +30,25 @@ abstract class CertificateStore {
     }
 
     protected abstract suspend fun saveData(
+        scope: Scope,
         subjectPrivateAddress: String,
         leafCertificateExpiryDate: ZonedDateTime,
         certificationPathData: ByteArray,
     )
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveLatest(subjectPrivateAddress: String): CertificationPath? =
-        retrieveAll(subjectPrivateAddress)
+    suspend fun retrieveLatest(scope: Scope, subjectPrivateAddress: String): CertificationPath? =
+        retrieveAll(scope, subjectPrivateAddress)
             .maxByOrNull { it.leafCertificate.expiryDate }
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieveAll(subjectPrivateAddress: String): List<CertificationPath> =
-        retrieveData(subjectPrivateAddress)
+    suspend fun retrieveAll(scope: Scope, subjectPrivateAddress: String): List<CertificationPath> =
+        retrieveData(scope, subjectPrivateAddress)
             .map { it.toCertificationPath() }
             .filter { it.leafCertificate.expiryDate >= ZonedDateTime.now() }
 
     protected abstract suspend fun retrieveData(
+        scope: Scope,
         subjectPrivateAddress: String
     ): List<ByteArray>
 
@@ -44,7 +56,7 @@ abstract class CertificateStore {
     abstract suspend fun deleteExpired()
 
     @Throws(KeyStoreBackendException::class)
-    abstract fun delete(subjectPrivateAddress: String)
+    abstract fun delete(scope: Scope, subjectPrivateAddress: String)
 
     // Helpers
 

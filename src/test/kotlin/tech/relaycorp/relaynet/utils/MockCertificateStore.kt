@@ -9,9 +9,10 @@ class MockCertificateStore(
     private val retrievalException: Throwable? = null,
 ) : CertificateStore() {
 
-    val data: MutableMap<String, List<Pair<ZonedDateTime, ByteArray>>> = mutableMapOf()
+    val data: MutableMap<Pair<Scope, String>, List<Pair<ZonedDateTime, ByteArray>>> = mutableMapOf()
 
     override suspend fun saveData(
+        scope: Scope,
         subjectPrivateAddress: String,
         leafCertificateExpiryDate: ZonedDateTime,
         certificationPathData: ByteArray
@@ -19,19 +20,22 @@ class MockCertificateStore(
         if (savingException != null) {
             throw KeyStoreBackendException("Saving certificates isn't supported", savingException)
         }
-        data[subjectPrivateAddress] =
-            data[subjectPrivateAddress].orEmpty() +
+        data[scope to subjectPrivateAddress] =
+            data[scope to subjectPrivateAddress].orEmpty() +
             listOf(Pair(leafCertificateExpiryDate, certificationPathData))
     }
 
-    override suspend fun retrieveData(subjectPrivateAddress: String): List<ByteArray> {
+    override suspend fun retrieveData(
+        scope: Scope,
+        subjectPrivateAddress: String
+    ): List<ByteArray> {
         if (retrievalException != null) {
             throw KeyStoreBackendException(
                 "Retrieving certificates isn't supported",
                 retrievalException
             )
         }
-        return data[subjectPrivateAddress].orEmpty().map { it.second }
+        return data[scope to subjectPrivateAddress].orEmpty().map { it.second }
     }
 
     override suspend fun deleteExpired() {
@@ -40,7 +44,7 @@ class MockCertificateStore(
         }
     }
 
-    override fun delete(subjectPrivateAddress: String) {
-        data.remove(subjectPrivateAddress)
+    override fun delete(scope: Scope, subjectPrivateAddress: String) {
+        data.remove(scope to subjectPrivateAddress)
     }
 }
