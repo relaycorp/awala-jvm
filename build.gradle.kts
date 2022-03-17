@@ -86,7 +86,7 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "BRANCH"
                 value = "MISSEDCOUNT"
-                maximum = "0".toBigDecimal()
+                maximum = "2".toBigDecimal()
             }
         }
     }
