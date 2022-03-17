@@ -89,5 +89,5 @@ abstract class CertificateStore {
     }
 
     private fun ASN1TaggedObject.toCertificate() =
-        Certificate.deserialize(`object`.encoded)
+        Certificate.deserialize(baseObject.encoded)
 }
