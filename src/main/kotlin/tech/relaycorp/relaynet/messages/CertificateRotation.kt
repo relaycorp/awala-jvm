@@ -66,7 +66,7 @@ class CertificateRotation(val subjectCertificate: Certificate, val chain: List<C
 
             val chainSequence = try {
                 DERSequence.getInstance(sequence[1], false)
-            } catch (exc: IllegalArgumentException) {
+            } catch (exc: IllegalStateException) {
                 throw InvalidMessageException("Chain is malformed", exc)
             }
             val chain = try {
