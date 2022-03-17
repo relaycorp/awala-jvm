@@ -16,7 +16,7 @@ plugins {
 
     id("org.jetbrains.dokka") version "1.6.10"
 
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+    id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 
     jacoco
 
@@ -86,7 +86,7 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "BRANCH"
                 value = "MISSEDCOUNT"
-                maximum = "0".toBigDecimal()
+                maximum = "2".toBigDecimal()
             }
         }
     }

@@ -60,7 +60,12 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
             pathLenConstraint: Int = 0,
             validityStartDate: ZonedDateTime = ZonedDateTime.now()
         ): Certificate {
-            if (validityStartDate >= validityEndDate) {
+            val expiryDate = if (issuerCertificate != null) minOf(
+                issuerCertificate.expiryDate,
+                validityEndDate
+            ) else validityEndDate
+
+            if (validityStartDate >= expiryDate) {
                 throw CertificateException("The end date must be later than the start date")
             }
             if (issuerCertificate != null && !issuerCertificate.isCA) {
@@ -77,7 +82,7 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
                 issuerDistinguishedName,
                 generateRandomBigInteger(),
                 Date.from(validityStartDate.toInstant()),
-                Date.from(validityEndDate.toInstant()),
+                Date.from(expiryDate.toInstant()),
                 subjectDistinguishedName,
                 subjectPublicKeyInfo
             )
