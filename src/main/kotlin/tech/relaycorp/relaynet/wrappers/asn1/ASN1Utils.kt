@@ -11,11 +11,11 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.ASN1OctetString
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
+import org.bouncycastle.asn1.ASN1VisibleString
 import org.bouncycastle.asn1.DERGeneralizedTime
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERTaggedObject
-import org.bouncycastle.asn1.DERVisibleString
 
 internal object ASN1Utils {
     val BER_DATETIME_FORMATTER: DateTimeFormatter =
@@ -82,8 +82,8 @@ internal object ASN1Utils {
         }
     }
 
-    fun getVisibleString(visibleString: ASN1TaggedObject): DERVisibleString =
-        DERVisibleString.getInstance(visibleString, false)
+    fun getVisibleString(visibleString: ASN1TaggedObject): ASN1VisibleString =
+        ASN1VisibleString.getInstance(visibleString, false)
 
     fun getOctetString(octetString: ASN1TaggedObject): ASN1OctetString =
         DEROctetString.getInstance(octetString, false)
