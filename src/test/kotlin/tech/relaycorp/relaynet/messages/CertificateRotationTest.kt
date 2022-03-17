@@ -151,7 +151,7 @@ class CertificateRotationTest {
             }
 
             assertEquals("Chain is malformed", exception.message)
-            assertTrue(exception.cause is IllegalArgumentException)
+            assertTrue(exception.cause is IllegalStateException)
         }
 
         @Test
