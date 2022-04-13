@@ -90,7 +90,7 @@ class CertificateStoreTest {
             )!!
 
             assertEquals(certificate, certificationPath.leafCertificate)
-            assertEquals(certificateChain, certificationPath.chain)
+            assertEquals(certificateChain, certificationPath.certificateAuthorities)
         }
 
         @Test

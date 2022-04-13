@@ -151,7 +151,10 @@ class CertificationPathTest {
             val pathDeserialized = CertificationPath.deserialize(serialization)
 
             assertEquals(PDACertPath.PDA, pathDeserialized.leafCertificate)
-            assertEquals(listOf(PDACertPath.PRIVATE_ENDPOINT), pathDeserialized.chain)
+            assertEquals(
+                listOf(PDACertPath.PRIVATE_ENDPOINT),
+                pathDeserialized.certificateAuthorities,
+            )
         }
     }
 }

@@ -9,12 +9,15 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class CertificationPath(
     val leafCertificate: Certificate,
-    val chain: List<Certificate>
+    val certificateAuthorities: List<Certificate>
 ) {
     fun serialize(): ByteArray {
         val leafCertificateASN1 = DEROctetString(leafCertificate.serialize())
-        val chainASN1 = ASN1Utils.makeSequence(chain.map { DEROctetString(it.serialize()) }, true)
-        return ASN1Utils.serializeSequence(listOf(leafCertificateASN1, chainASN1), false)
+        val casASN1 = ASN1Utils.makeSequence(
+            certificateAuthorities.map { DEROctetString(it.serialize()) },
+            true
+        )
+        return ASN1Utils.serializeSequence(listOf(leafCertificateASN1, casASN1), false)
     }
 
     companion object {
@@ -36,13 +39,13 @@ class CertificationPath(
                 throw CertificationPathException("Leaf certificate is malformed", exc)
             }
 
-            val chainSequence = try {
+            val casSequence = try {
                 DERSequence.getInstance(sequence[1], false)
             } catch (exc: IllegalStateException) {
                 throw CertificationPathException("Chain is malformed", exc)
             }
-            val chain = try {
-                chainSequence.toList()
+            val certificateAuthorities = try {
+                casSequence.toList()
                     .map { DEROctetString.getInstance(it).octets }
                     .map { Certificate.deserialize(it) }
             } catch (exc: CertificateException) {
@@ -51,7 +54,7 @@ class CertificationPath(
                 throw CertificationPathException("Chain contains non-OCTET STRING item", exc)
             }
 
-            return CertificationPath(leafCertificate, chain)
+            return CertificationPath(leafCertificate, certificateAuthorities)
         }
     }
 }
