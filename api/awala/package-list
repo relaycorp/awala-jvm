@@ -60,10 +60,6 @@ $dokka.location:tech.relaycorp.relaynet.keystores/CertificateStore/deleteExpired
 $dokka.location:tech.relaycorp.relaynet.keystores/CertificateStore/retrieveAll/#kotlin.String#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-certificate-store/retrieve-all.html
 $dokka.location:tech.relaycorp.relaynet.keystores/CertificateStore/retrieveLatest/#kotlin.String#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-certificate-store/retrieve-latest.html
 $dokka.location:tech.relaycorp.relaynet.keystores/CertificateStore/save/#tech.relaycorp.relaynet.wrappers.x509.Certificate#kotlin.collections.List[tech.relaycorp.relaynet.wrappers.x509.Certificate]#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-certificate-store/save.html
-$dokka.location:tech.relaycorp.relaynet.keystores/CertificationPath///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-certification-path/index.html
-$dokka.location:tech.relaycorp.relaynet.keystores/CertificationPath/CertificationPath/#tech.relaycorp.relaynet.wrappers.x509.Certificate#kotlin.collections.List[tech.relaycorp.relaynet.wrappers.x509.Certificate]/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-certification-path/-certification-path.html
-$dokka.location:tech.relaycorp.relaynet.keystores/CertificationPath/chain/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-certification-path/chain.html
-$dokka.location:tech.relaycorp.relaynet.keystores/CertificationPath/leafCertificate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-certification-path/leaf-certificate.html
 $dokka.location:tech.relaycorp.relaynet.keystores/KeyStoreBackendException///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-key-store-backend-exception/index.html
 $dokka.location:tech.relaycorp.relaynet.keystores/KeyStoreBackendException/KeyStoreBackendException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-key-store-backend-exception/-key-store-backend-exception.html
 $dokka.location:tech.relaycorp.relaynet.keystores/MissingKeyException///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-missing-key-exception/index.html
@@ -237,6 +233,17 @@ $dokka.location:tech.relaycorp.relaynet.nodes/NodeManager/NodeManager/#tech.rela
 $dokka.location:tech.relaycorp.relaynet.nodes/NodeManager/generateSessionKeyPair/#kotlin.String#kotlin.String?/PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-node-manager/generate-session-key-pair.html
 $dokka.location:tech.relaycorp.relaynet.nodes/NodeManager/unwrapMessagePayload/#tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage[TypeParam(bounds=[tech.relaycorp.relaynet.messages.payloads.EncryptedPayload])]/PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-node-manager/unwrap-message-payload.html
 $dokka.location:tech.relaycorp.relaynet.nodes/NodeManager/wrapMessagePayload/#TypeParam(bounds=[tech.relaycorp.relaynet.messages.payloads.EncryptedPayload])#kotlin.String#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.nodes/-node-manager/wrap-message-payload.html
+$dokka.location:tech.relaycorp.relaynet.pki////PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/index.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/-companion/index.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath.Companion/deserialize/#kotlin.ByteArray/PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/-companion/deserialize.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath///PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/index.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath/CertificationPath/#tech.relaycorp.relaynet.wrappers.x509.Certificate#kotlin.collections.List[tech.relaycorp.relaynet.wrappers.x509.Certificate]/PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/-certification-path.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath/certificateAuthorities/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/certificate-authorities.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath/leafCertificate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/leaf-certificate.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath/serialize/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/serialize.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPath/validate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path/validate.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPathException///PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path-exception/index.html
+$dokka.location:tech.relaycorp.relaynet.pki/CertificationPathException/CertificationPathException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.pki/-certification-path-exception/-certification-path-exception.html
 $dokka.location:tech.relaycorp.relaynet.ramf////PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/EncryptedRAMFMessage.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-encrypted-r-a-m-f-message/-companion/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/EncryptedRAMFMessage///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-encrypted-r-a-m-f-message/index.html
@@ -358,6 +365,7 @@ tech.relaycorp.relaynet.messages
 tech.relaycorp.relaynet.messages.control
 tech.relaycorp.relaynet.messages.payloads
 tech.relaycorp.relaynet.nodes
+tech.relaycorp.relaynet.pki
 tech.relaycorp.relaynet.ramf
 tech.relaycorp.relaynet.wrappers
 tech.relaycorp.relaynet.wrappers.asn1
