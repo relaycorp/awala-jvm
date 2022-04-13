@@ -1,4 +1,4 @@
-package tech.relaycorp.relaynet.keystores
+package tech.relaycorp.relaynet.pki
 
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 

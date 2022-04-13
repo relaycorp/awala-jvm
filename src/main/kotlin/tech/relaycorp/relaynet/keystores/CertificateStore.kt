@@ -2,6 +2,7 @@ package tech.relaycorp.relaynet.keystores
 
 import java.time.ZonedDateTime
 import org.bouncycastle.asn1.ASN1TaggedObject
+import tech.relaycorp.relaynet.pki.CertificationPath
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
