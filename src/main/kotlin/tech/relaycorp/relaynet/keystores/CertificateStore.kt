@@ -1,9 +1,8 @@
 package tech.relaycorp.relaynet.keystores
 
 import java.time.ZonedDateTime
-import org.bouncycastle.asn1.ASN1TaggedObject
-import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
-import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
+import tech.relaycorp.relaynet.pki.CertificationPath
+import tech.relaycorp.relaynet.pki.CertificationPathException
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 abstract class CertificateStore {
@@ -19,7 +18,7 @@ abstract class CertificateStore {
         saveData(
             certificate.subjectPrivateAddress,
             certificate.expiryDate,
-            CertificationPath(certificate, chain).toData(),
+            CertificationPath(certificate, chain).serialize(),
             issuerPrivateAddress
         )
     }
@@ -43,10 +42,13 @@ abstract class CertificateStore {
     suspend fun retrieveAll(
         subjectPrivateAddress: String,
         issuerPrivateAddress: String
-    ): List<CertificationPath> =
+    ): List<CertificationPath> = try {
         retrieveData(subjectPrivateAddress, issuerPrivateAddress)
-            .map { it.toCertificationPath() }
+            .map { CertificationPath.deserialize(it) }
             .filter { it.leafCertificate.expiryDate >= ZonedDateTime.now() }
+    } catch (exc: CertificationPathException) {
+        throw KeyStoreBackendException("Stored certification path is malformed", exc)
+    }
 
     protected abstract suspend fun retrieveData(
         subjectPrivateAddress: String,
@@ -58,36 +60,4 @@ abstract class CertificateStore {
 
     @Throws(KeyStoreBackendException::class)
     abstract fun delete(subjectPrivateAddress: String, issuerPrivateAddress: String)
-
-    // Helpers
-
-    private fun CertificationPath.toData() =
-        ASN1Utils.serializeSequence(
-            listOf(leafCertificate.toASN1()) + chain.map { it.toASN1() },
-            false
-        )
-
-    private fun Certificate.toASN1() =
-        certificateHolder.toASN1Structure()
-
-    @Throws(KeyStoreBackendException::class)
-    private fun ByteArray.toCertificationPath(): CertificationPath {
-        val pathEncoded = try {
-            ASN1Utils.deserializeHeterogeneousSequence(this)
-        } catch (exception: ASN1Exception) {
-            throw KeyStoreBackendException("Malformed certification path", exception)
-        }
-
-        if (pathEncoded.isEmpty()) {
-            throw KeyStoreBackendException("Empty certification path")
-        }
-
-        val leafCertificate = pathEncoded[0].toCertificate()
-        val chain = pathEncoded.copyOfRange(1, pathEncoded.size).map { it.toCertificate() }
-
-        return CertificationPath(leafCertificate, chain)
-    }
-
-    private fun ASN1TaggedObject.toCertificate() =
-        Certificate.deserialize(baseObject.encoded)
 }

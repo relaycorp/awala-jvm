@@ -10,10 +10,11 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.pki.CertificationPath
+import tech.relaycorp.relaynet.pki.CertificationPathException
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockCertificateStore
 import tech.relaycorp.relaynet.utils.PDACertPath
-import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 @ExperimentalCoroutinesApi
@@ -69,6 +70,10 @@ class CertificateStoreTest {
             val certificationPaths =
                 store.data[certificate.subjectPrivateAddress to issuerAddress]!!
             assertEquals(1, certificationPaths.size)
+            assertEquals(
+                CertificationPath(certificate, certificateChain).serialize().asList(),
+                certificationPaths.first().second.asList()
+            )
         }
     }
 
@@ -79,14 +84,13 @@ class CertificateStoreTest {
             val store = MockCertificateStore()
             store.save(certificate, certificateChain, issuerAddress)
 
-            val certificationPath =
-                store.retrieveLatest(
-                    certificate.subjectPrivateAddress,
-                    issuerAddress
-                )!!
+            val certificationPath = store.retrieveLatest(
+                certificate.subjectPrivateAddress,
+                issuerAddress
+            )!!
 
             assertEquals(certificate, certificationPath.leafCertificate)
-            assertEquals(certificateChain, certificationPath.chain)
+            assertEquals(certificateChain, certificationPath.certificateAuthorities)
         }
 
         @Test
@@ -175,34 +179,19 @@ class CertificateStoreTest {
             }
 
         @Test
-        fun `Malformed certification path should throw KeyStoreBackendException`() =
-            runBlockingTest {
-                val store = MockCertificateStore()
-                store.data[certificate.subjectPrivateAddress to issuerAddress] =
-                    listOf(
-                        Pair(ZonedDateTime.now().plusDays(1), "malformed".toByteArray())
-                    )
-
-                val exception = assertThrows<KeyStoreBackendException> {
-                    store.retrieveAll(certificate.subjectPrivateAddress, issuerAddress)
-                }
-                assertEquals("Malformed certification path", exception.message)
-            }
-
-        @Test
-        fun `Empty certification path should throw KeyStoreBackendException`() = runBlockingTest {
+        fun `Malformed certification path should throw error`() = runBlockingTest {
             val store = MockCertificateStore()
-            store.data[certificate.subjectPrivateAddress to issuerAddress] = listOf(
-                Pair(
-                    ZonedDateTime.now().plusDays(1),
-                    ASN1Utils.serializeSequence(emptyList())
+            store.data[certificate.subjectPrivateAddress to issuerAddress] =
+                listOf(
+                    Pair(ZonedDateTime.now().plusDays(1), "malformed".toByteArray())
                 )
-            )
 
             val exception = assertThrows<KeyStoreBackendException> {
                 store.retrieveAll(certificate.subjectPrivateAddress, issuerAddress)
             }
-            assertEquals("Empty certification path", exception.message)
+
+            assertEquals("Stored certification path is malformed", exception.message)
+            assertTrue(exception.cause is CertificationPathException)
         }
     }
 
