@@ -157,4 +157,53 @@ class CertificationPathTest {
             )
         }
     }
+
+    @Nested
+    inner class Validate {
+        @Test
+        fun `Validation should fail if there are no CAs`() {
+            val path = CertificationPath(PDACertPath.PDA, emptyList())
+
+            val exception = assertThrows<CertificationPathException> {
+                path.validate()
+            }
+
+            assertEquals("There are no CAs", exception.message)
+        }
+
+        @Test
+        fun `Validation should fail if there is no path from root to leaf certificate`() {
+            val path = CertificationPath(
+                PDACertPath.PDA,
+                listOf(PDACertPath.PRIVATE_GW), // Intermediate certificate is missing
+            )
+
+            val exception = assertThrows<CertificationPathException> {
+                path.validate()
+            }
+
+            assertEquals("Certification path is invalid", exception.message)
+            assertTrue(exception.cause is CertificateException)
+        }
+
+        @Test
+        fun `Validation should succeed if there is a path from root to leaf certificate`() {
+            val path = CertificationPath(
+                PDACertPath.PDA,
+                listOf(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
+            )
+
+            path.validate()
+        }
+
+        @Test
+        fun `Validation should succeed if there is the root issued the leaf directly`() {
+            val path = CertificationPath(
+                PDACertPath.PDA,
+                listOf(PDACertPath.PRIVATE_ENDPOINT)
+            )
+
+            path.validate()
+        }
+    }
 }

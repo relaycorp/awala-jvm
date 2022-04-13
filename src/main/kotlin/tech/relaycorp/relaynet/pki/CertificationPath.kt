@@ -11,6 +11,21 @@ class CertificationPath(
     val leafCertificate: Certificate,
     val certificateAuthorities: List<Certificate>
 ) {
+    @Throws(CertificationPathException::class)
+    fun validate() {
+        if (certificateAuthorities.isEmpty()) {
+            throw CertificationPathException("There are no CAs")
+        }
+
+        val rootCA = certificateAuthorities.last()
+        val intermediateCAs = certificateAuthorities.subList(0, certificateAuthorities.size)
+        try {
+            leafCertificate.getCertificationPath(intermediateCAs, listOf(rootCA))
+        } catch (exc: CertificateException) {
+            throw CertificationPathException("Certification path is invalid", exc)
+        }
+    }
+
     fun serialize(): ByteArray {
         val leafCertificateASN1 = DEROctetString(leafCertificate.serialize())
         val casASN1 = ASN1Utils.makeSequence(
