@@ -20,7 +20,7 @@ abstract class CertificateStore {
         saveData(
             certificate.subjectPrivateAddress,
             certificate.expiryDate,
-            CertificationPath(certificate, chain).toData(),
+            CertificationPath(certificate, chain).serialize(),
             issuerPrivateAddress
         )
     }
@@ -59,17 +59,6 @@ abstract class CertificateStore {
 
     @Throws(KeyStoreBackendException::class)
     abstract fun delete(subjectPrivateAddress: String, issuerPrivateAddress: String)
-
-    // Helpers
-
-    private fun CertificationPath.toData() =
-        ASN1Utils.serializeSequence(
-            listOf(leafCertificate.toASN1()) + chain.map { it.toASN1() },
-            false
-        )
-
-    private fun Certificate.toASN1() =
-        certificateHolder.toASN1Structure()
 
     @Throws(KeyStoreBackendException::class)
     private fun ByteArray.toCertificationPath(): CertificationPath {

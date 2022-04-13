@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.pki.CertificationPath
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockCertificateStore
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -69,6 +70,10 @@ class CertificateStoreTest {
             val certificationPaths =
                 store.data[certificate.subjectPrivateAddress to issuerAddress]!!
             assertEquals(1, certificationPaths.size)
+            assertEquals(
+                CertificationPath(certificate, certificateChain).serialize().asList(),
+                certificationPaths.first().second.asList()
+            )
         }
     }
 
