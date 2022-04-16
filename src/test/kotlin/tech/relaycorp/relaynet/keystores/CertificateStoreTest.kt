@@ -48,7 +48,7 @@ class CertificateStoreTest {
         fun `Certificate should be stored`() = runBlockingTest {
             val store = MockCertificateStore()
 
-            store.save(certificate, issuerPrivateAddress = issuerAddress)
+            store.save(CertificationPath(certificate, emptyList()), issuerAddress)
 
             assertTrue(
                 store.data.containsKey(certificate.subjectPrivateAddress to issuerAddress)
@@ -62,7 +62,7 @@ class CertificateStoreTest {
         fun `Certification path should be stored`() = runBlockingTest {
             val store = MockCertificateStore()
 
-            store.save(certificate, certificateChain, issuerAddress)
+            store.save(CertificationPath(certificate, certificateChain), issuerAddress)
 
             assertTrue(
                 store.data.containsKey(certificate.subjectPrivateAddress to issuerAddress)
@@ -82,7 +82,7 @@ class CertificateStoreTest {
         @Test
         fun `Existing certification path should be returned`() = runBlockingTest {
             val store = MockCertificateStore()
-            store.save(certificate, certificateChain, issuerAddress)
+            store.save(CertificationPath(certificate, certificateChain), issuerAddress)
 
             val certificationPath = store.retrieveLatest(
                 certificate.subjectPrivateAddress,
@@ -97,7 +97,7 @@ class CertificateStoreTest {
         fun `Existing certification path of another issuer should not be returned`() =
             runBlockingTest {
                 val store = MockCertificateStore()
-                store.save(certificate, certificateChain, issuerAddress)
+                store.save(CertificationPath(certificate, certificateChain), issuerAddress)
 
                 assertNull(
                     store.retrieveLatest(
@@ -118,8 +118,8 @@ class CertificateStoreTest {
         fun `Last to expire certificate should be returned`() = runBlockingTest {
             val store = MockCertificateStore()
 
-            store.save(certificate, certificateChain, issuerAddress)
-            store.save(aboutToExpireCertificate, certificateChain, issuerAddress)
+            store.save(CertificationPath(certificate, certificateChain), issuerAddress)
+            store.save(CertificationPath(aboutToExpireCertificate, certificateChain), issuerAddress)
 
             val certificationPath =
                 store.retrieveLatest(
@@ -145,9 +145,9 @@ class CertificateStoreTest {
         fun `All stored non-expired certification paths should be returned`() = runBlockingTest {
             val store = MockCertificateStore()
 
-            store.save(certificate, certificateChain, issuerAddress)
-            store.save(aboutToExpireCertificate, certificateChain, issuerAddress)
-            store.save(expiredCertificate, certificateChain, issuerAddress)
+            store.save(CertificationPath(certificate, certificateChain), issuerAddress)
+            store.save(CertificationPath(aboutToExpireCertificate, certificateChain), issuerAddress)
+            store.save(CertificationPath(expiredCertificate, certificateChain), issuerAddress)
 
             val allCertificationPaths =
                 store.retrieveAll(certificate.subjectPrivateAddress, issuerAddress)
@@ -168,8 +168,11 @@ class CertificateStoreTest {
             runBlockingTest {
                 val store = MockCertificateStore()
 
-                store.save(certificate, certificateChain, issuerAddress)
-                store.save(PDACertPath.PRIVATE_ENDPOINT, certificateChain, "another-issuer")
+                store.save(CertificationPath(certificate, certificateChain), issuerAddress)
+                store.save(
+                    CertificationPath(PDACertPath.PRIVATE_ENDPOINT, certificateChain),
+                    "another-issuer"
+                )
 
                 val allCertificationPaths =
                     store.retrieveAll(certificate.subjectPrivateAddress, issuerAddress)
@@ -200,8 +203,8 @@ class CertificateStoreTest {
         @Test
         fun `All expired certification paths are deleted`() = runBlockingTest {
             val store = MockCertificateStore()
-            store.save(expiredCertificate, certificateChain, issuerAddress)
-            store.save(expiredCertificate, certificateChain, "another-issuer")
+            store.save(CertificationPath(expiredCertificate, certificateChain), issuerAddress)
+            store.save(CertificationPath(expiredCertificate, certificateChain), "another-issuer")
 
             store.deleteExpired()
 
@@ -214,9 +217,9 @@ class CertificateStoreTest {
         @Test
         fun `All certification paths of a certain address are deleted`() = runBlockingTest {
             val store = MockCertificateStore()
-            store.save(certificate, certificateChain, issuerAddress)
-            store.save(aboutToExpireCertificate, certificateChain, issuerAddress)
-            store.save(unrelatedCertificate, certificateChain, issuerAddress)
+            store.save(CertificationPath(certificate, certificateChain), issuerAddress)
+            store.save(CertificationPath(aboutToExpireCertificate, certificateChain), issuerAddress)
+            store.save(CertificationPath(unrelatedCertificate, certificateChain), issuerAddress)
 
             store.delete(certificate.subjectPrivateAddress, issuerAddress)
 
@@ -231,8 +234,8 @@ class CertificateStoreTest {
         fun `Only certification paths of a certain address and issuer are deleted`() =
             runBlockingTest {
                 val store = MockCertificateStore()
-                store.save(certificate, certificateChain, issuerAddress)
-                store.save(certificate, certificateChain, "another-issuer")
+                store.save(CertificationPath(certificate, certificateChain), issuerAddress)
+                store.save(CertificationPath(certificate, certificateChain), "another-issuer")
 
                 store.delete(certificate.subjectPrivateAddress, issuerAddress)
 

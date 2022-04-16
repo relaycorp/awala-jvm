@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.messages.CertificateRotation
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
+import tech.relaycorp.relaynet.pki.CertificationPath
 import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
 import tech.relaycorp.relaynet.utils.ID_KEY_PAIR
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -38,7 +39,7 @@ class CargoMessageTest {
 
         @Test
         fun `CertificateRotation should be correctly classified as such`() {
-            val rotation = CertificateRotation(PDACertPath.PRIVATE_GW, listOf())
+            val rotation = CertificateRotation(CertificationPath(PDACertPath.PRIVATE_GW, listOf()))
             val rotationSerialization = rotation.serialize()
 
             val cargoMessage = CargoMessage(rotationSerialization)

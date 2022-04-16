@@ -3,22 +3,20 @@ package tech.relaycorp.relaynet.keystores
 import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.pki.CertificationPath
 import tech.relaycorp.relaynet.pki.CertificationPathException
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 abstract class CertificateStore {
 
     @Throws(KeyStoreBackendException::class)
     suspend fun save(
-        certificate: Certificate,
-        chain: List<Certificate> = emptyList(),
+        certificationPath: CertificationPath,
         issuerPrivateAddress: String
     ) {
-        if (certificate.expiryDate < ZonedDateTime.now()) return
+        if (certificationPath.leafCertificate.expiryDate < ZonedDateTime.now()) return
 
         saveData(
-            certificate.subjectPrivateAddress,
-            certificate.expiryDate,
-            CertificationPath(certificate, chain).serialize(),
+            certificationPath.leafCertificate.subjectPrivateAddress,
+            certificationPath.leafCertificate.expiryDate,
+            certificationPath.serialize(),
             issuerPrivateAddress
         )
     }
