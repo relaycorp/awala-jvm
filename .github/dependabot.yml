@@ -4,7 +4,6 @@ updates:
   directory: "/"
   schedule:
     interval: weekly
-  versioning-strategy: increase
   commit-message:
     prefix: "fix(deps):"
     prefix-development: "chore(deps):"
@@ -12,7 +11,6 @@ updates:
   directory: "/"
   schedule:
     interval: weekly
-  versioning-strategy: increase
   commit-message:
     prefix: "fix(deps):"
     prefix-development: "chore(deps):"
