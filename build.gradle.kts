@@ -14,7 +14,7 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
-    id("org.jetbrains.dokka") version "1.6.20"
+    id("org.jetbrains.dokka") version "1.6.21"
 
     id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 
