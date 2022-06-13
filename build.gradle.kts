@@ -9,14 +9,14 @@ group = "tech.relaycorp"
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.5.31"
+    id("org.jetbrains.kotlin.jvm") version "1.6.21"
 
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
-    id("org.jetbrains.dokka") version "1.6.20"
+    id("org.jetbrains.dokka") version "1.6.21"
 
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
+    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
 
     jacoco
 
@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    val kotlinCoroutinesVersion = "1.5.2"
+    val kotlinCoroutinesVersion = "1.6.2"
     val bouncyCastleVersion = "1.70"
 
     // Align versions of all Kotlin components
@@ -59,14 +59,14 @@ java {
 }
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.8"
 }
 
 tasks.jacocoTestReport {
     reports {
-        xml.isEnabled = true
-        html.isEnabled = true
-        html.destination = file("$buildDir/reports/coverage")
+        xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(file("$buildDir/reports/coverage"))
     }
 }
 
@@ -110,7 +110,7 @@ tasks.withType<KotlinCompile>().configureEach {
         jvmTarget = "1.8"
         allWarningsAsErrors = true
         freeCompilerArgs = freeCompilerArgs + arrayOf(
-            "-Xopt-in=kotlin.RequiresOptIn"
+            "-opt-in=kotlin.RequiresOptIn"
         )
     }
 }
