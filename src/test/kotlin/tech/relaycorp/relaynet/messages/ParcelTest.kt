@@ -3,7 +3,7 @@ package tech.relaycorp.relaynet.messages
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.messages.payloads.ServiceMessage
@@ -26,7 +26,7 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     private val privateKeyStore = MockPrivateKeyStore()
 
     @BeforeEach
-    fun registerSessionKey() = runBlockingTest {
+    fun registerSessionKey() = runTest {
         privateKeyStore.saveSessionKey(
             recipientSessionKeyPair.privateKey,
             recipientSessionKeyPair.sessionKey.keyId,
@@ -36,7 +36,7 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     }
 
     @Test
-    fun `Payload deserialization should be delegated to ServiceMessage`() = runBlockingTest {
+    fun `Payload deserialization should be delegated to ServiceMessage`() = runTest {
         val serviceMessage = ServiceMessage("the type", "the content".toByteArray())
         val parcel = Parcel(
             PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,

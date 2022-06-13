@@ -4,7 +4,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.bouncycastle.cms.KeyAgreeRecipientInformation
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
@@ -54,7 +54,7 @@ class NodeManagerTest {
     @Nested
     inner class GenerateSessionKeyPair {
         @Test
-        fun `Key should not be bound to any peer by default`() = runBlockingTest {
+        fun `Key should not be bound to any peer by default`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val (sessionKey, privateKey) = manager.generateSessionKeyPair(ownPrivateAddress)
@@ -72,7 +72,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `Key should be bound to a peer if explicitly set`() = runBlockingTest {
+        fun `Key should be bound to a peer if explicitly set`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val (sessionKey, privateKey) = manager.generateSessionKeyPair(
@@ -101,7 +101,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `Key should use P-256 by default`() = runBlockingTest {
+        fun `Key should use P-256 by default`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val (sessionKey) = manager.generateSessionKeyPair(peerPrivateAddress)
@@ -114,7 +114,7 @@ class NodeManagerTest {
 
         @ParameterizedTest(name = "Key should use {0} if explicitly requested")
         @EnumSource
-        fun explicitCurveName(curve: ECDHCurve) = runBlockingTest {
+        fun explicitCurveName(curve: ECDHCurve) = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore, NodeCryptoOptions(curve))
 
             val (sessionKey) = manager.generateSessionKeyPair(peerPrivateAddress)
@@ -130,12 +130,12 @@ class NodeManagerTest {
     @Nested
     inner class WrapMessagePayload {
         @BeforeEach
-        fun registerPeerSessionKey() = runBlockingTest {
+        fun registerPeerSessionKey() = runTest {
             publicKeyStore.save(peerSessionKey, peerPrivateAddress)
         }
 
         @Test
-        fun `There should be a session key for the recipient`() = runBlockingTest {
+        fun `There should be a session key for the recipient`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
             publicKeyStore.clear()
 
@@ -147,7 +147,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `Payload should be encrypted with the recipient's key`() = runBlockingTest {
+        fun `Payload should be encrypted with the recipient's key`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val ciphertext =
@@ -166,7 +166,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `The new ephemeral session key of the sender should be stored`() = runBlockingTest {
+        fun `The new ephemeral session key of the sender should be stored`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
             assertEquals(0, privateKeyStore.sessionKeys.size)
 
@@ -185,7 +185,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `The new ephemeral session key of the sender should be bound`() = runBlockingTest {
+        fun `The new ephemeral session key of the sender should be bound`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val ciphertext =
@@ -204,7 +204,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `Cipher AES-128 should be used by default`() = runBlockingTest {
+        fun `Cipher AES-128 should be used by default`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val ciphertext =
@@ -219,7 +219,7 @@ class NodeManagerTest {
 
         @ParameterizedTest(name = "Cipher {0} should be used if explicitly requested")
         @EnumSource
-        fun explicitCipher(cipher: SymmetricCipher) = runBlockingTest {
+        fun explicitCipher(cipher: SymmetricCipher) = runTest {
             val manager = StubNodeManager(
                 privateKeyStore,
                 publicKeyStore,
@@ -237,7 +237,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `SHA-256 should be used in KDF by default`() = runBlockingTest {
+        fun `SHA-256 should be used in KDF by default`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             val ciphertext =
@@ -256,7 +256,7 @@ class NodeManagerTest {
             name = "Hashing algorithm {0} should be used in KDF if explicitly requested"
         )
         @EnumSource
-        fun explicitHashingAlgorithm(algorithm: HashingAlgorithm) = runBlockingTest {
+        fun explicitHashingAlgorithm(algorithm: HashingAlgorithm) = runTest {
             val manager = StubNodeManager(
                 privateKeyStore,
                 publicKeyStore,
@@ -294,7 +294,7 @@ class NodeManagerTest {
         )
 
         @BeforeEach
-        fun registerOwnSessionKey() = runBlockingTest {
+        fun registerOwnSessionKey() = runTest {
             privateKeyStore.saveSessionKey(
                 ownSessionKeyPair.privateKey,
                 ownSessionKeyPair.sessionKey.keyId,
@@ -304,7 +304,7 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `Exception should be thrown if session key does not exist`() = runBlockingTest {
+        fun `Exception should be thrown if session key does not exist`() = runTest {
             privateKeyStore.clear()
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
@@ -314,14 +314,14 @@ class NodeManagerTest {
         }
 
         @Test
-        fun `Payload should be returned decrypted`() = runBlockingTest {
+        fun `Payload should be returned decrypted`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
 
             assertEquals(payload.payload, manager.unwrapMessagePayload(message).payload)
         }
 
         @Test
-        fun `Peer session key should be stored`() = runBlockingTest {
+        fun `Peer session key should be stored`() = runTest {
             val manager = StubNodeManager(privateKeyStore, publicKeyStore)
             assertEquals(0, publicKeyStore.keys.size)
 

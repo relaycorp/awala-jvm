@@ -6,7 +6,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistration
 import tech.relaycorp.relaynet.messages.control.PrivateNodeRegistrationRequest
@@ -37,7 +37,7 @@ class MockPDCClient : PDCClient {
 @ExperimentalCoroutinesApi
 class PDCClientTest {
     @Test
-    fun `Parcels can be collected without a explicit streaming mode`() = runBlockingTest {
+    fun `Parcels can be collected without a explicit streaming mode`() = runTest {
         val client = MockPDCClient()
 
         client.collectParcels(emptyArray()).toList()

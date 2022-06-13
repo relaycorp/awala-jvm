@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 
@@ -15,14 +15,14 @@ class BatchTest {
     private val messageSerialized = "I'm a parcel. Pinky promise.".toByteArray()
 
     @Test
-    fun `Zero messages should result in zero batches`() = runBlockingTest {
+    fun `Zero messages should result in zero batches`() = runTest {
         val batches = emptySequence<CargoMessageWithExpiry>().batch()
 
         assertEquals(0, batches.count())
     }
 
     @Test
-    fun `A single message should result in one batch`() = runBlockingTest {
+    fun `A single message should result in one batch`() = runTest {
         val batches = sequenceOf(CargoMessageWithExpiry(messageSerialized, expiryDate)).batch()
 
         assertEquals(1, batches.count())
@@ -32,7 +32,7 @@ class BatchTest {
     }
 
     @Test
-    fun `Multiple small messages should be put in the same batch`() = runBlockingTest {
+    fun `Multiple small messages should be put in the same batch`() = runTest {
         val message2Serialized = "I'm a PCA. *wink wink*".toByteArray()
 
         val batches = sequenceOf(
@@ -48,7 +48,7 @@ class BatchTest {
     }
 
     @Test
-    fun `Messages should be put into as few batches as possible`() = runBlockingTest {
+    fun `Messages should be put into as few batches as possible`() = runTest {
         val octetsIn3Mib = 3145728
         val messageSerialized = "a".repeat(octetsIn3Mib).toByteArray()
 
@@ -71,7 +71,7 @@ class BatchTest {
 
     @Test
     fun `Messages collectively reaching the max length should be placed together`() =
-        runBlockingTest {
+        runTest {
             val halfLimit = CargoMessage.MAX_LENGTH / 2
             val message1Serialized = "a".repeat(halfLimit - 3).toByteArray()
             val message2Serialized = "a".repeat(halfLimit - 2).toByteArray()
@@ -90,7 +90,7 @@ class BatchTest {
 
     @Test
     fun `Expiry date of batch should be that of its message with latest expiry`() =
-        runBlockingTest {
+        runTest {
             // Generate two batches where the expiry date of the former is that of its first
             // message, and the expiry date of the latter batch is that of its last message
             val messageSerialized = "a".repeat(CargoMessage.MAX_LENGTH / 2 - 3).toByteArray()

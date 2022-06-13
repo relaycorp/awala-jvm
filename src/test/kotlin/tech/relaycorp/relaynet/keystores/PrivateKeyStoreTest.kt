@@ -3,7 +3,7 @@ package tech.relaycorp.relaynet.keystores
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.bouncycastle.util.encoders.Hex
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -27,7 +27,7 @@ class PrivateKeyStoreTest {
     @Nested
     inner class SaveIdentityKey {
         @Test
-        fun `Key should be stored`() = runBlockingTest {
+        fun `Key should be stored`() = runTest {
             val store = MockPrivateKeyStore()
 
             store.saveIdentityKey(identityPrivateKey)
@@ -42,7 +42,7 @@ class PrivateKeyStoreTest {
     @Nested
     inner class RetrieveIdentityKey {
         @Test
-        fun `Existing key pair should be returned`() = runBlockingTest {
+        fun `Existing key pair should be returned`() = runTest {
             val store = MockPrivateKeyStore()
             store.saveIdentityKey(identityPrivateKey)
 
@@ -52,7 +52,7 @@ class PrivateKeyStoreTest {
         }
 
         @Test
-        fun `Exception should be thrown if key pair does not exist`() = runBlockingTest {
+        fun `Exception should be thrown if key pair does not exist`() = runTest {
             val store = MockPrivateKeyStore()
 
             val exception = assertThrows<MissingKeyException> {
@@ -66,7 +66,7 @@ class PrivateKeyStoreTest {
         }
 
         @Test
-        fun `Malformed private keys should be refused`() = runBlockingTest {
+        fun `Malformed private keys should be refused`() = runTest {
             val store = MockPrivateKeyStore()
             val privateAddress = identityPrivateKey.privateAddress
             store.setIdentityKey(
@@ -86,14 +86,14 @@ class PrivateKeyStoreTest {
     @Nested
     inner class RetrieveAllIdentityKeys {
         @Test
-        fun `No key pair should be returned if there are none`() = runBlockingTest {
+        fun `No key pair should be returned if there are none`() = runTest {
             val store = MockPrivateKeyStore()
 
             assertEquals(0, store.retrieveAllIdentityKeys().size)
         }
 
         @Test
-        fun `All stored key pairs should be returned`() = runBlockingTest {
+        fun `All stored key pairs should be returned`() = runTest {
             val store = MockPrivateKeyStore()
             store.saveIdentityKey(identityPrivateKey)
 
@@ -110,7 +110,7 @@ class PrivateKeyStoreTest {
     @Nested
     inner class SaveSessionKey {
         @Test
-        fun `Key should be stored`() = runBlockingTest {
+        fun `Key should be stored`() = runTest {
             val store = MockPrivateKeyStore()
 
             store.saveSessionKey(
@@ -124,7 +124,7 @@ class PrivateKeyStoreTest {
         }
 
         @Test
-        fun `Key should be unbound by default`() = runBlockingTest {
+        fun `Key should be unbound by default`() = runTest {
             val store = MockPrivateKeyStore()
 
             store.saveSessionKey(
@@ -142,7 +142,7 @@ class PrivateKeyStoreTest {
         }
 
         @Test
-        fun `Key should be bound to a peer if required`() = runBlockingTest {
+        fun `Key should be bound to a peer if required`() = runTest {
             val store = MockPrivateKeyStore()
 
             store.saveSessionKey(
@@ -164,7 +164,7 @@ class PrivateKeyStoreTest {
     @Nested
     inner class RetrieveSessionKey {
         @Test
-        fun `Unbound session keys should be returned`() = runBlockingTest {
+        fun `Unbound session keys should be returned`() = runTest {
             val store = MockPrivateKeyStore()
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
@@ -185,7 +185,7 @@ class PrivateKeyStoreTest {
         }
 
         @Test
-        fun `Bound session keys should be returned if peer matches`() = runBlockingTest {
+        fun `Bound session keys should be returned if peer matches`() = runTest {
             val store = MockPrivateKeyStore()
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
@@ -207,7 +207,7 @@ class PrivateKeyStoreTest {
         }
 
         @Test
-        fun `Exception should be thrown if key pair does not exist`() = runBlockingTest {
+        fun `Exception should be thrown if key pair does not exist`() = runTest {
             val store = MockPrivateKeyStore()
 
             val exception = assertThrows<MissingKeyException> {
@@ -225,7 +225,7 @@ class PrivateKeyStoreTest {
         }
 
         @Test
-        fun `Malformed private keys should be refused`() = runBlockingTest {
+        fun `Malformed private keys should be refused`() = runTest {
             val store = MockPrivateKeyStore()
             store.setSessionKey(
                 ownPrivateAddress,
