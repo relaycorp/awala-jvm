@@ -40,7 +40,7 @@ private data class FieldSet(
 
 internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
     val formatSignature =
-        byteArrayOf(*"Relaynet".toByteArray(), concreteMessageType, concreteMessageVersion)
+        byteArrayOf(*"Awala".toByteArray(), concreteMessageType, concreteMessageVersion)
 
     fun serialize(
         message: RAMFMessage<*>,
@@ -122,14 +122,14 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             throw RAMFException("Message should not be larger than 9 MiB")
         }
 
-        if (serializationSize < 10) {
+        if (serializationSize < 7) {
             throw RAMFException("Serialization is too short to contain format signature")
         }
 
-        val magicConstant = ByteArray(8)
+        val magicConstant = ByteArray(5)
         serializationStream.read(magicConstant, 0, magicConstant.size)
-        if (magicConstant.toString(Charset.forName("ASCII")) != "Relaynet") {
-            throw RAMFException("Format signature should start with magic constant 'Relaynet'")
+        if (magicConstant.toString(Charset.forName("ASCII")) != "Awala") {
+            throw RAMFException("Format signature should start with magic constant 'Awala'")
         }
 
         val messageType = serializationStream.read()

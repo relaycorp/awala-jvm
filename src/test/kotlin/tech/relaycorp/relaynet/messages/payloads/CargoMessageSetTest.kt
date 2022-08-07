@@ -146,7 +146,7 @@ internal class CargoMessageSetTest {
                     .serialize()
             val cargoMessageSet = CargoMessageSet(arrayOf(parcelSerialized, pcaSerialized))
 
-            val cargoMessages = cargoMessageSet.classifyMessages().asSequence().toList()
+            val cargoMessages = cargoMessageSet.classifyMessages().toList()
 
             assertEquals(2, cargoMessages.size)
             assertEquals(CargoMessage.Type.PARCEL, cargoMessages[0].type)

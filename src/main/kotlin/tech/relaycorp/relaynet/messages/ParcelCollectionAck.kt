@@ -31,7 +31,7 @@ class ParcelCollectionAck(
         private const val concreteMessageType: Byte = 0x51
         private const val concreteMessageVersion: Byte = 0
         internal val FORMAT_SIGNATURE = byteArrayOf(
-            *"Relaynet".toByteArray(),
+            *"Awala".toByteArray(),
             concreteMessageType,
             concreteMessageVersion
         )
@@ -41,14 +41,15 @@ class ParcelCollectionAck(
          */
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): ParcelCollectionAck {
-            if (serialization.size < 10) {
+            if (serialization.size < 7) {
                 throw InvalidMessageException("Message is too short to contain format signature")
             }
-            val formatSignature = serialization.slice(0..9)
+            val formatSignature = serialization.slice(FORMAT_SIGNATURE.indices)
             if (formatSignature != FORMAT_SIGNATURE.asList()) {
                 throw InvalidMessageException("Format signature is not that of a PCA")
             }
-            val derSequence = serialization.sliceArray(10 until serialization.size)
+            val derSequence =
+                serialization.sliceArray(FORMAT_SIGNATURE.size until serialization.size)
             val sequence = try {
                 ASN1Utils.deserializeHeterogeneousSequence(derSequence)
             } catch (exc: ASN1Exception) {

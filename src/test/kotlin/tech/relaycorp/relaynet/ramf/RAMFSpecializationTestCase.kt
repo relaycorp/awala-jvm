@@ -76,8 +76,8 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
         fun `Serializer should be configured to use specified message type and version`() {
             val messageSerialized = simpleMessage.serialize(keyPair.private)
 
-            assertEquals(expectedConcreteMessageType, messageSerialized[8])
-            assertEquals(expectedConcreteMessageVersion, messageSerialized[9])
+            assertEquals(expectedConcreteMessageType, messageSerialized[5])
+            assertEquals(expectedConcreteMessageVersion, messageSerialized[6])
         }
 
         @Test

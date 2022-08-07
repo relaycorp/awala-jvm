@@ -56,7 +56,7 @@ class CargoMessageTest {
 
         @Test
         fun `Invalid messages should not be assigned a type`() {
-            val cargoMessage = CargoMessage("RelaynetyP0".toByteArray())
+            val cargoMessage = CargoMessage("AwaloP0".toByteArray())
 
             assertNull(cargoMessage.type)
         }

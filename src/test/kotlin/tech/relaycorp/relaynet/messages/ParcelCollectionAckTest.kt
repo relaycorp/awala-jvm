@@ -14,7 +14,7 @@ internal class ParcelCollectionAckTest {
     private val recipientEndpointAddress = "https://ping.relaycorp.tech"
     private val parcelId = "the-parcel-id"
 
-    private val formatSignature = byteArrayOf(*"Relaynet".toByteArray(), 0x51, 0)
+    private val formatSignature = byteArrayOf(*"Awala".toByteArray(), 0x51, 0)
 
     @Nested
     inner class Serialize {
@@ -30,7 +30,7 @@ internal class ParcelCollectionAckTest {
 
             assertEquals(
                 formatSignature.asList(),
-                serialization.slice(0..9)
+                serialization.slice(formatSignature.indices)
             )
         }
 
@@ -44,7 +44,7 @@ internal class ParcelCollectionAckTest {
 
             val serialization = pca.serialize()
 
-            val derSequence = serialization.slice(10 until serialization.size)
+            val derSequence = serialization.slice(7 until serialization.size)
             val sequenceItems =
                 ASN1Utils.deserializeHeterogeneousSequence(derSequence.toByteArray())
             assertEquals(3, sequenceItems.size)
@@ -68,7 +68,7 @@ internal class ParcelCollectionAckTest {
         @Test
         fun `Serialization should be long enough to potentially contain format signature`() {
             val exception = assertThrows<InvalidMessageException> {
-                ParcelCollectionAck.deserialize("RelaynetP".toByteArray())
+                ParcelCollectionAck.deserialize("AwalaP".toByteArray())
             }
 
             assertEquals("Message is too short to contain format signature", exception.message)
@@ -77,7 +77,7 @@ internal class ParcelCollectionAckTest {
         @Test
         fun `Serialization should start with format signature`() {
             val exception = assertThrows<InvalidMessageException> {
-                ParcelCollectionAck.deserialize("RelaynetP0".toByteArray())
+                ParcelCollectionAck.deserialize("AwalaP0".toByteArray())
             }
 
             assertEquals("Format signature is not that of a PCA", exception.message)
