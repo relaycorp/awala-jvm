@@ -144,10 +144,9 @@ class CertificateStoreTest {
         @Test
         fun `All stored non-expired certification paths should be returned`() = runTest {
             val store = MockCertificateStore()
-
             store.save(CertificationPath(certificate, certificateChain), issuerAddress)
             store.save(CertificationPath(aboutToExpireCertificate, certificateChain), issuerAddress)
-            store.save(CertificationPath(expiredCertificate, certificateChain), issuerAddress)
+            store.forceSave(CertificationPath(expiredCertificate, certificateChain), issuerAddress)
 
             val allCertificationPaths =
                 store.retrieveAll(certificate.subjectPrivateAddress, issuerAddress)

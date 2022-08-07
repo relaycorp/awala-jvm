@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.utils
 import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.keystores.CertificateStore
 import tech.relaycorp.relaynet.keystores.KeyStoreBackendException
+import tech.relaycorp.relaynet.pki.CertificationPath
 
 class MockCertificateStore(
     private val savingException: Throwable? = null,
@@ -24,6 +25,18 @@ class MockCertificateStore(
         data[subjectPrivateAddress to issuerPrivateAddress] =
             data[subjectPrivateAddress to issuerPrivateAddress].orEmpty() +
             listOf(Pair(leafCertificateExpiryDate, certificationPathData))
+    }
+
+    suspend fun forceSave(
+        certificationPath: CertificationPath,
+        issuerPrivateAddress: String
+    ) {
+        saveData(
+            certificationPath.leafCertificate.subjectPrivateAddress,
+            certificationPath.leafCertificate.expiryDate,
+            certificationPath.serialize(),
+            issuerPrivateAddress
+        )
     }
 
     override suspend fun retrieveData(
