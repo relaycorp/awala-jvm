@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    val kotlinCoroutinesVersion = "1.6.2"
+    val kotlinCoroutinesVersion = "1.6.4"
     val bouncyCastleVersion = "1.70"
 
     // Align versions of all Kotlin components
