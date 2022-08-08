@@ -32,7 +32,7 @@ class MockCertificateStore(
         issuerPrivateAddress: String
     ) {
         saveData(
-            certificationPath.leafCertificate.subjectPrivateAddress,
+            certificationPath.leafCertificate.subjectId,
             certificationPath.leafCertificate.expiryDate,
             certificationPath.serialize(),
             issuerPrivateAddress

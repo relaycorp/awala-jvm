@@ -8,8 +8,8 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
  * Parcel Collection Acknowledgement (PCA).
  */
 class ParcelCollectionAck(
-    val senderEndpointPrivateAddress: String,
-    val recipientEndpointAddress: String,
+    val senderEndpointId: String,
+    val recipientEndpointId: String,
     val parcelId: String
 ) {
     /**
@@ -18,8 +18,8 @@ class ParcelCollectionAck(
     fun serialize(): ByteArray {
         val sequence = ASN1Utils.serializeSequence(
             listOf(
-                DERVisibleString(senderEndpointPrivateAddress),
-                DERVisibleString(recipientEndpointAddress),
+                DERVisibleString(senderEndpointId),
+                DERVisibleString(recipientEndpointId),
                 DERVisibleString(parcelId)
             ),
             false

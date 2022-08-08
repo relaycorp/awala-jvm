@@ -24,7 +24,7 @@ class PKITest {
             val certificate =
                 issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
-            assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
+            assertEquals(certificate.subjectId, certificate.commonName)
         }
 
         @Test
@@ -142,7 +142,7 @@ class PKITest {
             val certificate =
                 issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
-            assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
+            assertEquals(certificate.subjectId, certificate.commonName)
         }
 
         @Test
@@ -250,7 +250,7 @@ class PKITest {
                 recipientCertificate
             )
 
-            assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
+            assertEquals(certificate.subjectId, certificate.commonName)
         }
 
         @Test

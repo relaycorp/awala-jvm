@@ -15,7 +15,7 @@ private val SERIALIZER = RAMFSerializer(0x43, 0x00)
  * Cargo
  */
 class Cargo(
-    recipientAddress: String,
+    recipient: Recipient,
     payload: ByteArray,
     senderCertificate: Certificate,
     messageId: String? = null,
@@ -24,7 +24,7 @@ class Cargo(
     senderCertificateChain: Set<Certificate>? = null
 ) : EncryptedRAMFMessage<CargoMessageSet>(
     SERIALIZER,
-    recipientAddress,
+    recipient,
     payload,
     senderCertificate,
     messageId,

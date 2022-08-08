@@ -8,11 +8,12 @@ import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERVisibleString
+import org.bouncycastle.asn1.DLTaggedObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.ramf.RAMFException
-import tech.relaycorp.relaynet.utils.RAMFUtils
+import tech.relaycorp.relaynet.utils.RAMFStubs
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 class RecipientTest {
@@ -22,7 +23,7 @@ class RecipientTest {
         inner class Id {
             @Test
             fun `Id should be first item in sub-sequence`() {
-                val recipient = Recipient(RAMFUtils.recipientId)
+                val recipient = Recipient(RAMFStubs.recipientId)
 
                 val serialization = recipient.serialize()
 
@@ -34,7 +35,7 @@ class RecipientTest {
 
             @Test
             fun `Id should be implicitly tagged`() {
-                val recipient = Recipient(RAMFUtils.recipientId)
+                val recipient = Recipient(RAMFStubs.recipientId)
 
                 val serialization = recipient.serialize()
 
@@ -47,7 +48,7 @@ class RecipientTest {
         inner class InternetAddress {
             @Test
             fun `Internet address should be absent if unspecified`() {
-                val recipient = Recipient(RAMFUtils.recipientId)
+                val recipient = Recipient(RAMFStubs.recipientId)
 
                 val serialization = recipient.serialize()
 
@@ -56,7 +57,7 @@ class RecipientTest {
 
             @Test
             fun `Internet address should be second item in sub-sequence`() {
-                val recipient = Recipient(RAMFUtils.recipientId, RAMFUtils.recipientInternetAddress)
+                val recipient = Recipient(RAMFStubs.recipientId, RAMFStubs.recipientInternetAddress)
 
                 val serialization = recipient.serialize()
 
@@ -68,7 +69,7 @@ class RecipientTest {
 
             @Test
             fun `Internet address should be implicitly tagged`() {
-                val recipient = Recipient(RAMFUtils.recipientId, RAMFUtils.recipientInternetAddress)
+                val recipient = Recipient(RAMFStubs.recipientId, RAMFStubs.recipientInternetAddress)
 
                 val serialization = recipient.serialize()
 
@@ -81,13 +82,13 @@ class RecipientTest {
     @Nested
     inner class Deserialize {
         @Test
-        fun `Serialization should be a SEQUENCE`() {
+        fun `Implicitly-tagged serialization should be a SEQUENCE`() {
             val exception = assertThrows<RAMFException> {
-                Recipient.deserialize(DERNull.INSTANCE)
+                Recipient.deserialize(DLTaggedObject(false, 0, DERNull.INSTANCE))
             }
 
-            assertEquals("Recipient is not a SEQUENCE", exception.message)
-            assertTrue(exception.cause is IllegalArgumentException)
+            assertEquals("Recipient is not an implicitly-tagged SEQUENCE", exception.message)
+            assertTrue(exception.cause is IllegalStateException)
         }
 
         @Test
@@ -102,10 +103,21 @@ class RecipientTest {
         @Nested
         inner class Id {
             @Test
-            fun `Id should be extracted`() {
-                val recipient = Recipient(RAMFUtils.recipientId)
+            fun `Id should be extracted from explicitly-tagged sequence`() {
+                val recipient = Recipient(RAMFStubs.recipientId)
 
                 val recipientDeserialized = Recipient.deserialize(recipient.serialize())
+
+                assertEquals(recipient.id, recipientDeserialized.id)
+            }
+
+            @Test
+            fun `Id should be extracted from implicitly-tagged sequence`() {
+                val recipient = Recipient(RAMFStubs.recipientId)
+                val sequence = recipient.serialize()
+
+                val recipientDeserialized =
+                    Recipient.deserialize(DLTaggedObject(false, 0, sequence))
 
                 assertEquals(recipient.id, recipientDeserialized.id)
             }
@@ -155,7 +167,7 @@ class RecipientTest {
             @Test
             fun `Address should be null if absent`() {
                 val serialization = ASN1Utils.makeSequence(
-                    listOf(DERVisibleString(RAMFUtils.recipientId)),
+                    listOf(DERVisibleString(RAMFStubs.recipientId)),
                     false,
                 )
 
@@ -166,12 +178,12 @@ class RecipientTest {
 
             @Test
             fun `Domain name should be accepted`() {
-                val recipient = Recipient(RAMFUtils.recipientId, RAMFUtils.recipientInternetAddress)
+                val recipient = Recipient(RAMFStubs.recipientId, RAMFStubs.recipientInternetAddress)
 
                 val recipientDeserialized = Recipient.deserialize(recipient.serialize())
 
                 assertEquals(
-                    RAMFUtils.recipientInternetAddress,
+                    RAMFStubs.recipientInternetAddress,
                     recipientDeserialized.internetAddress
                 )
             }
@@ -179,7 +191,7 @@ class RecipientTest {
             @Test
             fun `Address spanning more than 1024 octets should be refused`() {
                 val longDomain = "${"a".repeat(1021)}.com"
-                val recipient = Recipient(RAMFUtils.recipientId, longDomain)
+                val recipient = Recipient(RAMFStubs.recipientId, longDomain)
                 val serialization = recipient.serialize()
 
                 val exception = assertThrows<RAMFException> { Recipient.deserialize(serialization) }
@@ -193,7 +205,7 @@ class RecipientTest {
             @Test
             fun `Malformed domain name should be refused`() {
                 val malformedDomain = "not really a domain name"
-                val recipient = Recipient(RAMFUtils.recipientId, malformedDomain)
+                val recipient = Recipient(RAMFStubs.recipientId, malformedDomain)
                 val serialization = recipient.serialize()
 
                 val exception = assertThrows<RAMFException> { Recipient.deserialize(serialization) }

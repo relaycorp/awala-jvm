@@ -1,5 +1,6 @@
 package tech.relaycorp.relaynet.messages.payloads
 
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.bouncycastle.asn1.DEROctetString
@@ -9,9 +10,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.messages.ParcelCollectionAck
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.ramf.InvalidPayloadException
 import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
 import tech.relaycorp.relaynet.utils.ID_KEY_PAIR
+import tech.relaycorp.relaynet.utils.RAMFStubs
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 internal class CargoMessageSetTest {
@@ -137,22 +140,20 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `Encapsulated messages should be wrapped in CargoMessage instances`() {
-            val recipientEndpointAddress = "https://foo.relaycorp.tech"
             val parcelSerialized =
-                Parcel(recipientEndpointAddress, "".toByteArray(), ID_CERTIFICATE)
+                Parcel(Recipient(RAMFStubs.recipientId), "".toByteArray(), ID_CERTIFICATE)
                     .serialize(ID_KEY_PAIR.private)
-            val pcaSerialized =
-                ParcelCollectionAck("0deadbeef", recipientEndpointAddress, "parcel-id")
-                    .serialize()
+            val pcaSerialized = ParcelCollectionAck("0deadbeef", "0deadc0de", "parcel-id")
+                .serialize()
             val cargoMessageSet = CargoMessageSet(arrayOf(parcelSerialized, pcaSerialized))
 
             val cargoMessages = cargoMessageSet.classifyMessages().toList()
 
             assertEquals(2, cargoMessages.size)
             assertEquals(CargoMessage.Type.PARCEL, cargoMessages[0].type)
-            assertEquals(parcelSerialized.asList(), cargoMessages[0].messageSerialized.asList())
+            assertContentEquals(parcelSerialized, cargoMessages[0].messageSerialized)
             assertEquals(CargoMessage.Type.PCA, cargoMessages[1].type)
-            assertEquals(pcaSerialized.asList(), cargoMessages[1].messageSerialized.asList())
+            assertContentEquals(pcaSerialized, cargoMessages[1].messageSerialized)
         }
     }
 }

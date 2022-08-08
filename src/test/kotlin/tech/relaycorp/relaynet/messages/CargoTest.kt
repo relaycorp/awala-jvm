@@ -15,7 +15,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 @ExperimentalCoroutinesApi
 internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
     ::Cargo,
-    { r: String, p: ByteArray, s: Certificate -> Cargo(r, p, s) },
+    { r: Recipient, p: ByteArray, s: Certificate -> Cargo(r, p, s) },
     0x43,
     0x00,
     Cargo.Companion
@@ -30,8 +30,8 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
         privateKeyStore.saveSessionKey(
             recipientSessionKeyPair.privateKey,
             recipientSessionKeyPair.sessionKey.keyId,
-            CDACertPath.PRIVATE_GW.subjectPrivateAddress,
-            CDACertPath.PUBLIC_GW.subjectPrivateAddress,
+            CDACertPath.PRIVATE_GW.subjectId,
+            CDACertPath.PUBLIC_GW.subjectId,
         )
     }
 
@@ -39,7 +39,7 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
     fun `Payload deserialization should be delegated to CargoMessageSet`() = runTest {
         val cargoMessageSet = CargoMessageSet(arrayOf("msg1".toByteArray(), "msg2".toByteArray()))
         val cargo = Cargo(
-            CDACertPath.PRIVATE_GW.subjectPrivateAddress,
+            Recipient(CDACertPath.PRIVATE_GW.subjectId),
             cargoMessageSet.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
             CDACertPath.PUBLIC_GW
         )

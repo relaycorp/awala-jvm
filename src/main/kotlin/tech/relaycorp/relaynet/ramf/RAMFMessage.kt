@@ -1,7 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-import java.net.MalformedURLException
-import java.net.URL
 import java.security.PrivateKey
 import java.time.ZoneId
 import java.time.ZoneOffset.UTC
@@ -9,11 +7,11 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.messages.payloads.Payload
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
-private const val MAX_RECIPIENT_ADDRESS_LENGTH = 1024
 private const val MAX_MESSAGE_ID_LENGTH = 64
 private const val MAX_TTL = 15552000
 
@@ -21,20 +19,18 @@ private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
 
 internal typealias RAMFMessageConstructor<M> =
-    (String, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
-
-private val PRIVATE_ADDRESS_REGEX = "^0[a-f0-9]+$".toRegex()
+    (Recipient, ByteArray, Certificate, String?, ZonedDateTime?, Int?, Set<Certificate>?) -> M
 
 /**
  * RAMF v1 message.
  *
- * @property recipientAddress The private or public address of the recipient
+ * @property recipient The recipient of the message
  * @property payload The payload
  * @property senderCertificate The sender's Relaynet PKI certificate
  */
 abstract class RAMFMessage<P : Payload> internal constructor(
     private val serializer: RAMFSerializer,
-    val recipientAddress: String,
+    val recipient: Recipient,
     val payload: ByteArray,
     val senderCertificate: Certificate,
     id: String?,
@@ -67,18 +63,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
      */
     val expiryDate: ZonedDateTime get() = creationDate.plusSeconds(ttl.toLong())
 
-    /**
-     * Report whether the recipient address is private
-     */
-    val isRecipientAddressPrivate get() = !recipientAddress.contains(":")
-
     init {
-        if (MAX_RECIPIENT_ADDRESS_LENGTH < recipientAddress.length) {
-            throw RAMFException(
-                "Recipient address cannot span more than $MAX_RECIPIENT_ADDRESS_LENGTH octets " +
-                    "(got ${recipientAddress.length})"
-            )
-        }
         if (MAX_MESSAGE_ID_LENGTH < this.id.length) {
             throw RAMFException(
                 "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets " +
@@ -129,19 +114,12 @@ abstract class RAMFMessage<P : Payload> internal constructor(
      * always cause validation to fail. This is intentional: We won't try to guess whether you made
      * a mistake or really meant to skip authorization checks.
      *
-     * @param requiredRecipientAddressType The type of recipient address this message must have, if you
-     *    need to enforce a specific type
      * @param trustedCAs The trusted CAs (if any); an empty set will always fail validation
      * @throws RAMFException If the message was never (or is no longer) valid
      */
     @Throws(RAMFException::class, InvalidMessageException::class)
-    fun validate(
-        requiredRecipientAddressType: RecipientAddressType?,
-        trustedCAs: Collection<Certificate>? = null
-    ) {
+    fun validate(trustedCAs: Collection<Certificate>? = null) {
         validateTiming()
-
-        validateRecipientAddress(requiredRecipientAddressType)
 
         try {
             senderCertificate.validate()
@@ -150,7 +128,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         }
 
         if (trustedCAs != null) {
-            validateAuthorization(trustedCAs, isRecipientAddressPrivate)
+            validateAuthorization(trustedCAs)
         }
     }
 
@@ -169,30 +147,9 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         // the sender's certificate has expired.
     }
 
-    private fun validateRecipientAddress(requiredRecipientAddressType: RecipientAddressType?) {
-        val isPublic = try {
-            URL(recipientAddress)
-            true
-        } catch (e: MalformedURLException) {
-            false
-        }
-        if (!isPublic && !PRIVATE_ADDRESS_REGEX.matches(recipientAddress)) {
-            throw RAMFException("Recipient address is an invalid private address")
-        }
-
-        val addressType = if (isRecipientAddressPrivate)
-            RecipientAddressType.PRIVATE
-        else
-            RecipientAddressType.PUBLIC
-        if (requiredRecipientAddressType != null && requiredRecipientAddressType != addressType) {
-            throw InvalidMessageException("Invalid recipient address type")
-        }
-    }
-
     @Throws(InvalidMessageException::class)
     private fun validateAuthorization(
         trustedCAs: Collection<Certificate>,
-        isRecipientAddressPrivate: Boolean
     ) {
         val certificationPath = try {
             getSenderCertificationPath(trustedCAs)
@@ -200,12 +157,10 @@ abstract class RAMFMessage<P : Payload> internal constructor(
             throw InvalidMessageException("Sender is not trusted", exc)
         }
 
-        if (isRecipientAddressPrivate) {
-            val recipientCertificate = certificationPath[1]
-            val recipientPrivateAddress = recipientCertificate.subjectPrivateAddress
-            if (recipientPrivateAddress != recipientAddress) {
-                throw InvalidMessageException("Sender is authorized by the wrong recipient")
-            }
+        val recipientCertificate = certificationPath[1]
+        val recipientPrivateAddress = recipientCertificate.subjectId
+        if (recipientPrivateAddress != recipient.id) {
+            throw InvalidMessageException("Sender is authorized by the wrong recipient")
         }
     }
 

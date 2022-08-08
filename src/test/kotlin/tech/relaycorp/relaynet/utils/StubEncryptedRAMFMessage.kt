@@ -3,13 +3,14 @@ package tech.relaycorp.relaynet.utils
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.time.ZonedDateTime
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.ramf.EncryptedRAMFMessage
 import tech.relaycorp.relaynet.ramf.RAMFMessageCompanion
 import tech.relaycorp.relaynet.ramf.RAMFSerializer
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 internal class StubEncryptedRAMFMessage(
-    recipientAddress: String,
+    recipient: Recipient,
     payload: ByteArray,
     senderCertificate: Certificate,
     messageId: String? = null,
@@ -18,7 +19,7 @@ internal class StubEncryptedRAMFMessage(
     senderCertificateChain: Set<Certificate>? = null
 ) : EncryptedRAMFMessage<StubEncryptedPayload>(
     SERIALIZER,
-    recipientAddress,
+    recipient,
     payload,
     senderCertificate,
     messageId,

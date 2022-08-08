@@ -157,9 +157,9 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
         get() = convertCertToJava(this).publicKey
 
     /**
-     * Calculate the private address of the subject.
+     * Calculate the id of the subject.
      */
-    val subjectPrivateAddress
+    val subjectId
         get() = "0" + getSHA256DigestHex(certificateHolder.subjectPublicKeyInfo.encoded)
 
     /**

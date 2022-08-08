@@ -1,6 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.keystores.MissingKeyException
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
 import tech.relaycorp.relaynet.utils.StubEncryptedPayload
@@ -20,10 +20,10 @@ import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 
 @ExperimentalCoroutinesApi
 internal class EncryptedRAMFMessageTest {
-    private val senderPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
+    private val senderPrivateAddress = PDACertPath.PDA.subjectId
     private val senderSessionKeyPair = SessionKeyPair.generate()
 
-    private val recipientPrivateAddress = PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress
+    private val recipient = Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId)
     private val recipientSessionKeyPair = SessionKeyPair.generate()
 
     private val payload = StubEncryptedPayload("the payload")
@@ -37,7 +37,7 @@ internal class EncryptedRAMFMessageTest {
             privateKeyStore.saveSessionKey(
                 recipientSessionKeyPair.privateKey,
                 recipientSessionKeyPair.sessionKey.keyId,
-                recipientPrivateAddress,
+                recipient.id,
                 senderPrivateAddress,
             )
         }
@@ -45,7 +45,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `Exception should be thrown if payload ciphertext is malformed`() = runTest {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 "this is not an EnvelopedData value".toByteArray(),
                 PDACertPath.PDA,
             )
@@ -58,7 +58,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `SessionlessEnvelopedData should not be supported`() = runTest {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 SessionlessEnvelopedData.encrypt(
                     payload.serializePlaintext(),
                     PDACertPath.PRIVATE_ENDPOINT
@@ -76,7 +76,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `Exception should be thrown if session key does not exist`() = runTest {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
                 PDACertPath.PDA,
             )
@@ -90,7 +90,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `SessionEnvelopedData payload should be decrypted`() = runTest {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
                 PDACertPath.PDA,
             )
@@ -103,7 +103,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `Peer's session key should be output`() = runTest {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
                 PDACertPath.PDA,
             )
@@ -112,21 +112,6 @@ internal class EncryptedRAMFMessageTest {
 
             assertEquals(senderSessionKeyPair.sessionKey, senderSessionKey)
         }
-
-        @Test
-        fun `Messages bound for a public node shouldn't be supported`() = runTest {
-            val message = StubEncryptedRAMFMessage(
-                "https://example.com",
-                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                PDACertPath.PDA,
-            )
-
-            val exception = assertThrows<NotImplementedError> {
-                message.unwrapPayload(privateKeyStore)
-            }
-
-            assertContains(exception.message!!, "Public recipients are not currently supported")
-        }
     }
 
     @Nested
@@ -134,7 +119,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `Exception should be thrown if payload ciphertext is malformed`() {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 "this is not an EnvelopedData value".toByteArray(),
                 PDACertPath.PDA,
             )
@@ -147,7 +132,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `SessionlessEnvelopedData should not be supported`() {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 SessionlessEnvelopedData.encrypt(
                     payload.serializePlaintext(),
                     PDACertPath.PRIVATE_ENDPOINT
@@ -165,7 +150,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `Exception should be thrown if wrong private key is passed`() {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
                 PDACertPath.PDA,
             )
@@ -179,7 +164,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `SessionEnvelopedData payload should be decrypted`() {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
                 PDACertPath.PDA,
             )
@@ -192,7 +177,7 @@ internal class EncryptedRAMFMessageTest {
         @Test
         fun `Peer's session key should be output`() {
             val message = StubEncryptedRAMFMessage(
-                recipientPrivateAddress,
+                recipient,
                 payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
                 PDACertPath.PDA,
             )

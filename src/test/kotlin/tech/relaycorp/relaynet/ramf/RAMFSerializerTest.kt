@@ -1,14 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-import com.beanit.jasn1.ber.BerLength
-import com.beanit.jasn1.ber.BerTag
-import com.beanit.jasn1.ber.ReverseByteArrayOutputStream
-import com.beanit.jasn1.ber.types.BerDateTime
-import com.beanit.jasn1.ber.types.BerGeneralizedTime
-import com.beanit.jasn1.ber.types.BerInteger
-import com.beanit.jasn1.ber.types.BerOctetString
-import com.beanit.jasn1.ber.types.BerType
-import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayOutputStream
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -20,41 +11,36 @@ import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERGeneralizedTime
+import org.bouncycastle.asn1.DERNull
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.utils.BER_DATETIME_FORMATTER
+import tech.relaycorp.relaynet.utils.KeyPairSet
+import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.utils.RAMFStubs
 import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
-import tech.relaycorp.relaynet.utils.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
-import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 // Pick a timezone that's never equivalent to UTC (unlike "Europe/London")
 val NON_UTC_ZONE_ID: ZoneId = ZoneId.of("America/Caracas")
 
 class RAMFSerializerTest {
-    private val stubCaSenderKeyPair = generateRSAKeyPair()
-    private val stubCaCertificate = issueStubCertificate(
-        stubCaSenderKeyPair.public,
-        stubCaSenderKeyPair.private,
-        isCA = true
-    )
-    val stubSenderCertificateChain = setOf(stubCaCertificate)
+    val stubSenderCertificateChain = setOf(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
 
-    private val stubSenderKeyPair = generateRSAKeyPair()
-    private val stubSenderCertificate = issueStubCertificate(
-        stubSenderKeyPair.public,
-        stubCaSenderKeyPair.private,
-        stubCaCertificate
-    )
+    private val stubSenderKeyPair = KeyPairSet.PDA_GRANTEE
+    private val stubSenderCertificate = PDACertPath.PDA
 
     private val stubMessage = StubEncryptedRAMFMessage(
-        "04334",
+        Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId, RAMFStubs.recipientInternetAddress),
         "payload".toByteArray(),
         stubSenderCertificate,
         "message-id",
@@ -67,7 +53,7 @@ class RAMFSerializerTest {
 
     private val stubSerialization = serializer.serialize(
         stubMessage,
-        stubSenderKeyPair.private
+        KeyPairSet.PDA_GRANTEE.private
     )
 
     val formatSignatureConstant = "Awala".toByteArray()
@@ -166,10 +152,10 @@ class RAMFSerializerTest {
         @Nested
         inner class FieldSet {
             @Test
-            fun `Recipient should be stored as an ASN1 VisibleString`() {
+            fun `Recipient should be stored as an ASN1 CONSTRUCTED`() {
                 val sequence = getFieldSequence(stubSerialization)
-                val recipientDer = ASN1Utils.getVisibleString(sequence[0])
-                assertEquals(stubMessage.recipientAddress, recipientDer.string)
+                val recipient = Recipient.deserialize(sequence[0])
+                assertEquals(stubMessage.recipient, recipient)
             }
 
             @Test
@@ -198,7 +184,7 @@ class RAMFSerializerTest {
                 fun `Creation date should be converted to UTC when provided in different TZ`() {
                     val nowTimezoneUnaware = LocalDateTime.now()
                     val message = StubEncryptedRAMFMessage(
-                        stubMessage.recipientAddress,
+                        stubMessage.recipient,
                         stubMessage.payload,
                         stubSenderCertificate,
                         stubMessage.id,
@@ -286,15 +272,12 @@ class RAMFSerializerTest {
 
         @Test
         fun `Input can be a ByteArray`() {
-            @Suppress("USELESS_IS_CHECK")
-            assertTrue(stubSerialization is ByteArray)
-
             val message = serializer.deserialize(
                 stubSerialization,
                 ::StubEncryptedRAMFMessage
             )
 
-            assertEquals(stubMessage.recipientAddress, message.recipientAddress)
+            assertEquals(stubMessage.recipient, message.recipient)
         }
 
         @Test
@@ -304,7 +287,7 @@ class RAMFSerializerTest {
                 ::StubEncryptedRAMFMessage
             )
 
-            assertEquals(stubMessage.recipientAddress, message.recipientAddress)
+            assertEquals(stubMessage.recipient, message.recipient)
         }
 
         @Nested
@@ -475,11 +458,10 @@ class RAMFSerializerTest {
                 val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
 
-                val fieldSetSerialization = ReverseByteArrayOutputStream(100)
-                BerOctetString("Not a sequence".toByteArray()).encode(fieldSetSerialization)
+                val fieldSetSerialization = DERVisibleString("Not a SEQUENCE")
                 invalidSerialization.write(
                     SignedData.sign(
-                        fieldSetSerialization.array,
+                        fieldSetSerialization.encoded,
                         stubSenderKeyPair.private,
                         stubSenderCertificate,
                         setOf(stubSenderCertificate)
@@ -499,17 +481,18 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Fields should be a sequence of exactly 5 items`() {
+            fun `Fields should be a sequence of at least 5 items`() {
                 val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
 
-                val fieldSetSerialization = serializeSequence(
-                    BerVisibleString("1"),
-                    BerVisibleString("2"),
-                    BerVisibleString("3"),
-                    BerVisibleString("4"),
-                    BerVisibleString("5"),
-                    BerVisibleString("6")
+                val fieldSetSerialization = ASN1Utils.serializeSequence(
+                    listOf(
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                    ),
+                    false
                 )
                 invalidSerialization.write(
                     SignedData.sign(
@@ -528,7 +511,7 @@ class RAMFSerializerTest {
                 }
 
                 assertEquals(
-                    "Field sequence should contain 5 items (got 6)",
+                    "Field sequence should contain 5 items (got 4)",
                     exception.message
                 )
             }
@@ -540,13 +523,12 @@ class RAMFSerializerTest {
                     stubSenderKeyPair.private
                 )
 
-                val parsedMessage =
-                    serializer.deserialize(
-                        serialization,
-                        ::StubEncryptedRAMFMessage
-                    )
+                val parsedMessage = serializer.deserialize(
+                    serialization,
+                    ::StubEncryptedRAMFMessage
+                )
 
-                assertEquals(stubMessage.recipientAddress, parsedMessage.recipientAddress)
+                assertEquals(stubMessage.recipient, parsedMessage.recipient)
 
                 assertEquals(stubMessage.id, parsedMessage.id)
 
@@ -566,8 +548,16 @@ class RAMFSerializerTest {
                 val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
 
-                val fieldSetSerialization =
-                    serializeFieldSet(creationTime = BerGeneralizedTime("20200307173323-03"))
+                val fieldSetSerialization = ASN1Utils.serializeSequence(
+                    listOf(
+                        stubMessage.recipient.serialize(),
+                        DERVisibleString(stubMessage.id),
+                        DERGeneralizedTime("20200307173323-03"),
+                        ASN1Integer(stubMessage.ttl.toLong()),
+                        DEROctetString(stubMessage.payload)
+                    ),
+                    false
+                )
                 invalidSerialization.write(
                     SignedData.sign(
                         fieldSetSerialization,
@@ -593,7 +583,7 @@ class RAMFSerializerTest {
             @Test
             fun `Creation time should be parsed as UTC`() {
                 val message = StubEncryptedRAMFMessage(
-                    stubMessage.recipientAddress,
+                    stubMessage.recipient,
                     stubMessage.payload,
                     stubSenderCertificate,
                     stubMessage.id,
@@ -613,55 +603,6 @@ class RAMFSerializerTest {
                     )
 
                 assertEquals(parsedMessage.creationDate.zone, ZoneId.of("UTC"))
-            }
-
-            private fun serializeFieldSet(
-                recipientAddress: BerType = BerVisibleString(stubMessage.recipientAddress),
-                messageId: BerType = BerVisibleString(stubMessage.id),
-                creationTime: BerType = BerDateTime(
-                    stubMessage.creationDate.format(
-                        BER_DATETIME_FORMATTER
-                    )
-                ),
-                ttl: BerType = BerInteger(stubMessage.ttl.toBigInteger()),
-                payload: BerType = BerOctetString(stubMessage.payload)
-            ): ByteArray {
-                return serializeSequence(
-                    recipientAddress,
-                    messageId,
-                    creationTime,
-                    ttl,
-                    payload
-                )
-            }
-
-            private fun serializeSequence(
-                vararg items: BerType
-            ): ByteArray {
-                val reverseOS = ReverseByteArrayOutputStream(256, true)
-                val lastIndex = 0x80 + items.size - 1
-                val serializationLength =
-                    items.reversed()
-                        .mapIndexed { i, v -> serializeItem(v, reverseOS, lastIndex - i) }.sum()
-
-                BerLength.encodeLength(reverseOS, serializationLength)
-                BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16).encode(reverseOS)
-                return reverseOS.array
-            }
-
-            private fun serializeItem(
-                item: BerType,
-                reverseOS: ReverseByteArrayOutputStream,
-                index: Int
-            ): Int {
-                val length = when (item) {
-                    is BerVisibleString -> item.encode(reverseOS, false)
-                    is BerInteger -> item.encode(reverseOS, false)
-                    is BerOctetString -> item.encode(reverseOS, false)
-                    else -> throw Exception("Unsupported BER type")
-                }
-                reverseOS.write(index)
-                return length + 1
             }
         }
     }

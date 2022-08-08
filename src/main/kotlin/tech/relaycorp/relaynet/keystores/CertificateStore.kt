@@ -14,7 +14,7 @@ abstract class CertificateStore {
         if (certificationPath.leafCertificate.expiryDate < ZonedDateTime.now()) return
 
         saveData(
-            certificationPath.leafCertificate.subjectPrivateAddress,
+            certificationPath.leafCertificate.subjectId,
             certificationPath.leafCertificate.expiryDate,
             certificationPath.serialize(),
             issuerPrivateAddress

@@ -11,15 +11,14 @@ import tech.relaycorp.relaynet.pki.CertificationPath
 import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
 import tech.relaycorp.relaynet.utils.ID_KEY_PAIR
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.utils.RAMFStubs
 
 class CargoMessageTest {
     @Nested
     inner class Constructor {
-        private val recipientEndpointAddress = "https://foo.relaycorp.tech"
-
         @Test
         fun `Parcels should be correctly classified as such`() {
-            val parcel = Parcel(recipientEndpointAddress, "".toByteArray(), ID_CERTIFICATE)
+            val parcel = Parcel(RAMFStubs.recipient, "".toByteArray(), ID_CERTIFICATE)
             val parcelSerialized = parcel.serialize(ID_KEY_PAIR.private)
 
             val cargoMessage = CargoMessage(parcelSerialized)
@@ -29,7 +28,7 @@ class CargoMessageTest {
 
         @Test
         fun `PCAs should be correctly classified as such`() {
-            val pca = ParcelCollectionAck("0deadbeef", recipientEndpointAddress, "parcel-id")
+            val pca = ParcelCollectionAck("0deadbeef", RAMFStubs.recipientId, "parcel-id")
             val pcaSerialized = pca.serialize()
 
             val cargoMessage = CargoMessage(pcaSerialized)

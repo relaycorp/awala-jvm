@@ -4,6 +4,7 @@ import java.security.PrivateKey
 import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.keystores.MissingKeyException
 import tech.relaycorp.relaynet.keystores.PrivateKeyStore
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.messages.payloads.EncryptedPayload
 import tech.relaycorp.relaynet.messages.payloads.PayloadUnwrapping
 import tech.relaycorp.relaynet.wrappers.cms.EnvelopedData
@@ -13,7 +14,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
     serializer: RAMFSerializer,
-    recipientAddress: String,
+    recipient: Recipient,
     payload: ByteArray,
     senderCertificate: Certificate,
     messageId: String?,
@@ -22,7 +23,7 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
     senderCertificateChain: Set<Certificate>?
 ) : RAMFMessage<P>(
     serializer,
-    recipientAddress,
+    recipient,
     payload,
     senderCertificate,
     messageId,
@@ -46,16 +47,12 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
         NotImplementedError::class
     )
     suspend fun unwrapPayload(privateKeyStore: PrivateKeyStore): PayloadUnwrapping<P> {
-        if (!isRecipientAddressPrivate) {
-            // Fix is part of https://github.com/relaycorp/relayverse/issues/19
-            TODO("Public recipients are not currently supported")
-        }
         val envelopedData = deserializeEnvelopedData()
         val keyId = envelopedData.getRecipientKeyId()
         val privateKey = privateKeyStore.retrieveSessionKey(
             keyId.id,
-            recipientAddress,
-            senderCertificate.subjectPrivateAddress
+            recipient.id,
+            senderCertificate.subjectId
         )
         return unwrapEnvelopedData(envelopedData, privateKey)
     }

@@ -1,6 +1,7 @@
 package tech.relaycorp.relaynet.messages
 
 import org.bouncycastle.asn1.ASN1Encodable
+import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.DERVisibleString
@@ -8,8 +9,8 @@ import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.wrappers.DNS
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
-class Recipient(val id: String, val internetAddress: String? = null) {
-    internal fun serialize(): DERSequence {
+data class Recipient(val id: String, val internetAddress: String? = null) {
+    internal fun serialize(): ASN1Sequence {
         val idEncoded = DERVisibleString(id)
         val additionalFields =
             if (internetAddress != null) listOf(DERVisibleString(internetAddress))
@@ -22,12 +23,7 @@ class Recipient(val id: String, val internetAddress: String? = null) {
         private val idRegex = "^0[a-f0-9]+$".toRegex()
 
         @Throws(RAMFException::class)
-        internal fun deserialize(serialization: ASN1Encodable): Recipient {
-            val sequence = try {
-                DERSequence.getInstance(serialization)
-            } catch (exc: IllegalArgumentException) {
-                throw RAMFException("Recipient is not a SEQUENCE", exc)
-            }
+        internal fun deserialize(sequence: ASN1Sequence): Recipient {
             if (sequence.size() == 0) {
                 throw RAMFException("Recipient SEQUENCE is empty")
             }
@@ -37,6 +33,16 @@ class Recipient(val id: String, val internetAddress: String? = null) {
             else
                 null
             return Recipient(id, internetAddress)
+        }
+
+        @Throws(RAMFException::class)
+        internal fun deserialize(serialization: ASN1TaggedObject): Recipient {
+            val sequence = try {
+                DERSequence.getInstance(serialization, false)
+            } catch (exc: IllegalStateException) {
+                throw RAMFException("Recipient is not an implicitly-tagged SEQUENCE", exc)
+            }
+            return deserialize(sequence)
         }
 
         @Throws(RAMFException::class)

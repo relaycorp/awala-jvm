@@ -1,7 +1,6 @@
 package tech.relaycorp.relaynet.bindings.pdc
 
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.Nested
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.messages.Parcel
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.ramf.RAMFException
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -56,23 +56,9 @@ class ParcelCollectionTest {
         }
 
         @Test
-        fun `Parcels bound for public endpoints should be refused`() {
-            val invalidParcel = Parcel("https://public.endpoint", payload, senderCertificate)
-            val collector = ParcelCollection(
-                invalidParcel.serialize(KeyPairSet.PDA_GRANTEE.private),
-                setOf(recipientCertificate),
-                dummyACK
-            )
-
-            val exception =
-                assertThrows<InvalidMessageException> { collector.deserializeAndValidateParcel() }
-            assertNull(exception.cause)
-        }
-
-        @Test
         fun `Parcels from unauthorized senders should be refused`() {
             val invalidParcel = Parcel(
-                recipientCertificate.subjectPrivateAddress,
+                Recipient(recipientCertificate.subjectId),
                 payload,
                 PDACertPath.PUBLIC_GW // Unauthorized sender
             )
@@ -90,7 +76,7 @@ class ParcelCollectionTest {
         @Test
         fun `Valid parcels should be returned`() {
             val parcel = Parcel(
-                recipientCertificate.subjectPrivateAddress,
+                Recipient(recipientCertificate.subjectId),
                 payload,
                 senderCertificate
             )
@@ -102,7 +88,7 @@ class ParcelCollectionTest {
 
             val parcelDeserialized = collector.deserializeAndValidateParcel()
 
-            assertEquals(parcel.recipientAddress, parcelDeserialized.recipientAddress)
+            assertEquals(parcel.recipient, parcelDeserialized.recipient)
             assertEquals(parcel.payload.asList(), parcelDeserialized.payload.asList())
             assertEquals(parcel.senderCertificate, parcelDeserialized.senderCertificate)
         }

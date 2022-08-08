@@ -15,7 +15,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 @ExperimentalCoroutinesApi
 internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     ::Parcel,
-    { r: String, p: ByteArray, s: Certificate -> Parcel(r, p, s) },
+    { r: Recipient, p: ByteArray, s: Certificate -> Parcel(r, p, s) },
     0x50,
     0x00,
     Parcel.Companion
@@ -30,8 +30,8 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
         privateKeyStore.saveSessionKey(
             recipientSessionKeyPair.privateKey,
             recipientSessionKeyPair.sessionKey.keyId,
-            PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
-            PDACertPath.PDA.subjectPrivateAddress,
+            PDACertPath.PRIVATE_ENDPOINT.subjectId,
+            PDACertPath.PDA.subjectId,
         )
     }
 
@@ -39,7 +39,7 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     fun `Payload deserialization should be delegated to ServiceMessage`() = runTest {
         val serviceMessage = ServiceMessage("the type", "the content".toByteArray())
         val parcel = Parcel(
-            PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
+            Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId),
             serviceMessage.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
             PDACertPath.PDA
         )

@@ -3,7 +3,6 @@ package tech.relaycorp.relaynet.bindings.pdc
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.messages.Parcel
 import tech.relaycorp.relaynet.ramf.RAMFException
-import tech.relaycorp.relaynet.ramf.RecipientAddressType
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 /**
@@ -27,5 +26,5 @@ class ParcelCollection(
     @Throws(RAMFException::class, InvalidMessageException::class)
     fun deserializeAndValidateParcel(): Parcel =
         Parcel.deserialize(parcelSerialized)
-            .also { it.validate(RecipientAddressType.PRIVATE, trustedCertificates) }
+            .also { it.validate(trustedCertificates) }
 }

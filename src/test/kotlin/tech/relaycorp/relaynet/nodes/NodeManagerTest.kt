@@ -20,6 +20,7 @@ import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.SymmetricCipher
 import tech.relaycorp.relaynet.keystores.MissingKeyException
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 import tech.relaycorp.relaynet.utils.PDACertPath
@@ -34,9 +35,9 @@ import tech.relaycorp.relaynet.wrappers.cms.SessionEnvelopedData
 class NodeManagerTest {
     private val payload = StubEncryptedPayload("the payload")
 
-    private val ownPrivateAddress = PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress
+    private val ownPrivateAddress = PDACertPath.PRIVATE_ENDPOINT.subjectId
 
-    private val peerPrivateAddress = PDACertPath.PDA.subjectPrivateAddress
+    private val peerPrivateAddress = PDACertPath.PDA.subjectId
     private val peerSessionKeyPair = SessionKeyPair.generate()
     private val peerSessionKey = peerSessionKeyPair.sessionKey
     private val peerSessionPrivateKey = peerSessionKeyPair.privateKey
@@ -288,7 +289,7 @@ class NodeManagerTest {
             peerSessionKeyPair,
         )
         private val message = StubEncryptedRAMFMessage(
-            PDACertPath.PRIVATE_ENDPOINT.subjectPrivateAddress,
+            Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId),
             envelopedData.serialize(),
             PDACertPath.PDA
         )

@@ -122,7 +122,7 @@ internal class ParcelCollectionAckTest {
 
             val pca = ParcelCollectionAck.deserialize(serialization)
 
-            assertEquals(pca.senderEndpointPrivateAddress, senderEndpointPrivateAddress)
+            assertEquals(pca.senderEndpointId, senderEndpointPrivateAddress)
         }
 
         @Test
@@ -135,7 +135,7 @@ internal class ParcelCollectionAckTest {
 
             val pca = ParcelCollectionAck.deserialize(serialization)
 
-            assertEquals(pca.recipientEndpointAddress, recipientEndpointAddress)
+            assertEquals(pca.recipientEndpointId, recipientEndpointAddress)
         }
 
         @Test

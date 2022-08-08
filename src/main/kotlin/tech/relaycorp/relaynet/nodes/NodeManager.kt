@@ -74,7 +74,7 @@ abstract class NodeManager<P : Payload>(
         val unwrapping = message.unwrapPayload(privateKeyStore)
         sessionPublicKeyStore.save(
             unwrapping.peerSessionKey,
-            message.senderCertificate.subjectPrivateAddress,
+            message.senderCertificate.subjectId,
             message.creationDate
         )
         return unwrapping.payload
