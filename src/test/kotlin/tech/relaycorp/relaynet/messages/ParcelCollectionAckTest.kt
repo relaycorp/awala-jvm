@@ -6,12 +6,13 @@ import kotlin.test.assertTrue
 import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.utils.RAMFStubs
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 internal class ParcelCollectionAckTest {
     private val senderEndpointPrivateAddress = "0deadbeef"
-    private val recipientEndpointAddress = "https://ping.relaycorp.tech"
+    private val recipientEndpointAddress = RAMFStubs.recipientInternetAddress
     private val parcelId = "the-parcel-id"
 
     private val formatSignature = byteArrayOf(*"Awala".toByteArray(), 0x51, 0)
