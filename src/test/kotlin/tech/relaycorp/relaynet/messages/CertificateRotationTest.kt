@@ -11,7 +11,7 @@ import tech.relaycorp.relaynet.utils.PDACertPath
 
 class CertificateRotationTest {
     private val certificationPath =
-        CertificationPath(PDACertPath.PRIVATE_GW, listOf(PDACertPath.PUBLIC_GW))
+        CertificationPath(PDACertPath.PRIVATE_GW, listOf(PDACertPath.INTERNET_GW))
 
     private val formatSignature = byteArrayOf(*"Awala".toByteArray(), 0x10, 0)
 

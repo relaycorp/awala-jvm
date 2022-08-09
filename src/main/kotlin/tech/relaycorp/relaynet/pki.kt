@@ -9,7 +9,7 @@ import tech.relaycorp.relaynet.wrappers.nodeId
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 /**
- * Issue Relaynet PKI certificate to a private or public gateway.
+ * Issue Awala PKI certificate to a gateway.
  *
  * @param subjectPublicKey The public key of the subject
  * @param issuerPrivateKey The private key of the issuer

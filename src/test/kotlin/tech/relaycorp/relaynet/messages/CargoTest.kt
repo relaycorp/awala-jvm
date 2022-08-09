@@ -31,7 +31,7 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
             recipientSessionKeyPair.privateKey,
             recipientSessionKeyPair.sessionKey.keyId,
             CDACertPath.PRIVATE_GW.subjectId,
-            CDACertPath.PUBLIC_GW.subjectId,
+            CDACertPath.INTERNET_GW.subjectId,
         )
     }
 
@@ -41,7 +41,7 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
         val cargo = Cargo(
             Recipient(CDACertPath.PRIVATE_GW.subjectId),
             cargoMessageSet.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-            CDACertPath.PUBLIC_GW
+            CDACertPath.INTERNET_GW
         )
 
         val (payloadDeserialized) = cargo.unwrapPayload(privateKeyStore)

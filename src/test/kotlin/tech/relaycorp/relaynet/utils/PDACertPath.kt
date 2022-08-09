@@ -6,24 +6,24 @@ import tech.relaycorp.relaynet.issueEndpointCertificate
 import tech.relaycorp.relaynet.issueGatewayCertificate
 
 /**
- * Full certification path from a public gateway to a PDA.
+ * Full certification path from an Internet gateway to a PDA.
  */
 object PDACertPath {
     private val now: ZonedDateTime = ZonedDateTime.now()
     private val twoSecondsAgo = now.minusSeconds(2)
     private val tomorrow = now.plusDays(1)
 
-    val PUBLIC_GW = issueGatewayCertificate(
-        KeyPairSet.PUBLIC_GW.public,
-        KeyPairSet.PUBLIC_GW.private,
+    val INTERNET_GW = issueGatewayCertificate(
+        KeyPairSet.INTERNET_GW.public,
+        KeyPairSet.INTERNET_GW.private,
         tomorrow,
         validityStartDate = twoSecondsAgo
     )
     val PRIVATE_GW = issueGatewayCertificate(
         KeyPairSet.PRIVATE_GW.public,
-        KeyPairSet.PUBLIC_GW.private,
+        KeyPairSet.INTERNET_GW.private,
         tomorrow,
-        PUBLIC_GW,
+        INTERNET_GW,
         twoSecondsAgo
     )
     val PRIVATE_ENDPOINT = issueEndpointCertificate(

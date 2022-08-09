@@ -15,7 +15,7 @@ It is important to call the `validate()` method on any RAMF message received fro
 
 ## Delivering cargo
 
-When delivering cargo to a public gateway via a cargo relay implementation (e.g., CogRPC), you'll need to pass [`CargoRelayRequest`](/awala-jvm/api/relaynet/tech.relaycorp.relaynet/-cargo-delivery-request/) instances to it so that you can track and delete cargo as it's safely delivered to the gateway.
+When delivering cargo to an Internet gateway via a cargo relay implementation (e.g., CogRPC), you'll need to pass [`CargoRelayRequest`](/awala-jvm/api/relaynet/tech.relaycorp.relaynet/-cargo-delivery-request/) instances to it so that you can track and delete cargo as it's safely delivered to the gateway.
 
 The actual way to pass such instances will depend entirely on the cargo relay library, so make sure it read its documentation.
 

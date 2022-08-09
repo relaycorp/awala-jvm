@@ -14,13 +14,13 @@ object CDACertPath {
 
     val PRIVATE_GW = issueGatewayCertificate(
         KeyPairSet.PRIVATE_GW.public,
-        KeyPairSet.PUBLIC_GW.private,
+        KeyPairSet.INTERNET_GW.private,
         tomorrow,
         validityStartDate = twoSecondsAgo
     )
-    val PUBLIC_GW = issueDeliveryAuthorization(
-        KeyPairSet.PUBLIC_GW.public,
-        KeyPairSet.PUBLIC_GW.private,
+    val INTERNET_GW = issueDeliveryAuthorization(
+        KeyPairSet.INTERNET_GW.public,
+        KeyPairSet.INTERNET_GW.private,
         tomorrow,
         PRIVATE_GW,
         validityStartDate = twoSecondsAgo

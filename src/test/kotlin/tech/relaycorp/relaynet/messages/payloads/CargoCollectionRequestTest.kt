@@ -16,22 +16,22 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 class CargoCollectionRequestTest {
     @Test
     fun `CDA should be accessible from instance`() {
-        val ccr = CargoCollectionRequest(CDACertPath.PUBLIC_GW)
+        val ccr = CargoCollectionRequest(CDACertPath.INTERNET_GW)
 
-        assertEquals(CDACertPath.PUBLIC_GW, ccr.cargoDeliveryAuthorization)
+        assertEquals(CDACertPath.INTERNET_GW, ccr.cargoDeliveryAuthorization)
     }
 
     @Nested
     inner class Serialize {
         @Test
         fun `Cargo Delivery Authorization should be included DER-encoded`() {
-            val ccr = CargoCollectionRequest(CDACertPath.PUBLIC_GW)
+            val ccr = CargoCollectionRequest(CDACertPath.INTERNET_GW)
 
             val serialization = ccr.serializePlaintext()
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val cdaASN1 = ASN1Utils.getOctetString(sequence.first())
-            assertEquals(CDACertPath.PUBLIC_GW, Certificate.deserialize(cdaASN1.octets))
+            assertEquals(CDACertPath.INTERNET_GW, Certificate.deserialize(cdaASN1.octets))
         }
     }
 
@@ -72,12 +72,12 @@ class CargoCollectionRequestTest {
 
         @Test
         fun `Valid values should be accepted`() {
-            val ccr = CargoCollectionRequest(CDACertPath.PUBLIC_GW)
+            val ccr = CargoCollectionRequest(CDACertPath.INTERNET_GW)
             val serialization = ccr.serializePlaintext()
 
             val ccrDeserialized = CargoCollectionRequest.deserialize(serialization)
 
-            assertEquals(CDACertPath.PUBLIC_GW, ccrDeserialized.cargoDeliveryAuthorization)
+            assertEquals(CDACertPath.INTERNET_GW, ccrDeserialized.cargoDeliveryAuthorization)
         }
     }
 }

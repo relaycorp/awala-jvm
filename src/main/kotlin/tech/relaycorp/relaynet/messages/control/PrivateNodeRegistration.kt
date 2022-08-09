@@ -13,7 +13,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 /**
- * Private node registration with its private or public gateway.
+ * Private node registration with its gateway.
  *
  * When the node is a private endpoint, the gateway must be private. When the node is a private
  * gateway, the gateway must be public.

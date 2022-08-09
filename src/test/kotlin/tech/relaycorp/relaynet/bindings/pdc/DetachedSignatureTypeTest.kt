@@ -79,8 +79,11 @@ class DetachedSignatureTypeTest {
 
         @Test
         fun `Untrusted signers should be refused`() {
-            val serialization =
-                signatureType.sign(plaintext, KeyPairSet.PUBLIC_GW.private, PDACertPath.PUBLIC_GW)
+            val serialization = signatureType.sign(
+                plaintext,
+                KeyPairSet.INTERNET_GW.private,
+                PDACertPath.INTERNET_GW
+            )
 
             val exception = assertThrows<InvalidSignatureException> {
                 signatureType.verify(serialization, plaintext, listOf(PDACertPath.PRIVATE_GW))

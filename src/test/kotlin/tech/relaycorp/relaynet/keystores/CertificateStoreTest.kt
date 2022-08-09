@@ -21,8 +21,8 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 class CertificateStoreTest {
 
     private val certificate = PDACertPath.PRIVATE_GW
-    private val certificateChain = listOf(PDACertPath.PUBLIC_GW, PDACertPath.PUBLIC_GW)
-    private val issuerAddress = PDACertPath.PUBLIC_GW.subjectId
+    private val certificateChain = listOf(PDACertPath.INTERNET_GW, PDACertPath.INTERNET_GW)
+    private val issuerAddress = PDACertPath.INTERNET_GW.subjectId
 
     private val aboutToExpireCertificate = Certificate.issue(
         "foo",

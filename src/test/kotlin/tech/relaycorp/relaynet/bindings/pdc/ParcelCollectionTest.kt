@@ -60,10 +60,10 @@ class ParcelCollectionTest {
             val invalidParcel = Parcel(
                 Recipient(recipientCertificate.subjectId),
                 payload,
-                PDACertPath.PUBLIC_GW // Unauthorized sender
+                PDACertPath.INTERNET_GW // Unauthorized sender
             )
             val collector = ParcelCollection(
-                invalidParcel.serialize(KeyPairSet.PUBLIC_GW.private),
+                invalidParcel.serialize(KeyPairSet.INTERNET_GW.private),
                 setOf(recipientCertificate),
                 dummyACK
             )

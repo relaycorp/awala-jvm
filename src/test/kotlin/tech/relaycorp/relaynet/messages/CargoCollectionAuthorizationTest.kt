@@ -33,16 +33,16 @@ internal class CargoCollectionAuthorizationTest :
             recipientSessionKeyPair.privateKey,
             recipientSessionKeyPair.sessionKey.keyId,
             CDACertPath.PRIVATE_GW.subjectId,
-            CDACertPath.PUBLIC_GW.subjectId,
+            CDACertPath.INTERNET_GW.subjectId,
         )
     }
 
     @Test
     fun `Payload deserialization should be delegated to CargoCollectionRequest`() =
         runTest {
-            val ccr = CargoCollectionRequest(CDACertPath.PUBLIC_GW)
+            val ccr = CargoCollectionRequest(CDACertPath.INTERNET_GW)
             val cca = CargoCollectionAuthorization(
-                Recipient(CDACertPath.PUBLIC_GW.subjectId),
+                Recipient(CDACertPath.INTERNET_GW.subjectId),
                 ccr.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
                 ID_CERTIFICATE
             )

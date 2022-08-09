@@ -299,13 +299,13 @@ class RAMFMessageTest {
         )
 
         val certificationPath =
-            message.getSenderCertificationPath(setOf(PDACertPath.PUBLIC_GW))
+            message.getSenderCertificationPath(setOf(PDACertPath.INTERNET_GW))
 
         assertEquals(
             listOf(
                 PDACertPath.PRIVATE_ENDPOINT,
                 PDACertPath.PRIVATE_GW,
-                PDACertPath.PUBLIC_GW
+                PDACertPath.INTERNET_GW
             ),
             certificationPath.asList()
         )
@@ -436,7 +436,7 @@ class RAMFMessageTest {
                 )
 
                 val exception = assertThrows<InvalidMessageException> {
-                    message.validate(setOf(PDACertPath.PUBLIC_GW))
+                    message.validate(setOf(PDACertPath.INTERNET_GW))
                 }
 
                 assertEquals("Sender is not trusted", exception.message)
@@ -455,7 +455,7 @@ class RAMFMessageTest {
                     )
                 )
 
-                message.validate(setOf(PDACertPath.PUBLIC_GW))
+                message.validate(setOf(PDACertPath.INTERNET_GW))
             }
 
             @Test
@@ -473,7 +473,7 @@ class RAMFMessageTest {
                 )
 
                 val exception = assertThrows<InvalidMessageException> {
-                    message.validate(setOf(PDACertPath.PUBLIC_GW))
+                    message.validate(setOf(PDACertPath.INTERNET_GW))
                 }
 
                 assertEquals("Sender is authorized by the wrong recipient", exception.message)

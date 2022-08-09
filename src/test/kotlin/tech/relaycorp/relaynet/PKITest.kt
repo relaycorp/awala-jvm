@@ -14,7 +14,7 @@ import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class PKITest {
-    val identityKeyPair = KeyPairSet.PUBLIC_GW
+    val identityKeyPair = KeyPairSet.INTERNET_GW
     val tomorrow: ZonedDateTime = ZonedDateTime.now(UTC).plusDays(1)
 
     @Nested

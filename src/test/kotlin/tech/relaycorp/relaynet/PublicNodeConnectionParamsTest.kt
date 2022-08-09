@@ -18,7 +18,7 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 class PublicNodeConnectionParamsTest {
     val internetAddress = "foo.relaycorp.tech"
 
-    val identityKey: PublicKey = KeyPairSet.PUBLIC_GW.public
+    val identityKey: PublicKey = KeyPairSet.INTERNET_GW.public
     val sessionKey = SessionKeyPair.generate().sessionKey
 
     @Nested
