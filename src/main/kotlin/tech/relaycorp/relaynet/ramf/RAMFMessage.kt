@@ -158,8 +158,8 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         }
 
         val recipientCertificate = certificationPath[1]
-        val recipientPrivateAddress = recipientCertificate.subjectId
-        if (recipientPrivateAddress != recipient.id) {
+        val recipientId = recipientCertificate.subjectId
+        if (recipientId != recipient.id) {
             throw InvalidMessageException("Sender is authorized by the wrong recipient")
         }
     }

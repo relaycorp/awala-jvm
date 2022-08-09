@@ -11,8 +11,8 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 internal class ParcelCollectionAckTest {
-    private val senderEndpointPrivateAddress = "0deadbeef"
-    private val recipientEndpointAddress = RAMFStubs.recipientInternetAddress
+    private val senderEndpointId = "0deadbeef"
+    private val recipientEndpointId = RAMFStubs.recipientInternetAddress
     private val parcelId = "the-parcel-id"
 
     private val formatSignature = byteArrayOf(*"Awala".toByteArray(), 0x51, 0)
@@ -22,8 +22,8 @@ internal class ParcelCollectionAckTest {
         @Test
         fun `Serialization should start with format signature`() {
             val pca = ParcelCollectionAck(
-                senderEndpointPrivateAddress,
-                recipientEndpointAddress,
+                senderEndpointId,
+                recipientEndpointId,
                 parcelId
             )
 
@@ -38,8 +38,8 @@ internal class ParcelCollectionAckTest {
         @Test
         fun `ACK should be serialized as a 3-item sequence`() {
             val pca = ParcelCollectionAck(
-                senderEndpointPrivateAddress,
-                recipientEndpointAddress,
+                senderEndpointId,
+                recipientEndpointId,
                 parcelId
             )
 
@@ -50,11 +50,11 @@ internal class ParcelCollectionAckTest {
                 ASN1Utils.deserializeHeterogeneousSequence(derSequence.toByteArray())
             assertEquals(3, sequenceItems.size)
             assertEquals(
-                senderEndpointPrivateAddress,
+                senderEndpointId,
                 ASN1Utils.getVisibleString(sequenceItems[0]).string
             )
             assertEquals(
-                recipientEndpointAddress,
+                recipientEndpointId,
                 ASN1Utils.getVisibleString(sequenceItems[1]).string
             )
             assertEquals(
@@ -114,36 +114,36 @@ internal class ParcelCollectionAckTest {
         }
 
         @Test
-        fun `Sender endpoint private address should be decoded as a VisibleString`() {
+        fun `Sender endpoint id should be decoded as a VisibleString`() {
             val serialization = ParcelCollectionAck(
-                senderEndpointPrivateAddress,
-                recipientEndpointAddress,
+                senderEndpointId,
+                recipientEndpointId,
                 parcelId
             ).serialize()
 
             val pca = ParcelCollectionAck.deserialize(serialization)
 
-            assertEquals(pca.senderEndpointId, senderEndpointPrivateAddress)
+            assertEquals(pca.senderEndpointId, senderEndpointId)
         }
 
         @Test
         fun `Recipient endpoint address should be decoded as a VisibleString`() {
             val serialization = ParcelCollectionAck(
-                senderEndpointPrivateAddress,
-                recipientEndpointAddress,
+                senderEndpointId,
+                recipientEndpointId,
                 parcelId
             ).serialize()
 
             val pca = ParcelCollectionAck.deserialize(serialization)
 
-            assertEquals(pca.recipientEndpointId, recipientEndpointAddress)
+            assertEquals(pca.recipientEndpointId, recipientEndpointId)
         }
 
         @Test
         fun `Parcel id should be decoded as a VisibleString`() {
             val serialization = ParcelCollectionAck(
-                senderEndpointPrivateAddress,
-                recipientEndpointAddress,
+                senderEndpointId,
+                recipientEndpointId,
                 parcelId
             ).serialize()
 

@@ -5,32 +5,32 @@ import org.bouncycastle.util.encoders.Hex
 import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.deserializeECKeyPair
 import tech.relaycorp.relaynet.wrappers.deserializeRSAKeyPair
-import tech.relaycorp.relaynet.wrappers.privateAddress
+import tech.relaycorp.relaynet.wrappers.nodeId
 
 abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
     suspend fun saveIdentityKey(privateKey: PrivateKey) {
         val keyData = PrivateKeyData(privateKey.encoded)
-        saveIdentityKeyData(privateKey.privateAddress, keyData)
+        saveIdentityKeyData(privateKey.nodeId, keyData)
     }
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveIdentityKeyData(
-        privateAddress: String,
+        nodeId: String,
         keyData: PrivateKeyData
     )
 
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
-    suspend fun retrieveIdentityKey(privateAddress: String): PrivateKey {
-        val keyData = retrieveIdentityKeyData(privateAddress)
-            ?: throw MissingKeyException("There is no identity key for $privateAddress")
+    suspend fun retrieveIdentityKey(nodeId: String): PrivateKey {
+        val keyData = retrieveIdentityKeyData(nodeId)
+            ?: throw MissingKeyException("There is no identity key for $nodeId")
 
         return keyData.toIdentityPrivateKey()
     }
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun retrieveIdentityKeyData(
-        privateAddress: String,
+        nodeId: String,
     ): PrivateKeyData?
 
     @Throws(KeyStoreBackendException::class)
@@ -44,35 +44,35 @@ abstract class PrivateKeyStore {
     suspend fun saveSessionKey(
         privateKey: PrivateKey,
         keyId: ByteArray,
-        privateAddress: String,
-        peerPrivateAddress: String? = null
+        nodeId: String,
+        peerId: String? = null
     ) = saveSessionKeySerialized(
         formatSessionKeyId(keyId),
         privateKey.encoded,
-        privateAddress,
-        peerPrivateAddress
+        nodeId,
+        peerId
     )
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveSessionKeySerialized(
         keyId: String,
         keySerialized: ByteArray,
-        privateAddress: String,
-        peerPrivateAddress: String?,
+        nodeId: String,
+        peerId: String?,
     )
 
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun retrieveSessionKey(
         keyId: ByteArray,
-        privateAddress: String,
-        peerPrivateAddress: String
+        nodeId: String,
+        peerId: String
     ): PrivateKey {
         val keyIdString = formatSessionKeyId(keyId)
         val privateKeySerialized = retrieveSessionKeySerialized(
             keyIdString,
-            privateAddress,
-            peerPrivateAddress
-        ) ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
+            nodeId,
+            peerId
+        ) ?: throw MissingKeyException("There is no session key for $peerId")
         return try {
             privateKeySerialized.deserializeECKeyPair().private
         } catch (exc: KeyException) {
@@ -81,26 +81,26 @@ abstract class PrivateKeyStore {
     }
 
     /**
-     * Delete the identity and session keys for the node identified by [privateAddress].
+     * Delete the identity and session keys for the node identified by [nodeId].
      *
      * This is a no-op if the node doesn't exist.
      */
     @Throws(KeyStoreBackendException::class)
-    abstract suspend fun deleteKeys(privateAddress: String)
+    abstract suspend fun deleteKeys(nodeId: String)
 
     /**
-     * Delete the session keys for the peer identified by [peerPrivateAddress].
+     * Delete the session keys for the peer identified by [peerId].
      *
      * This is a no-op if the peer doesn't exist.
      */
     @Throws(KeyStoreBackendException::class)
-    abstract suspend fun deleteSessionKeysForPeer(peerPrivateAddress: String)
+    abstract suspend fun deleteSessionKeysForPeer(peerId: String)
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun retrieveSessionKeySerialized(
         keyId: String,
-        privateAddress: String,
-        peerPrivateAddress: String,
+        nodeId: String,
+        peerId: String,
     ): ByteArray?
 
     private fun formatSessionKeyId(keyId: ByteArray) = Hex.toHexString(keyId)

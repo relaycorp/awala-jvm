@@ -20,7 +20,7 @@ import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 
 @ExperimentalCoroutinesApi
 internal class EncryptedRAMFMessageTest {
-    private val senderPrivateAddress = PDACertPath.PDA.subjectId
+    private val senderId = PDACertPath.PDA.subjectId
     private val senderSessionKeyPair = SessionKeyPair.generate()
 
     private val recipient = Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId)
@@ -38,7 +38,7 @@ internal class EncryptedRAMFMessageTest {
                 recipientSessionKeyPair.privateKey,
                 recipientSessionKeyPair.sessionKey.keyId,
                 recipient.id,
-                senderPrivateAddress,
+                senderId,
             )
         }
 

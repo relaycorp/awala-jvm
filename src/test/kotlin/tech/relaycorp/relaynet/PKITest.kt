@@ -20,7 +20,7 @@ class PKITest {
     @Nested
     inner class IssueGatewayCertificate {
         @Test
-        fun `Subject CommonName should be set to private address of gateway`() {
+        fun `Subject CommonName should be set to id of gateway`() {
             val certificate =
                 issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
@@ -138,7 +138,7 @@ class PKITest {
     @Nested
     inner class IssueEndpointCertificate {
         @Test
-        fun `CommonName should be set to private address of gateway`() {
+        fun `CommonName should be set to id of gateway`() {
             val certificate =
                 issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
@@ -242,7 +242,7 @@ class PKITest {
             issueEndpointCertificate(recipientKeyPair.public, recipientKeyPair.private, tomorrow)
 
         @Test
-        fun `Subject CommonName should be set to private address of subject`() {
+        fun `Subject CommonName should be set to id of subject`() {
             val certificate = issueDeliveryAuthorization(
                 identityKeyPair.public,
                 recipientKeyPair.private,

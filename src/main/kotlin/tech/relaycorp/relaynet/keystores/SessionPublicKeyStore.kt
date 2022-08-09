@@ -8,12 +8,12 @@ abstract class SessionPublicKeyStore {
     @Throws(KeyStoreBackendException::class)
     suspend fun save(
         key: SessionKey,
-        peerPrivateAddress: String,
+        peerId: String,
         creationTime: ZonedDateTime = ZonedDateTime.now()
     ) {
         val creationTimestamp = creationTime.toEpochSecond()
 
-        val existingKeyData = retrieveKeyData(peerPrivateAddress)
+        val existingKeyData = retrieveKeyData(peerId)
         if (existingKeyData != null && creationTimestamp < existingKeyData.creationTimestamp) {
             return
         }
@@ -23,31 +23,31 @@ abstract class SessionPublicKeyStore {
             key.publicKey.encoded,
             creationTimestamp
         )
-        saveKeyData(keyData, peerPrivateAddress)
+        saveKeyData(keyData, peerId)
     }
 
     @Throws(KeyStoreBackendException::class)
-    suspend fun retrieve(peerPrivateAddress: String): SessionKey {
-        val keyData = retrieveKeyData(peerPrivateAddress)
-            ?: throw MissingKeyException("There is no session key for $peerPrivateAddress")
+    suspend fun retrieve(peerId: String): SessionKey {
+        val keyData = retrieveKeyData(peerId)
+            ?: throw MissingKeyException("There is no session key for $peerId")
 
         val sessionPublicKey = keyData.keyDer.deserializeECPublicKey()
         return SessionKey(keyData.keyId, sessionPublicKey)
     }
 
     /**
-     * Delete the session key for [peerPrivateAddress], if it exists.
+     * Delete the session key for [peerId], if it exists.
      */
     @Throws(KeyStoreBackendException::class)
-    abstract suspend fun delete(peerPrivateAddress: String)
+    abstract suspend fun delete(peerId: String)
 
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveKeyData(
         keyData: SessionPublicKeyData,
-        peerPrivateAddress: String
+        peerId: String
     )
 
     @Throws(KeyStoreBackendException::class)
-    protected abstract suspend fun retrieveKeyData(peerPrivateAddress: String):
+    protected abstract suspend fun retrieveKeyData(peerId: String):
         SessionPublicKeyData?
 }
