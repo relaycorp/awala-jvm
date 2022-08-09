@@ -13,7 +13,7 @@ import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.deserializeRSAPublicKey
 
 class PublicNodeConnectionParams(
-    val publicAddress: String,
+    val internetAddress: String,
     val identityKey: PublicKey,
     val sessionKey: SessionKey
 ) {
@@ -27,7 +27,7 @@ class PublicNodeConnectionParams(
         )
         return ASN1Utils.serializeSequence(
             listOf(
-                DERVisibleString(publicAddress),
+                DERVisibleString(internetAddress),
                 DEROctetString(identityKey.encoded),
                 sessionKeyASN1
             ),
@@ -51,10 +51,10 @@ class PublicNodeConnectionParams(
                 )
             }
 
-            val publicAddress = ASN1Utils.getVisibleString(sequence[0]).string
-            if (!DNS.isValidDomainName(publicAddress)) {
+            val internetAddress = ASN1Utils.getVisibleString(sequence[0]).string
+            if (!DNS.isValidDomainName(internetAddress)) {
                 throw InvalidNodeConnectionParams(
-                    "Public address is syntactically invalid ($publicAddress)"
+                    "Internet address is syntactically invalid ($internetAddress)"
                 )
             }
 
@@ -92,7 +92,7 @@ class PublicNodeConnectionParams(
             }
 
             return PublicNodeConnectionParams(
-                publicAddress,
+                internetAddress,
                 identityKey,
                 SessionKey(sessionKeyId, sessionPublicKey)
             )
