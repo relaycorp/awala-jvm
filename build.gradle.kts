@@ -41,11 +41,7 @@ dependencies {
 
     // Bouncy Castle
     implementation("org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion")
-
-    // Libraries for ASN.1 serialization. We should eventually replace jASN1 with Bouncy Castle
-    // https://github.com/relaycorp/awala-jvm/issues/25
-    implementation("com.beanit:jasn1:1.11.3")
-    implementation("org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion")
+    implementation("org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion") // ASN.1 serialization
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJuniperVersion")

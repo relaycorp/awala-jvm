@@ -12,7 +12,7 @@ import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.MockPrivateKeyStore
 import tech.relaycorp.relaynet.wrappers.KeyException
-import tech.relaycorp.relaynet.wrappers.privateAddress
+import tech.relaycorp.relaynet.wrappers.nodeId
 
 @ExperimentalCoroutinesApi
 class PrivateKeyStoreTest {
@@ -21,8 +21,8 @@ class PrivateKeyStoreTest {
     private val sessionKeyGeneration = SessionKeyPair.generate()
     private val sessionKeyIdHex = Hex.toHexString(sessionKeyGeneration.sessionKey.keyId)
 
-    private val ownPrivateAddress = KeyPairSet.PRIVATE_ENDPOINT.public.privateAddress
-    private val peerPrivateAddress = KeyPairSet.PDA_GRANTEE.public.privateAddress
+    private val nodeId = KeyPairSet.PRIVATE_ENDPOINT.public.nodeId
+    private val peerId = KeyPairSet.PDA_GRANTEE.public.nodeId
 
     @Nested
     inner class SaveIdentityKey {
@@ -32,9 +32,9 @@ class PrivateKeyStoreTest {
 
             store.saveIdentityKey(identityPrivateKey)
 
-            val privateAddress = identityPrivateKey.privateAddress
-            assertTrue(store.identityKeys.containsKey(privateAddress))
-            val keyData = store.identityKeys[privateAddress]!!
+            val nodeId = identityPrivateKey.nodeId
+            assertTrue(store.identityKeys.containsKey(nodeId))
+            val keyData = store.identityKeys[nodeId]!!
             assertEquals(identityPrivateKey.encoded.asList(), keyData.privateKeyDer.asList())
         }
     }
@@ -46,7 +46,7 @@ class PrivateKeyStoreTest {
             val store = MockPrivateKeyStore()
             store.saveIdentityKey(identityPrivateKey)
 
-            val idPrivateKey = store.retrieveIdentityKey(identityPrivateKey.privateAddress)
+            val idPrivateKey = store.retrieveIdentityKey(identityPrivateKey.nodeId)
 
             assertEquals(identityPrivateKey.encoded.asList(), idPrivateKey.encoded.asList())
         }
@@ -56,11 +56,11 @@ class PrivateKeyStoreTest {
             val store = MockPrivateKeyStore()
 
             val exception = assertThrows<MissingKeyException> {
-                store.retrieveIdentityKey(identityPrivateKey.privateAddress)
+                store.retrieveIdentityKey(identityPrivateKey.nodeId)
             }
 
             assertEquals(
-                "There is no identity key for ${identityPrivateKey.privateAddress}",
+                "There is no identity key for ${identityPrivateKey.nodeId}",
                 exception.message
             )
         }
@@ -68,14 +68,14 @@ class PrivateKeyStoreTest {
         @Test
         fun `Malformed private keys should be refused`() = runTest {
             val store = MockPrivateKeyStore()
-            val privateAddress = identityPrivateKey.privateAddress
+            val nodeId = identityPrivateKey.nodeId
             store.setIdentityKey(
-                privateAddress,
+                nodeId,
                 PrivateKeyData("malformed".toByteArray())
             )
 
             val exception = assertThrows<KeyStoreBackendException> {
-                store.retrieveIdentityKey(privateAddress)
+                store.retrieveIdentityKey(nodeId)
             }
 
             assertEquals("Private key is malformed", exception.message)
@@ -116,11 +116,11 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
+                nodeId,
             )
 
-            assertTrue(store.sessionKeys.containsKey(ownPrivateAddress))
-            assertTrue(store.sessionKeys[ownPrivateAddress]!!.containsKey("unbound"))
+            assertTrue(store.sessionKeys.containsKey(nodeId))
+            assertTrue(store.sessionKeys[nodeId]!!.containsKey("unbound"))
         }
 
         @Test
@@ -130,11 +130,11 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
+                nodeId,
             )
 
             val keySerialized =
-                store.sessionKeys[ownPrivateAddress]!!["unbound"]!![sessionKeyIdHex]!!
+                store.sessionKeys[nodeId]!!["unbound"]!![sessionKeyIdHex]!!
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
                 keySerialized.asList()
@@ -148,12 +148,12 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
-                peerPrivateAddress
+                nodeId,
+                peerId
             )
 
             val keySerialized =
-                store.sessionKeys[ownPrivateAddress]!![peerPrivateAddress]!![sessionKeyIdHex]!!
+                store.sessionKeys[nodeId]!![peerId]!![sessionKeyIdHex]!!
             assertEquals(
                 sessionKeyGeneration.privateKey.encoded.asList(),
                 keySerialized.asList()
@@ -169,13 +169,13 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
+                nodeId,
             )
 
             val sessionKey = store.retrieveSessionKey(
                 sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
-                "not $peerPrivateAddress"
+                nodeId,
+                "not $peerId"
             )
 
             assertEquals(
@@ -190,14 +190,14 @@ class PrivateKeyStoreTest {
             store.saveSessionKey(
                 sessionKeyGeneration.privateKey,
                 sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
-                peerPrivateAddress
+                nodeId,
+                peerId
             )
 
             val sessionKey = store.retrieveSessionKey(
                 sessionKeyGeneration.sessionKey.keyId,
-                ownPrivateAddress,
-                peerPrivateAddress,
+                nodeId,
+                peerId,
             )
 
             assertEquals(
@@ -213,13 +213,13 @@ class PrivateKeyStoreTest {
             val exception = assertThrows<MissingKeyException> {
                 store.retrieveSessionKey(
                     sessionKeyGeneration.sessionKey.keyId,
-                    ownPrivateAddress,
-                    peerPrivateAddress,
+                    nodeId,
+                    peerId,
                 )
             }
 
             assertEquals(
-                "There is no session key for $peerPrivateAddress",
+                "There is no session key for $peerId",
                 exception.message
             )
         }
@@ -228,7 +228,7 @@ class PrivateKeyStoreTest {
         fun `Malformed private keys should be refused`() = runTest {
             val store = MockPrivateKeyStore()
             store.setSessionKey(
-                ownPrivateAddress,
+                nodeId,
                 null,
                 sessionKeyIdHex,
                 "malformed".toByteArray()
@@ -237,8 +237,8 @@ class PrivateKeyStoreTest {
             val exception = assertThrows<KeyStoreBackendException> {
                 store.retrieveSessionKey(
                     sessionKeyGeneration.sessionKey.keyId,
-                    ownPrivateAddress,
-                    peerPrivateAddress
+                    nodeId,
+                    peerId
                 )
             }
 

@@ -5,11 +5,11 @@ package tech.relaycorp.relaynet
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.time.ZonedDateTime
-import tech.relaycorp.relaynet.wrappers.privateAddress
+import tech.relaycorp.relaynet.wrappers.nodeId
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 /**
- * Issue Relaynet PKI certificate to a private or public gateway.
+ * Issue Awala PKI certificate to a gateway.
  *
  * @param subjectPublicKey The public key of the subject
  * @param issuerPrivateKey The private key of the issuer
@@ -26,7 +26,7 @@ fun issueGatewayCertificate(
 ): Certificate {
     val isSelfIssued = issuerCertificate == null
     return Certificate.issue(
-        subjectPublicKey.privateAddress,
+        subjectPublicKey.nodeId,
         subjectPublicKey,
         issuerPrivateKey,
         validityEndDate,
@@ -54,7 +54,7 @@ fun issueEndpointCertificate(
     validityStartDate: ZonedDateTime = ZonedDateTime.now()
 ): Certificate {
     return Certificate.issue(
-        subjectPublicKey.privateAddress,
+        subjectPublicKey.nodeId,
         subjectPublicKey,
         issuerPrivateKey,
         validityEndDate,
@@ -84,7 +84,7 @@ fun issueDeliveryAuthorization(
     issuerCertificate: Certificate,
     validityStartDate: ZonedDateTime = ZonedDateTime.now()
 ): Certificate = Certificate.issue(
-    subjectPublicKey.privateAddress,
+    subjectPublicKey.nodeId,
     subjectPublicKey,
     issuerPrivateKey,
     validityEndDate,

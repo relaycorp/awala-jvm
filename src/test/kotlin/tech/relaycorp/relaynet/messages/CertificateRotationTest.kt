@@ -11,9 +11,9 @@ import tech.relaycorp.relaynet.utils.PDACertPath
 
 class CertificateRotationTest {
     private val certificationPath =
-        CertificationPath(PDACertPath.PRIVATE_GW, listOf(PDACertPath.PUBLIC_GW))
+        CertificationPath(PDACertPath.PRIVATE_GW, listOf(PDACertPath.INTERNET_GW))
 
-    private val formatSignature = byteArrayOf(*"Relaynet".toByteArray(), 0x10, 0)
+    private val formatSignature = byteArrayOf(*"Awala".toByteArray(), 0x10, 0)
 
     @Nested
     inner class Serialize {
@@ -24,7 +24,7 @@ class CertificateRotationTest {
             val serialization = rotation.serialize()
 
             assertEquals(
-                formatSignature.asList(), serialization.slice(0..9)
+                formatSignature.asList(), serialization.slice(0..6)
             )
         }
 
@@ -34,7 +34,7 @@ class CertificateRotationTest {
 
             val serialization = rotation.serialize()
 
-            val pathSerialized = serialization.slice(10 until serialization.size)
+            val pathSerialized = serialization.slice(7 until serialization.size)
             assertEquals(certificationPath.serialize().asList(), pathSerialized.toList())
         }
     }
@@ -44,7 +44,7 @@ class CertificateRotationTest {
         @Test
         fun `Serialization should be long enough to potentially contain format signature`() {
             val exception = assertThrows<InvalidMessageException> {
-                CertificateRotation.deserialize("RelaynetP".toByteArray())
+                CertificateRotation.deserialize("AwalaP".toByteArray())
             }
 
             assertEquals("Message is too short to contain format signature", exception.message)
@@ -53,7 +53,7 @@ class CertificateRotationTest {
         @Test
         fun `Serialization should start with format signature`() {
             val exception = assertThrows<InvalidMessageException> {
-                CertificateRotation.deserialize("RelaynetP0".toByteArray())
+                CertificateRotation.deserialize("AwalaP0".toByteArray())
             }
 
             assertEquals("Format signature is not that of a CertificateRotation", exception.message)

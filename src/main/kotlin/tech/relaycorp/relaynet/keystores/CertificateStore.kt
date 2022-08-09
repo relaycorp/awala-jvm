@@ -9,39 +9,39 @@ abstract class CertificateStore {
     @Throws(KeyStoreBackendException::class)
     suspend fun save(
         certificationPath: CertificationPath,
-        issuerPrivateAddress: String
+        issuerId: String
     ) {
         if (certificationPath.leafCertificate.expiryDate < ZonedDateTime.now()) return
 
         saveData(
-            certificationPath.leafCertificate.subjectPrivateAddress,
+            certificationPath.leafCertificate.subjectId,
             certificationPath.leafCertificate.expiryDate,
             certificationPath.serialize(),
-            issuerPrivateAddress
+            issuerId
         )
     }
 
     protected abstract suspend fun saveData(
-        subjectPrivateAddress: String,
+        subjectId: String,
         leafCertificateExpiryDate: ZonedDateTime,
         certificationPathData: ByteArray,
-        issuerPrivateAddress: String,
+        issuerId: String,
     )
 
     @Throws(KeyStoreBackendException::class)
     suspend fun retrieveLatest(
-        subjectPrivateAddress: String,
-        issuerPrivateAddress: String
+        subjectId: String,
+        issuerId: String
     ): CertificationPath? =
-        retrieveAll(subjectPrivateAddress, issuerPrivateAddress)
+        retrieveAll(subjectId, issuerId)
             .maxByOrNull { it.leafCertificate.expiryDate }
 
     @Throws(KeyStoreBackendException::class)
     suspend fun retrieveAll(
-        subjectPrivateAddress: String,
-        issuerPrivateAddress: String
+        subjectId: String,
+        issuerId: String
     ): List<CertificationPath> = try {
-        retrieveData(subjectPrivateAddress, issuerPrivateAddress)
+        retrieveData(subjectId, issuerId)
             .map { CertificationPath.deserialize(it) }
             .filter { it.leafCertificate.expiryDate >= ZonedDateTime.now() }
     } catch (exc: CertificationPathException) {
@@ -49,13 +49,13 @@ abstract class CertificateStore {
     }
 
     protected abstract suspend fun retrieveData(
-        subjectPrivateAddress: String,
-        issuerPrivateAddress: String
+        subjectId: String,
+        issuerId: String
     ): List<ByteArray>
 
     @Throws(KeyStoreBackendException::class)
     abstract suspend fun deleteExpired()
 
     @Throws(KeyStoreBackendException::class)
-    abstract fun delete(subjectPrivateAddress: String, issuerPrivateAddress: String)
+    abstract fun delete(subjectId: String, issuerId: String)
 }

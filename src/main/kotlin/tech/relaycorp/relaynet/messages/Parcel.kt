@@ -15,7 +15,7 @@ internal val PARCEL_SERIALIZER = RAMFSerializer(0x50, 0x00)
  * Parcel
  */
 class Parcel(
-    recipientAddress: String,
+    recipient: Recipient,
     payload: ByteArray,
     senderCertificate: Certificate,
     messageId: String? = null,
@@ -24,7 +24,7 @@ class Parcel(
     senderCertificateChain: Set<Certificate>? = null
 ) : EncryptedRAMFMessage<ServiceMessage>(
     PARCEL_SERIALIZER,
-    recipientAddress,
+    recipient,
     payload,
     senderCertificate,
     messageId,

@@ -13,8 +13,8 @@ class CargoMessage(val messageSerialized: ByteArray) {
         private set
 
     init {
-        if (10 <= messageSerialized.size) {
-            val formatSignature = messageSerialized.slice(0..9)
+        if (7 <= messageSerialized.size) {
+            val formatSignature = messageSerialized.slice(0..6)
             for (typeEnum in Type.values()) {
                 if (typeEnum.formatSignature == formatSignature) {
                     type = typeEnum

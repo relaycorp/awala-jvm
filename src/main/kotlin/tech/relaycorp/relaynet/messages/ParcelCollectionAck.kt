@@ -8,8 +8,8 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
  * Parcel Collection Acknowledgement (PCA).
  */
 class ParcelCollectionAck(
-    val senderEndpointPrivateAddress: String,
-    val recipientEndpointAddress: String,
+    val senderEndpointId: String,
+    val recipientEndpointId: String,
     val parcelId: String
 ) {
     /**
@@ -18,8 +18,8 @@ class ParcelCollectionAck(
     fun serialize(): ByteArray {
         val sequence = ASN1Utils.serializeSequence(
             listOf(
-                DERVisibleString(senderEndpointPrivateAddress),
-                DERVisibleString(recipientEndpointAddress),
+                DERVisibleString(senderEndpointId),
+                DERVisibleString(recipientEndpointId),
                 DERVisibleString(parcelId)
             ),
             false
@@ -31,7 +31,7 @@ class ParcelCollectionAck(
         private const val concreteMessageType: Byte = 0x51
         private const val concreteMessageVersion: Byte = 0
         internal val FORMAT_SIGNATURE = byteArrayOf(
-            *"Relaynet".toByteArray(),
+            *"Awala".toByteArray(),
             concreteMessageType,
             concreteMessageVersion
         )
@@ -41,14 +41,15 @@ class ParcelCollectionAck(
          */
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): ParcelCollectionAck {
-            if (serialization.size < 10) {
+            if (serialization.size < 7) {
                 throw InvalidMessageException("Message is too short to contain format signature")
             }
-            val formatSignature = serialization.slice(0..9)
+            val formatSignature = serialization.slice(FORMAT_SIGNATURE.indices)
             if (formatSignature != FORMAT_SIGNATURE.asList()) {
                 throw InvalidMessageException("Format signature is not that of a PCA")
             }
-            val derSequence = serialization.sliceArray(10 until serialization.size)
+            val derSequence =
+                serialization.sliceArray(FORMAT_SIGNATURE.size until serialization.size)
             val sequence = try {
                 ASN1Utils.deserializeHeterogeneousSequence(derSequence)
             } catch (exc: ASN1Exception) {

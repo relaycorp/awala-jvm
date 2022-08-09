@@ -15,7 +15,7 @@ private val SERIALIZER = RAMFSerializer(0x44, 0x00)
  * Cargo Collection Authorization (CCA)
  */
 class CargoCollectionAuthorization(
-    recipientAddress: String,
+    recipient: Recipient,
     payload: ByteArray,
     senderCertificate: Certificate,
     messageId: String? = null,
@@ -24,7 +24,7 @@ class CargoCollectionAuthorization(
     senderCertificateChain: Set<Certificate>? = null
 ) : EncryptedRAMFMessage<CargoCollectionRequest>(
     SERIALIZER,
-    recipientAddress,
+    recipient,
     payload,
     senderCertificate,
     messageId,

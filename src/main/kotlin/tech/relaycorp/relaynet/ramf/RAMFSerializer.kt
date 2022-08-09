@@ -1,12 +1,5 @@
 package tech.relaycorp.relaynet.ramf
 
-import com.beanit.jasn1.ber.BerLength
-import com.beanit.jasn1.ber.BerTag
-import com.beanit.jasn1.ber.ReverseByteArrayOutputStream
-import com.beanit.jasn1.ber.types.BerDateTime
-import com.beanit.jasn1.ber.types.BerInteger
-import com.beanit.jasn1.ber.types.BerOctetString
-import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -17,21 +10,23 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 import org.bouncycastle.asn1.ASN1Integer
+import org.bouncycastle.asn1.DERGeneralizedTime
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
 private const val OCTETS_IN_9_MIB = 9437184
 
-private val DER_SEQUENCE_TAG = BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16)
-
 private val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
 
 @Suppress("ArrayInDataClass")
 private data class FieldSet(
-    val recipientAddress: String,
+    val recipient: Recipient,
     val messageId: String,
     val creationDate: ZonedDateTime,
     val ttl: Int,
@@ -40,7 +35,7 @@ private data class FieldSet(
 
 internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
     val formatSignature =
-        byteArrayOf(*"Relaynet".toByteArray(), concreteMessageType, concreteMessageVersion)
+        byteArrayOf(*"Awala".toByteArray(), concreteMessageType, concreteMessageVersion)
 
     fun serialize(
         message: RAMFMessage<*>,
@@ -66,41 +61,18 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
 
     @Throws(IOException::class)
     private fun serializeMessage(message: RAMFMessage<*>): ByteArray {
-        val reverseOS = ReverseByteArrayOutputStream(1000, true)
-        var codeLength = 0
-
-        codeLength += BerOctetString(message.payload).encode(reverseOS, false)
-        // write tag: CONTEXT_CLASS, PRIMITIVE, 4
-        reverseOS.write(0x84)
-        codeLength += 1
-
-        codeLength += BerInteger(message.ttl.toBigInteger()).encode(reverseOS, false)
-        // write tag: CONTEXT_CLASS, PRIMITIVE, 3
-        reverseOS.write(0x83)
-        codeLength += 1
-
         val creationTimeUtc = message.creationDate.withZoneSameInstant(UTC_ZONE_ID)
-        codeLength += BerDateTime(creationTimeUtc.format(ASN1Utils.BER_DATETIME_FORMATTER)).encode(
-            reverseOS,
+        val creationTimeUtcString = creationTimeUtc.format(ASN1Utils.BER_DATETIME_FORMATTER)
+        return ASN1Utils.serializeSequence(
+            listOf(
+                message.recipient.serialize(),
+                DERVisibleString(message.id),
+                DERGeneralizedTime(creationTimeUtcString),
+                ASN1Integer(message.ttl.toLong()),
+                DEROctetString(message.payload)
+            ),
             false
         )
-        // write tag: CONTEXT_CLASS, PRIMITIVE, 2
-        reverseOS.write(0x82)
-        codeLength += 1
-
-        codeLength += BerVisibleString(message.id).encode(reverseOS, false)
-        // write tag: CONTEXT_CLASS, PRIMITIVE, 1
-        reverseOS.write(0x81)
-        codeLength += 1
-
-        codeLength += BerVisibleString(message.recipientAddress).encode(reverseOS, false)
-        // write tag: CONTEXT_CLASS, PRIMITIVE, 0
-        reverseOS.write(0x80)
-        codeLength += 1
-
-        BerLength.encodeLength(reverseOS, codeLength)
-        DER_SEQUENCE_TAG.encode(reverseOS)
-        return reverseOS.array
     }
 
     @Throws(RAMFException::class)
@@ -122,14 +94,14 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             throw RAMFException("Message should not be larger than 9 MiB")
         }
 
-        if (serializationSize < 10) {
+        if (serializationSize < 7) {
             throw RAMFException("Serialization is too short to contain format signature")
         }
 
-        val magicConstant = ByteArray(8)
+        val magicConstant = ByteArray(5)
         serializationStream.read(magicConstant, 0, magicConstant.size)
-        if (magicConstant.toString(Charset.forName("ASCII")) != "Relaynet") {
-            throw RAMFException("Format signature should start with magic constant 'Relaynet'")
+        if (magicConstant.toString(Charset.forName("ASCII")) != "Awala") {
+            throw RAMFException("Format signature should start with magic constant 'Awala'")
         }
 
         val messageType = serializationStream.read()
@@ -156,7 +128,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             it != cmsSignedData.signerCertificate
         }.toSet()
         return messageClazz(
-            fields.recipientAddress,
+            fields.recipient,
             fields.payload,
             cmsSignedData.signerCertificate!!, // Verification passed, so the cert is present
             fields.messageId,
@@ -179,7 +151,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             )
         }
 
-        val recipientAddress = ASN1Utils.getVisibleString(fields[0])
+        val recipient = Recipient.deserialize(fields[0])
 
         val messageId = ASN1Utils.getVisibleString(fields[1])
 
@@ -200,7 +172,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         val payloadDer = ASN1Utils.getOctetString(fields[4])
 
         return FieldSet(
-            recipientAddress.string,
+            recipient,
             messageId.string,
             ZonedDateTime.of(creationTime, UTC_ZONE_ID),
             ttlDer.intPositiveValueExact(),

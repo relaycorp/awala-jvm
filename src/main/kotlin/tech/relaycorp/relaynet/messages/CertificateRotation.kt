@@ -10,7 +10,7 @@ class CertificateRotation(val certificationPath: CertificationPath) {
         private const val concreteMessageType: Byte = 0x10
         private const val concreteMessageVersion: Byte = 0
         internal val FORMAT_SIGNATURE = byteArrayOf(
-            *"Relaynet".toByteArray(),
+            *"Awala".toByteArray(),
             concreteMessageType,
             concreteMessageVersion
         )

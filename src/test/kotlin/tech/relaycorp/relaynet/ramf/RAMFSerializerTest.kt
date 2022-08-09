@@ -1,60 +1,46 @@
 package tech.relaycorp.relaynet.ramf
 
-import com.beanit.jasn1.ber.BerLength
-import com.beanit.jasn1.ber.BerTag
-import com.beanit.jasn1.ber.ReverseByteArrayOutputStream
-import com.beanit.jasn1.ber.types.BerDateTime
-import com.beanit.jasn1.ber.types.BerGeneralizedTime
-import com.beanit.jasn1.ber.types.BerInteger
-import com.beanit.jasn1.ber.types.BerOctetString
-import com.beanit.jasn1.ber.types.BerType
-import com.beanit.jasn1.ber.types.string.BerVisibleString
 import java.io.ByteArrayOutputStream
-import java.nio.charset.Charset
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERGeneralizedTime
+import org.bouncycastle.asn1.DERNull
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.crypto.SignedData
 import tech.relaycorp.relaynet.crypto.SignedDataException
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.utils.BER_DATETIME_FORMATTER
+import tech.relaycorp.relaynet.utils.KeyPairSet
+import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.utils.RAMFStubs
 import tech.relaycorp.relaynet.utils.StubEncryptedRAMFMessage
-import tech.relaycorp.relaynet.utils.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.cms.HASHING_ALGORITHM_OIDS
 import tech.relaycorp.relaynet.wrappers.cms.parseCmsSignedData
-import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 // Pick a timezone that's never equivalent to UTC (unlike "Europe/London")
 val NON_UTC_ZONE_ID: ZoneId = ZoneId.of("America/Caracas")
 
 class RAMFSerializerTest {
-    private val stubCaSenderKeyPair = generateRSAKeyPair()
-    private val stubCaCertificate = issueStubCertificate(
-        stubCaSenderKeyPair.public,
-        stubCaSenderKeyPair.private,
-        isCA = true
-    )
-    val stubSenderCertificateChain = setOf(stubCaCertificate)
+    val stubSenderCertificateChain = setOf(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
 
-    private val stubSenderKeyPair = generateRSAKeyPair()
-    private val stubSenderCertificate = issueStubCertificate(
-        stubSenderKeyPair.public,
-        stubCaSenderKeyPair.private,
-        stubCaCertificate
-    )
+    private val stubSenderKeyPair = KeyPairSet.PDA_GRANTEE
+    private val stubSenderCertificate = PDACertPath.PDA
 
     private val stubMessage = StubEncryptedRAMFMessage(
-        "04334",
+        Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId, RAMFStubs.recipientInternetAddress),
         "payload".toByteArray(),
         stubSenderCertificate,
         "message-id",
@@ -67,22 +53,24 @@ class RAMFSerializerTest {
 
     private val stubSerialization = serializer.serialize(
         stubMessage,
-        stubSenderKeyPair.private
+        KeyPairSet.PDA_GRANTEE.private
     )
+
+    val formatSignatureConstant = "Awala".toByteArray()
 
     @Nested
     inner class Serialize {
         @Test
-        fun `Magic constant should be ASCII string Relaynet`() {
-            val magicSignature = stubSerialization.copyOfRange(0, 8)
-            assertEquals("Relaynet", magicSignature.toString(Charset.forName("ASCII")))
+        fun `Magic constant should be ASCII string Awala`() {
+            val actualConstant = stubSerialization.copyOfRange(0, formatSignatureConstant.size)
+            assertContentEquals(formatSignatureConstant, actualConstant)
         }
 
         @Test
         fun `Concrete message type should be set`() {
             assertEquals(
                 serializer.concreteMessageType,
-                stubSerialization[8]
+                stubSerialization[formatSignatureConstant.size]
             )
         }
 
@@ -90,7 +78,7 @@ class RAMFSerializerTest {
         fun `Concrete message version should be set`() {
             assertEquals(
                 serializer.concreteMessageVersion,
-                stubSerialization[9]
+                stubSerialization[formatSignatureConstant.size + 1]
             )
         }
 
@@ -164,10 +152,10 @@ class RAMFSerializerTest {
         @Nested
         inner class FieldSet {
             @Test
-            fun `Recipient should be stored as an ASN1 VisibleString`() {
+            fun `Recipient should be stored as an ASN1 CONSTRUCTED`() {
                 val sequence = getFieldSequence(stubSerialization)
-                val recipientDer = ASN1Utils.getVisibleString(sequence[0])
-                assertEquals(stubMessage.recipientAddress, recipientDer.string)
+                val recipient = Recipient.deserialize(sequence[0])
+                assertEquals(stubMessage.recipient, recipient)
             }
 
             @Test
@@ -196,7 +184,7 @@ class RAMFSerializerTest {
                 fun `Creation date should be converted to UTC when provided in different TZ`() {
                     val nowTimezoneUnaware = LocalDateTime.now()
                     val message = StubEncryptedRAMFMessage(
-                        stubMessage.recipientAddress,
+                        stubMessage.recipient,
                         stubMessage.payload,
                         stubSenderCertificate,
                         stubMessage.id,
@@ -262,7 +250,7 @@ class RAMFSerializerTest {
                 )
             }
             assertEquals(
-                "Format signature should start with magic constant 'Relaynet'",
+                "Format signature should start with magic constant 'Awala'",
                 exception.message
             )
         }
@@ -284,15 +272,12 @@ class RAMFSerializerTest {
 
         @Test
         fun `Input can be a ByteArray`() {
-            @Suppress("USELESS_IS_CHECK")
-            assertTrue(stubSerialization is ByteArray)
-
             val message = serializer.deserialize(
                 stubSerialization,
                 ::StubEncryptedRAMFMessage
             )
 
-            assertEquals(stubMessage.recipientAddress, message.recipientAddress)
+            assertEquals(stubMessage.recipient, message.recipient)
         }
 
         @Test
@@ -302,14 +287,14 @@ class RAMFSerializerTest {
                 ::StubEncryptedRAMFMessage
             )
 
-            assertEquals(stubMessage.recipientAddress, message.recipientAddress)
+            assertEquals(stubMessage.recipient, message.recipient)
         }
 
         @Nested
         inner class FormatSignature {
             @Test
             fun `Format signature must be present`() {
-                val formatSignatureLength = 10
+                val formatSignatureLength = 7
                 val invalidSerialization = "a".repeat(formatSignatureLength - 1).toByteArray()
 
                 val exception =
@@ -327,8 +312,8 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Magic constant should be ASCII string Relaynet`() {
-                val incompleteSerialization = "Relaynope01234".toByteArray()
+            fun `Magic constant should be ASCII string Awala`() {
+                val incompleteSerialization = "Awalo01234".toByteArray()
 
                 val exception = assertThrows<RAMFException> {
                     serializer.deserialize(
@@ -338,7 +323,7 @@ class RAMFSerializerTest {
                 }
 
                 assertEquals(
-                    "Format signature should start with magic constant 'Relaynet'",
+                    "Format signature should start with magic constant 'Awala'",
                     exception.message
                 )
             }
@@ -346,8 +331,8 @@ class RAMFSerializerTest {
             @Test
             fun `Concrete message type should match expected one`() {
                 val invalidMessageType = serializer.concreteMessageType.inc()
-                val invalidSerialization = ByteArrayOutputStream(10)
-                invalidSerialization.write("Relaynet".toByteArray())
+                val invalidSerialization = ByteArrayOutputStream()
+                invalidSerialization.write("Awala".toByteArray())
                 invalidSerialization.write(invalidMessageType.toInt())
                 invalidSerialization.write(serializer.concreteMessageVersion.toInt())
 
@@ -368,8 +353,8 @@ class RAMFSerializerTest {
             @Test
             fun `Concrete message version should match expected one`() {
                 val invalidMessageVersion = serializer.concreteMessageVersion.inc()
-                val invalidSerialization = ByteArrayOutputStream(10)
-                invalidSerialization.write("Relaynet".toByteArray())
+                val invalidSerialization = ByteArrayOutputStream()
+                invalidSerialization.write("Awala".toByteArray())
                 invalidSerialization.write(serializer.concreteMessageType.toInt())
                 invalidSerialization.write(invalidMessageVersion.toInt())
 
@@ -393,7 +378,7 @@ class RAMFSerializerTest {
             @Test
             fun `Invalid signature should be refused`() {
                 val invalidSerialization = ByteArrayOutputStream()
-                invalidSerialization.write("Relaynet".toByteArray())
+                invalidSerialization.write("Awala".toByteArray())
                 invalidSerialization.write(serializer.concreteMessageType.toInt())
                 invalidSerialization.write(serializer.concreteMessageVersion.toInt())
                 invalidSerialization.write("Not really CMS SignedData".toByteArray())
@@ -438,14 +423,14 @@ class RAMFSerializerTest {
 
         @Nested
         inner class FieldSet {
-            private val formatSignature: ByteArray = "Relaynet".toByteArray() + byteArrayOf(
+            private val formatSignature: ByteArray = "Awala".toByteArray() + byteArrayOf(
                 serializer.concreteMessageType,
                 serializer.concreteMessageVersion
             )
 
             @Test
             fun `Fields should be DER-serialized`() {
-                val invalidSerialization = ByteArrayOutputStream(11)
+                val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
                 invalidSerialization.write(
                     SignedData.sign(
@@ -470,14 +455,13 @@ class RAMFSerializerTest {
 
             @Test
             fun `Fields should be stored as a universal, constructed sequence`() {
-                val invalidSerialization = ByteArrayOutputStream(11)
+                val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
 
-                val fieldSetSerialization = ReverseByteArrayOutputStream(100)
-                BerOctetString("Not a sequence".toByteArray()).encode(fieldSetSerialization)
+                val fieldSetSerialization = DERVisibleString("Not a SEQUENCE")
                 invalidSerialization.write(
                     SignedData.sign(
-                        fieldSetSerialization.array,
+                        fieldSetSerialization.encoded,
                         stubSenderKeyPair.private,
                         stubSenderCertificate,
                         setOf(stubSenderCertificate)
@@ -497,17 +481,18 @@ class RAMFSerializerTest {
             }
 
             @Test
-            fun `Fields should be a sequence of exactly 5 items`() {
+            fun `Fields should be a sequence of at least 5 items`() {
                 val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
 
-                val fieldSetSerialization = serializeSequence(
-                    BerVisibleString("1"),
-                    BerVisibleString("2"),
-                    BerVisibleString("3"),
-                    BerVisibleString("4"),
-                    BerVisibleString("5"),
-                    BerVisibleString("6")
+                val fieldSetSerialization = ASN1Utils.serializeSequence(
+                    listOf(
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                    ),
+                    false
                 )
                 invalidSerialization.write(
                     SignedData.sign(
@@ -526,7 +511,7 @@ class RAMFSerializerTest {
                 }
 
                 assertEquals(
-                    "Field sequence should contain 5 items (got 6)",
+                    "Field sequence should contain 5 items (got 4)",
                     exception.message
                 )
             }
@@ -538,13 +523,12 @@ class RAMFSerializerTest {
                     stubSenderKeyPair.private
                 )
 
-                val parsedMessage =
-                    serializer.deserialize(
-                        serialization,
-                        ::StubEncryptedRAMFMessage
-                    )
+                val parsedMessage = serializer.deserialize(
+                    serialization,
+                    ::StubEncryptedRAMFMessage
+                )
 
-                assertEquals(stubMessage.recipientAddress, parsedMessage.recipientAddress)
+                assertEquals(stubMessage.recipient, parsedMessage.recipient)
 
                 assertEquals(stubMessage.id, parsedMessage.id)
 
@@ -564,8 +548,16 @@ class RAMFSerializerTest {
                 val invalidSerialization = ByteArrayOutputStream()
                 invalidSerialization.write(formatSignature)
 
-                val fieldSetSerialization =
-                    serializeFieldSet(creationTime = BerGeneralizedTime("20200307173323-03"))
+                val fieldSetSerialization = ASN1Utils.serializeSequence(
+                    listOf(
+                        stubMessage.recipient.serialize(),
+                        DERVisibleString(stubMessage.id),
+                        DERGeneralizedTime("20200307173323-03"),
+                        ASN1Integer(stubMessage.ttl.toLong()),
+                        DEROctetString(stubMessage.payload)
+                    ),
+                    false
+                )
                 invalidSerialization.write(
                     SignedData.sign(
                         fieldSetSerialization,
@@ -591,7 +583,7 @@ class RAMFSerializerTest {
             @Test
             fun `Creation time should be parsed as UTC`() {
                 val message = StubEncryptedRAMFMessage(
-                    stubMessage.recipientAddress,
+                    stubMessage.recipient,
                     stubMessage.payload,
                     stubSenderCertificate,
                     stubMessage.id,
@@ -612,55 +604,6 @@ class RAMFSerializerTest {
 
                 assertEquals(parsedMessage.creationDate.zone, ZoneId.of("UTC"))
             }
-
-            private fun serializeFieldSet(
-                recipientAddress: BerType = BerVisibleString(stubMessage.recipientAddress),
-                messageId: BerType = BerVisibleString(stubMessage.id),
-                creationTime: BerType = BerDateTime(
-                    stubMessage.creationDate.format(
-                        BER_DATETIME_FORMATTER
-                    )
-                ),
-                ttl: BerType = BerInteger(stubMessage.ttl.toBigInteger()),
-                payload: BerType = BerOctetString(stubMessage.payload)
-            ): ByteArray {
-                return serializeSequence(
-                    recipientAddress,
-                    messageId,
-                    creationTime,
-                    ttl,
-                    payload
-                )
-            }
-
-            private fun serializeSequence(
-                vararg items: BerType
-            ): ByteArray {
-                val reverseOS = ReverseByteArrayOutputStream(256, true)
-                val lastIndex = 0x80 + items.size - 1
-                val serializationLength =
-                    items.reversed()
-                        .mapIndexed { i, v -> serializeItem(v, reverseOS, lastIndex - i) }.sum()
-
-                BerLength.encodeLength(reverseOS, serializationLength)
-                BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16).encode(reverseOS)
-                return reverseOS.array
-            }
-
-            private fun serializeItem(
-                item: BerType,
-                reverseOS: ReverseByteArrayOutputStream,
-                index: Int
-            ): Int {
-                val length = when (item) {
-                    is BerVisibleString -> item.encode(reverseOS, false)
-                    is BerInteger -> item.encode(reverseOS, false)
-                    is BerOctetString -> item.encode(reverseOS, false)
-                    else -> throw Exception("Unsupported BER type")
-                }
-                reverseOS.write(index)
-                return length + 1
-            }
         }
     }
 
@@ -668,7 +611,7 @@ class RAMFSerializerTest {
     fun `formatSignature should contain the type and version`() {
         assertEquals(
             byteArrayOf(
-                *"Relaynet".toByteArray(),
+                *formatSignatureConstant,
                 serializer.concreteMessageType,
                 serializer.concreteMessageVersion
             ).asList(),

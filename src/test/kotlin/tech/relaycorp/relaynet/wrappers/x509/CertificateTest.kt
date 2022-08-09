@@ -638,7 +638,7 @@ class CertificateTest {
         }
 
         @Test
-        fun subjectPrivateAddress() {
+        fun subjectId() {
             val certificate = Certificate.issue(
                 subjectCommonName,
                 subjectKeyPair.public,
@@ -647,7 +647,7 @@ class CertificateTest {
             )
 
             val expectedAddress = "0${sha256Hex(subjectKeyPair.public.encoded)}"
-            assertEquals(expectedAddress, certificate.subjectPrivateAddress)
+            assertEquals(expectedAddress, certificate.subjectId)
         }
 
         @Test
@@ -738,7 +738,6 @@ class CertificateTest {
             validityEndDate
         )
 
-        @Suppress("ReplaceCallWithBinaryOperator")
         @Test
         fun `A non-Certificate object should not equal`() {
             assertFalse(stubCertificate.equals("Hey"))

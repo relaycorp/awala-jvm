@@ -14,17 +14,17 @@ import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 class PKITest {
-    val identityKeyPair = KeyPairSet.PUBLIC_GW
+    val identityKeyPair = KeyPairSet.INTERNET_GW
     val tomorrow: ZonedDateTime = ZonedDateTime.now(UTC).plusDays(1)
 
     @Nested
     inner class IssueGatewayCertificate {
         @Test
-        fun `Subject CommonName should be set to private address of gateway`() {
+        fun `Subject CommonName should be set to id of gateway`() {
             val certificate =
                 issueGatewayCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
-            assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
+            assertEquals(certificate.subjectId, certificate.commonName)
         }
 
         @Test
@@ -138,11 +138,11 @@ class PKITest {
     @Nested
     inner class IssueEndpointCertificate {
         @Test
-        fun `CommonName should be set to private address of gateway`() {
+        fun `CommonName should be set to id of gateway`() {
             val certificate =
                 issueEndpointCertificate(identityKeyPair.public, identityKeyPair.private, tomorrow)
 
-            assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
+            assertEquals(certificate.subjectId, certificate.commonName)
         }
 
         @Test
@@ -242,7 +242,7 @@ class PKITest {
             issueEndpointCertificate(recipientKeyPair.public, recipientKeyPair.private, tomorrow)
 
         @Test
-        fun `Subject CommonName should be set to private address of subject`() {
+        fun `Subject CommonName should be set to id of subject`() {
             val certificate = issueDeliveryAuthorization(
                 identityKeyPair.public,
                 recipientKeyPair.private,
@@ -250,7 +250,7 @@ class PKITest {
                 recipientCertificate
             )
 
-            assertEquals(certificate.subjectPrivateAddress, certificate.commonName)
+            assertEquals(certificate.subjectId, certificate.commonName)
         }
 
         @Test

@@ -4,12 +4,14 @@ import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import tech.relaycorp.relaynet.messages.Recipient
 import tech.relaycorp.relaynet.utils.ID_CERTIFICATE
+import tech.relaycorp.relaynet.utils.RAMFStubs
 import tech.relaycorp.relaynet.utils.issueStubCertificate
 import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
-typealias MinimalRAMFMessageConstructor<M> = (String, ByteArray, Certificate) -> M
+typealias MinimalRAMFMessageConstructor<M> = (Recipient, ByteArray, Certificate) -> M
 
 internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
     private val messageConstructor: RAMFMessageConstructor<M>,
@@ -18,15 +20,15 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
     private val expectedConcreteMessageVersion: Byte,
     private val companion: RAMFMessageCompanion<M>
 ) {
-    val simpleMessage = requiredParamsConstructor(recipientAddress, payload, senderCertificate)
+    val simpleMessage = requiredParamsConstructor(recipient, payload, senderCertificate)
 
     @Nested
     inner class Constructor {
         @Test
         fun `Required arguments should be honored`() {
-            val message = requiredParamsConstructor(recipientAddress, payload, senderCertificate)
+            val message = requiredParamsConstructor(recipient, payload, senderCertificate)
 
-            assertEquals(recipientAddress, message.recipientAddress)
+            assertEquals(recipient, message.recipient)
             assertEquals(payload.asList(), message.payload.asList())
             assertEquals(senderCertificate, message.senderCertificate)
         }
@@ -39,7 +41,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
             val date = ZonedDateTime.now()
 
             val message = messageConstructor(
-                recipientAddress,
+                recipient,
                 payload,
                 senderCertificate,
                 id,
@@ -59,7 +61,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
     inner class Serialization {
         @Test
         fun `Recipient address should be honored`() {
-            assertEquals(recipientAddress, simpleMessage.recipientAddress)
+            assertEquals(recipient, simpleMessage.recipient)
         }
 
         @Test
@@ -76,15 +78,15 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
         fun `Serializer should be configured to use specified message type and version`() {
             val messageSerialized = simpleMessage.serialize(keyPair.private)
 
-            assertEquals(expectedConcreteMessageType, messageSerialized[8])
-            assertEquals(expectedConcreteMessageVersion, messageSerialized[9])
+            assertEquals(expectedConcreteMessageType, messageSerialized[5])
+            assertEquals(expectedConcreteMessageVersion, messageSerialized[6])
         }
 
         @Test
         fun `Message id should be honored if set`() {
             val messageId = "the-id"
             val message = messageConstructor(
-                recipientAddress,
+                recipient,
                 payload,
                 senderCertificate,
                 messageId,
@@ -101,7 +103,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
             val creationDate = ZonedDateTime.now().minusMinutes(10)
             val message =
                 messageConstructor(
-                    recipientAddress,
+                    recipient,
                     payload,
                     senderCertificate,
                     null,
@@ -118,7 +120,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
             val ttl = 42
             val message =
                 messageConstructor(
-                    recipientAddress,
+                    recipient,
                     payload,
                     senderCertificate,
                     null,
@@ -136,7 +138,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
                 issueStubCertificate(keyPair.public, keyPair.private)
             )
             val message = messageConstructor(
-                recipientAddress,
+                recipient,
                 payload,
                 senderCertificate,
                 null,
@@ -169,7 +171,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
     }
 
     companion object {
-        private const val recipientAddress = "0deadbeef"
+        private val recipient = Recipient(RAMFStubs.recipientId)
         private val payload = "Payload".toByteArray()
         private val keyPair = generateRSAKeyPair()
         private val senderCertificate = issueStubCertificate(keyPair.public, keyPair.private)

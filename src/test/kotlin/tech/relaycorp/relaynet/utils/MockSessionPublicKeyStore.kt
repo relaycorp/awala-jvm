@@ -13,22 +13,22 @@ class MockSessionPublicKeyStore(
         keys.clear()
     }
 
-    override suspend fun saveKeyData(keyData: SessionPublicKeyData, peerPrivateAddress: String) {
+    override suspend fun saveKeyData(keyData: SessionPublicKeyData, peerId: String) {
         if (savingException != null) {
             throw savingException
         }
-        this.keys[peerPrivateAddress] = keyData
+        this.keys[peerId] = keyData
     }
 
-    override suspend fun retrieveKeyData(peerPrivateAddress: String): SessionPublicKeyData? {
+    override suspend fun retrieveKeyData(peerId: String): SessionPublicKeyData? {
         if (retrievalException != null) {
             throw retrievalException
         }
 
-        return keys[peerPrivateAddress]
+        return keys[peerId]
     }
 
-    override suspend fun delete(peerPrivateAddress: String) {
-        keys.remove(peerPrivateAddress)
+    override suspend fun delete(peerId: String) {
+        keys.remove(peerId)
     }
 }

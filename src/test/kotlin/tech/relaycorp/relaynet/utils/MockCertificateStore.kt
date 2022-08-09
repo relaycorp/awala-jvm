@@ -3,6 +3,7 @@ package tech.relaycorp.relaynet.utils
 import java.time.ZonedDateTime
 import tech.relaycorp.relaynet.keystores.CertificateStore
 import tech.relaycorp.relaynet.keystores.KeyStoreBackendException
+import tech.relaycorp.relaynet.pki.CertificationPath
 
 class MockCertificateStore(
     private val savingException: Throwable? = null,
@@ -13,22 +14,34 @@ class MockCertificateStore(
         mutableMapOf()
 
     override suspend fun saveData(
-        subjectPrivateAddress: String,
+        subjectId: String,
         leafCertificateExpiryDate: ZonedDateTime,
         certificationPathData: ByteArray,
-        issuerPrivateAddress: String
+        issuerId: String
     ) {
         if (savingException != null) {
             throw KeyStoreBackendException("Saving certificates isn't supported", savingException)
         }
-        data[subjectPrivateAddress to issuerPrivateAddress] =
-            data[subjectPrivateAddress to issuerPrivateAddress].orEmpty() +
+        data[subjectId to issuerId] =
+            data[subjectId to issuerId].orEmpty() +
             listOf(Pair(leafCertificateExpiryDate, certificationPathData))
     }
 
+    suspend fun forceSave(
+        certificationPath: CertificationPath,
+        issuerId: String
+    ) {
+        saveData(
+            certificationPath.leafCertificate.subjectId,
+            certificationPath.leafCertificate.expiryDate,
+            certificationPath.serialize(),
+            issuerId
+        )
+    }
+
     override suspend fun retrieveData(
-        subjectPrivateAddress: String,
-        issuerPrivateAddress: String
+        subjectId: String,
+        issuerId: String
     ): List<ByteArray> {
         if (retrievalException != null) {
             throw KeyStoreBackendException(
@@ -36,7 +49,7 @@ class MockCertificateStore(
                 retrievalException
             )
         }
-        return data[subjectPrivateAddress to issuerPrivateAddress].orEmpty().map { it.second }
+        return data[subjectId to issuerId].orEmpty().map { it.second }
     }
 
     override suspend fun deleteExpired() {
@@ -45,7 +58,7 @@ class MockCertificateStore(
         }
     }
 
-    override fun delete(subjectPrivateAddress: String, issuerPrivateAddress: String) {
-        data.remove(subjectPrivateAddress to issuerPrivateAddress)
+    override fun delete(subjectId: String, issuerId: String) {
+        data.remove(subjectId to issuerId)
     }
 }

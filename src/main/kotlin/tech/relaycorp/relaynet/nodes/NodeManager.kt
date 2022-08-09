@@ -16,15 +16,15 @@ abstract class NodeManager<P : Payload>(
     internal val cryptoOptions: NodeCryptoOptions,
 ) {
     suspend fun generateSessionKeyPair(
-        privateAddress: String,
-        peerPrivateAddress: String? = null
+        nodeId: String,
+        peerId: String? = null
     ): SessionKeyPair {
         val keyGeneration = SessionKeyPair.generate(this.cryptoOptions.ecdhCurve)
         privateKeyStore.saveSessionKey(
             keyGeneration.privateKey,
             keyGeneration.sessionKey.keyId,
-            privateAddress,
-            peerPrivateAddress,
+            nodeId,
+            peerId,
         )
         return keyGeneration
     }
@@ -35,17 +35,17 @@ abstract class NodeManager<P : Payload>(
      * Also store the new ephemeral session key.
      *
      * @param payload
-     * @param peerPrivateAddress
-     * @param privateAddress
+     * @param peerId
+     * @param nodeId
      */
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun <P : EncryptedPayload> wrapMessagePayload(
         payload: P,
-        peerPrivateAddress: String,
-        privateAddress: String,
+        peerId: String,
+        nodeId: String,
     ): ByteArray {
-        val recipientSessionKey = sessionPublicKeyStore.retrieve(peerPrivateAddress)
-        val senderSessionKeyPair = generateSessionKeyPair(privateAddress, peerPrivateAddress)
+        val recipientSessionKey = sessionPublicKeyStore.retrieve(peerId)
+        val senderSessionKeyPair = generateSessionKeyPair(nodeId, peerId)
         return payload.encrypt(
             recipientSessionKey,
             senderSessionKeyPair,
@@ -74,7 +74,7 @@ abstract class NodeManager<P : Payload>(
         val unwrapping = message.unwrapPayload(privateKeyStore)
         sessionPublicKeyStore.save(
             unwrapping.peerSessionKey,
-            message.senderCertificate.subjectPrivateAddress,
+            message.senderCertificate.subjectId,
             message.creationDate
         )
         return unwrapping.payload
