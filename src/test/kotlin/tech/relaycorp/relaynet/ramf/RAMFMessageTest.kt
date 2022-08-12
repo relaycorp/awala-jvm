@@ -6,6 +6,7 @@ import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
@@ -309,6 +310,60 @@ class RAMFMessageTest {
             ),
             certificationPath.asList()
         )
+    }
+
+    @Nested
+    inner class RecipientCertificate {
+        private val recipientCertificate = PDACertPath.PRIVATE_ENDPOINT
+
+        @Test
+        fun `Null should be returned if sender's issuer does not match recipient`() {
+            val message = StubEncryptedRAMFMessage(
+                recipient.copy(id = "${recipient.id}123"),
+                payload,
+                senderCertificate,
+                senderCertificateChain = setOf(recipientCertificate)
+            )
+
+            assertNull(message.recipientCertificate)
+        }
+
+        @Test
+        fun `Null should be returned if recipient certificate is not attached`() {
+            val message = StubEncryptedRAMFMessage(
+                recipient,
+                payload,
+                senderCertificate,
+            )
+
+            assertNull(message.recipientCertificate)
+        }
+
+        @Test
+        fun `Null should be returned if recipient does not match issuer of sender`() {
+            val message = StubEncryptedRAMFMessage(
+                recipient,
+                payload,
+                senderCertificate,
+                senderCertificateChain = setOf(
+                    PDACertPath.PRIVATE_GW // Wrong
+                )
+            )
+
+            assertNull(message.recipientCertificate)
+        }
+
+        @Test
+        fun `Certificate should be returned if it matches message recipient and sender issuer`() {
+            val message = StubEncryptedRAMFMessage(
+                recipient,
+                payload,
+                senderCertificate,
+                senderCertificateChain = setOf(recipientCertificate)
+            )
+
+            assertEquals(recipientCertificate, message.recipientCertificate)
+        }
     }
 
     @Nested

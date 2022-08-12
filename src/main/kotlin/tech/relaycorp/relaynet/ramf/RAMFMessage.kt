@@ -63,6 +63,14 @@ abstract class RAMFMessage<P : Payload> internal constructor(
      */
     val expiryDate: ZonedDateTime get() = creationDate.plusSeconds(ttl.toLong())
 
+    /**
+     * The recipient's certificate, if attached.
+     */
+    val recipientCertificate: Certificate?
+        get() = senderCertificateChain.firstOrNull {
+            it.subjectId == recipient.id && senderCertificate.isLikelyIssuer(it)
+        }
+
     init {
         if (MAX_MESSAGE_ID_LENGTH < this.id.length) {
             throw RAMFException(

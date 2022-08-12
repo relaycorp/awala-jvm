@@ -866,6 +866,39 @@ class CertificateTest {
     }
 
     @Nested
+    inner class IsLikelyIssuer {
+        @Test
+        fun `False should be returned if DN doesn't match`() {
+            val certificate1 = Certificate.issue(
+                subjectCommonName,
+                subjectKeyPair.public,
+                subjectKeyPair.private,
+                validityEndDate,
+            )
+            val certificate2 = Certificate.issue(
+                "not-$subjectCommonName",
+                subjectKeyPair.public,
+                subjectKeyPair.private,
+                validityEndDate,
+            )
+
+            assertFalse(certificate1.isLikelyIssuer(certificate2))
+        }
+
+        @Test
+        fun `True should be returned if DN matches`() {
+            val certificate = Certificate.issue(
+                subjectCommonName,
+                subjectKeyPair.public,
+                subjectKeyPair.private,
+                validityEndDate,
+            )
+
+            assertTrue(certificate.isLikelyIssuer(certificate))
+        }
+    }
+
+    @Nested
     inner class GetCertificationPath {
         private val rootCACert = Certificate.issue(
             subjectCommonName,
