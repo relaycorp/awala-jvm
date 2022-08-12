@@ -265,6 +265,7 @@ $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/getSenderCertificationP
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/id/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/id.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/payload/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/payload.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/recipient/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/recipient.html
+$dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/recipientCertificate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/recipient-certificate.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/senderCertificate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/sender-certificate.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/senderCertificateChain/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/sender-certificate-chain.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/serialize/#java.security.PrivateKey#tech.relaycorp.relaynet.HashingAlgorithm?/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/serialize.html
@@ -293,6 +294,7 @@ $dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/equals/#kotlin
 $dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/expiryDate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.x509/-certificate/expiry-date.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/getCertificationPath/#kotlin.collections.Collection[tech.relaycorp.relaynet.wrappers.x509.Certificate]#kotlin.collections.Collection[tech.relaycorp.relaynet.wrappers.x509.Certificate]/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.x509/-certificate/get-certification-path.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/hashCode/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.x509/-certificate/hash-code.html
+$dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/isLikelyIssuer/#tech.relaycorp.relaynet.wrappers.x509.Certificate/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.x509/-certificate/is-likely-issuer.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/issuerCommonName/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.x509/-certificate/issuer-common-name.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/serialize/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.x509/-certificate/serialize.html
 $dokka.location:tech.relaycorp.relaynet.wrappers.x509/Certificate/startDate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.wrappers.x509/-certificate/start-date.html
