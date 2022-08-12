@@ -214,6 +214,16 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
     }
 
     /**
+     * Report whether [potentialIssuer]'s Distinguished Name matches that of the issuer
+     * of the current certificate.
+     *
+     * This doesn't check that [potentialIssuer] actually signed the current certificate --
+     * hence the "likely".
+     */
+    fun isLikelyIssuer(potentialIssuer: Certificate) =
+        certificateHolder.issuer == potentialIssuer.certificateHolder.subject
+
+    /**
      * Validate the certificate.
      *
      * @throws CertificateException If the certificate is invalid
