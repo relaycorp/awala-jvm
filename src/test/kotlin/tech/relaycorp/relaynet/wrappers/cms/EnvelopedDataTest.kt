@@ -52,7 +52,7 @@ import tech.relaycorp.relaynet.wrappers.generateRSAKeyPair
 
 private val PLAINTEXT = "hello".toByteArray()
 
-private val ORIGINATOR_KEY_ID_OID = ASN1ObjectIdentifier("0.4.0.127.0.17.0.1.0")
+private val ORIGINATOR_KEY_ID_OID = ASN1ObjectIdentifier("1.3.6.1.4.1.58708.0.1.0")
 
 private val SENDER_SESSION_KEY_PAIR = SessionKeyPair.generate()
 
