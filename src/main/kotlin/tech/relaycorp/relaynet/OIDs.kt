@@ -3,8 +3,10 @@ package tech.relaycorp.relaynet
 import org.bouncycastle.asn1.ASN1ObjectIdentifier
 
 internal object OIDs {
+    // iso.org.dod.internet.private.enterprise.relaycorp
     private val RELAYCORP: ASN1ObjectIdentifier =
-        ASN1ObjectIdentifier("0.4.0.127.0.17").intern()
+        ASN1ObjectIdentifier("1.3.6.1.4.1.58708").intern()
+
     private val AWALA = RELAYCORP.branch("0").intern()
 
     private val AWALA_PKI = AWALA.branch("1").intern()
