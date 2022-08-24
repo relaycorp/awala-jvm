@@ -12,7 +12,7 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.deserializeECPublicKey
 import tech.relaycorp.relaynet.wrappers.deserializeRSAPublicKey
 
-class PublicNodeConnectionParams(
+class NodeConnectionParams(
     val internetAddress: String,
     val identityKey: PublicKey,
     val sessionKey: SessionKey
@@ -37,7 +37,7 @@ class PublicNodeConnectionParams(
 
     companion object {
         @Throws(InvalidNodeConnectionParams::class)
-        fun deserialize(serialization: ByteArray): PublicNodeConnectionParams {
+        fun deserialize(serialization: ByteArray): NodeConnectionParams {
             val sequence = try {
                 ASN1Utils.deserializeHeterogeneousSequence(serialization)
             } catch (exc: ASN1Exception) {
@@ -91,7 +91,7 @@ class PublicNodeConnectionParams(
                 )
             }
 
-            return PublicNodeConnectionParams(
+            return NodeConnectionParams(
                 internetAddress,
                 identityKey,
                 SessionKey(sessionKeyId, sessionPublicKey)
