@@ -3,8 +3,10 @@ package tech.relaycorp.relaynet.messages.control
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
+import org.bouncycastle.asn1.DERVisibleString
 import tech.relaycorp.relaynet.SessionKey
 import tech.relaycorp.relaynet.messages.InvalidMessageException
+import tech.relaycorp.relaynet.wrappers.DNS
 import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
@@ -20,11 +22,13 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
  *
  * @param privateNodeCertificate The certificate of the private node
  * @param gatewayCertificate The certificate of the gateway acting as server
+ * @param gatewayInternetAddress The Internet address of the gateway
  * @param gatewaySessionKey The session key of the gateway acting as server
  */
 class PrivateNodeRegistration(
     val privateNodeCertificate: Certificate,
     val gatewayCertificate: Certificate,
+    val gatewayInternetAddress: String,
     val gatewaySessionKey: SessionKey? = null,
 ) {
     /**
@@ -33,6 +37,7 @@ class PrivateNodeRegistration(
     fun serialize(): ByteArray {
         val nodeCertificateASN1 = DEROctetString(privateNodeCertificate.serialize())
         val gatewayCertificateASN1 = DEROctetString(gatewayCertificate.serialize())
+        val gatewayInternetAddressASN1 = DERVisibleString(gatewayInternetAddress)
         val gatewaySessionKeyASN1 = if (gatewaySessionKey != null) {
             ASN1Utils.makeSequence(
                 listOf(
@@ -46,7 +51,8 @@ class PrivateNodeRegistration(
         }
         val rootSequence = listOf(
             nodeCertificateASN1,
-            gatewayCertificateASN1
+            gatewayCertificateASN1,
+            gatewayInternetAddressASN1,
         ) + listOfNotNull(gatewaySessionKeyASN1)
         return ASN1Utils.serializeSequence(rootSequence, false)
     }
@@ -62,9 +68,9 @@ class PrivateNodeRegistration(
             } catch (exc: ASN1Exception) {
                 throw InvalidMessageException("Node registration is not a DER sequence", exc)
             }
-            if (sequence.size < 2) {
+            if (sequence.size < 3) {
                 throw InvalidMessageException(
-                    "Node registration sequence should have at least two items (got " +
+                    "Node registration sequence should have at least three items (got " +
                         "${sequence.size})"
                 )
             }
@@ -84,9 +90,20 @@ class PrivateNodeRegistration(
                     exc
                 )
             }
+            val gatewayInternetAddress = ASN1Utils.getVisibleString(sequence[2]).string
+            if (!DNS.isValidDomainName(gatewayInternetAddress)) {
+                throw InvalidMessageException(
+                    "Malformed gateway Internet address ($gatewayInternetAddress)",
+                )
+            }
             val gatewaySessionKey =
-                if (3 <= sequence.size) getSessionKeyFromSequence(sequence[2]) else null
-            return PrivateNodeRegistration(nodeCertificate, gatewayCertificate, gatewaySessionKey)
+                if (4 <= sequence.size) getSessionKeyFromSequence(sequence[3]) else null
+            return PrivateNodeRegistration(
+                nodeCertificate,
+                gatewayCertificate,
+                gatewayInternetAddress,
+                gatewaySessionKey
+            )
         }
 
         private fun getSessionKeyFromSequence(sessionKeyASN1: ASN1TaggedObject): SessionKey {

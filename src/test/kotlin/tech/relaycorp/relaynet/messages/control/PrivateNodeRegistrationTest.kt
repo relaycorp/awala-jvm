@@ -8,6 +8,7 @@ import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.DERVisibleString
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.SessionKey
@@ -15,12 +16,14 @@ import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.utils.KeyPairSet
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.utils.RAMFStubs
 import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class PrivateNodeRegistrationTest {
+    private val gatewayInternetAddress = RAMFStubs.recipientInternetAddress
     private val gatewaySessionKey = (SessionKeyPair.generate()).sessionKey
 
     @Nested
@@ -28,7 +31,11 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Node certificate should be serialized`() {
             val registration =
-                PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
+                PrivateNodeRegistration(
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    PDACertPath.PRIVATE_GW,
+                    gatewayInternetAddress
+                )
 
             val serialization = registration.serialize()
 
@@ -43,7 +50,11 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Gateway certificate should be serialized`() {
             val registration =
-                PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
+                PrivateNodeRegistration(
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    PDACertPath.PRIVATE_GW,
+                    gatewayInternetAddress
+                )
 
             val serialization = registration.serialize()
 
@@ -55,17 +66,37 @@ class PrivateNodeRegistrationTest {
             )
         }
 
+        @Test
+        fun `Gateway Internet address should be serialized`() {
+            val registration =
+                PrivateNodeRegistration(
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    PDACertPath.PRIVATE_GW,
+                    gatewayInternetAddress
+                )
+
+            val serialization = registration.serialize()
+
+            val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
+            val gatewayInternetAddressASN1 = ASN1Utils.getVisibleString(sequence[2])
+            assertEquals(gatewayInternetAddress, gatewayInternetAddressASN1.string)
+        }
+
         @Nested
         inner class GatewaySessionKey {
             @Test
             fun `Session key should be absent from serialization if it does not exist`() {
                 val registration =
-                    PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
+                    PrivateNodeRegistration(
+                        PDACertPath.PRIVATE_ENDPOINT,
+                        PDACertPath.PRIVATE_GW,
+                        gatewayInternetAddress
+                    )
 
                 val serialization = registration.serialize()
 
                 val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-                assertEquals(2, sequence.size)
+                assertEquals(3, sequence.size)
             }
 
             @Test
@@ -73,13 +104,14 @@ class PrivateNodeRegistrationTest {
                 val registration = PrivateNodeRegistration(
                     PDACertPath.PRIVATE_ENDPOINT,
                     PDACertPath.PRIVATE_GW,
+                    gatewayInternetAddress,
                     gatewaySessionKey
                 )
 
                 val serialization = registration.serialize()
 
                 val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-                val sessionKeyASN1 = ASN1Sequence.getInstance(sequence[2], false)
+                val sessionKeyASN1 = ASN1Sequence.getInstance(sequence[3], false)
                 val keyIdASN1 =
                     ASN1Utils.getOctetString(sessionKeyASN1.getObjectAt(0) as ASN1TaggedObject)
                 assertEquals(gatewaySessionKey.keyId.asList(), keyIdASN1.octets.asList())
@@ -90,13 +122,14 @@ class PrivateNodeRegistrationTest {
                 val registration = PrivateNodeRegistration(
                     PDACertPath.PRIVATE_ENDPOINT,
                     PDACertPath.PRIVATE_GW,
+                    gatewayInternetAddress,
                     gatewaySessionKey
                 )
 
                 val serialization = registration.serialize()
 
                 val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-                val sessionKeyASN1 = ASN1Sequence.getInstance(sequence[2], false)
+                val sessionKeyASN1 = ASN1Sequence.getInstance(sequence[3], false)
                 val sessionPublicKeyASN1 =
                     ASN1Utils.getOctetString(sessionKeyASN1.getObjectAt(1) as ASN1TaggedObject)
                 assertEquals(
@@ -122,16 +155,16 @@ class PrivateNodeRegistrationTest {
         }
 
         @Test
-        fun `Sequence should have at least two items`() {
+        fun `Sequence should have at least three items`() {
             val invalidSerialization =
-                ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE), false)
+                ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE, DERNull.INSTANCE), false)
 
             val exception = assertThrows<InvalidMessageException> {
                 PrivateNodeRegistration.deserialize(invalidSerialization)
             }
 
             assertEquals(
-                "Node registration sequence should have at least two items (got 1)",
+                "Node registration sequence should have at least three items (got 2)",
                 exception.message
             )
         }
@@ -139,7 +172,14 @@ class PrivateNodeRegistrationTest {
         @Test
         fun `Invalid node certificates should be refused`() {
             val invalidSerialization =
-                ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE, DERNull.INSTANCE), false)
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE
+                    ),
+                    false
+                )
 
             val exception = assertThrows<InvalidMessageException> {
                 PrivateNodeRegistration.deserialize(invalidSerialization)
@@ -157,7 +197,8 @@ class PrivateNodeRegistrationTest {
             val invalidSerialization = ASN1Utils.serializeSequence(
                 listOf(
                     DEROctetString(PDACertPath.PRIVATE_ENDPOINT.serialize()),
-                    DERNull.INSTANCE
+                    DERNull.INSTANCE,
+                    DERNull.INSTANCE,
                 ),
                 false
             )
@@ -174,9 +215,32 @@ class PrivateNodeRegistrationTest {
         }
 
         @Test
+        fun `Malformed Internet address for gateway should be refused`() {
+            val malformedDomainName = "not a domain name"
+            val invalidRegistration = PrivateNodeRegistration(
+                PDACertPath.PRIVATE_ENDPOINT,
+                PDACertPath.PRIVATE_GW,
+                malformedDomainName
+            )
+            val invalidSerialization = invalidRegistration.serialize()
+
+            val exception = assertThrows<InvalidMessageException> {
+                PrivateNodeRegistration.deserialize(invalidSerialization)
+            }
+
+            assertEquals(
+                "Malformed gateway Internet address ($malformedDomainName)",
+                exception.message
+            )
+        }
+
+        @Test
         fun `Valid registration without session key should be accepted`() {
-            val registration =
-                PrivateNodeRegistration(PDACertPath.PRIVATE_ENDPOINT, PDACertPath.PRIVATE_GW)
+            val registration = PrivateNodeRegistration(
+                PDACertPath.PRIVATE_ENDPOINT,
+                PDACertPath.PRIVATE_GW,
+                gatewayInternetAddress
+            )
             val serialization = registration.serialize()
 
             val registrationDeserialized = PrivateNodeRegistration.deserialize(serialization)
@@ -189,6 +253,7 @@ class PrivateNodeRegistrationTest {
                 PDACertPath.PRIVATE_GW,
                 registrationDeserialized.gatewayCertificate
             )
+            assertEquals(gatewayInternetAddress, registrationDeserialized.gatewayInternetAddress)
             assertNull(registrationDeserialized.gatewaySessionKey)
         }
 
@@ -200,6 +265,7 @@ class PrivateNodeRegistrationTest {
                     listOf(
                         DEROctetString(PDACertPath.PRIVATE_ENDPOINT.serialize()),
                         DEROctetString(PDACertPath.PRIVATE_GW.serialize()),
+                        DERVisibleString(gatewayInternetAddress),
                         ASN1Utils.makeSequence(listOf(DEROctetString(gatewaySessionKey.keyId)))
                     ),
                     false
@@ -220,6 +286,7 @@ class PrivateNodeRegistrationTest {
                 val invalidRegistration = PrivateNodeRegistration(
                     PDACertPath.PRIVATE_ENDPOINT,
                     PDACertPath.PRIVATE_GW,
+                    gatewayInternetAddress,
                     SessionKey(
                         gatewaySessionKey.keyId,
                         KeyPairSet.PRIVATE_ENDPOINT.public, // Invalid: Not an ECDH key.
@@ -243,6 +310,7 @@ class PrivateNodeRegistrationTest {
                 val registration = PrivateNodeRegistration(
                     PDACertPath.PRIVATE_ENDPOINT,
                     PDACertPath.PRIVATE_GW,
+                    gatewayInternetAddress,
                     gatewaySessionKey
                 )
                 val serialization = registration.serialize()
