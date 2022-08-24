@@ -15,7 +15,7 @@ import tech.relaycorp.relaynet.wrappers.KeyException
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 
-class PublicNodeConnectionParamsTest {
+class NodeConnectionParamsTest {
     val internetAddress = "foo.relaycorp.tech"
 
     val identityKey: PublicKey = KeyPairSet.INTERNET_GW.public
@@ -25,7 +25,7 @@ class PublicNodeConnectionParamsTest {
     inner class Serialize {
         @Test
         fun `Internet address should be serialized`() {
-            val params = PublicNodeConnectionParams(internetAddress, identityKey, sessionKey)
+            val params = NodeConnectionParams(internetAddress, identityKey, sessionKey)
 
             val serialization = params.serialize()
 
@@ -35,7 +35,7 @@ class PublicNodeConnectionParamsTest {
 
         @Test
         fun `Identity key should be serialized`() {
-            val params = PublicNodeConnectionParams(internetAddress, identityKey, sessionKey)
+            val params = NodeConnectionParams(internetAddress, identityKey, sessionKey)
 
             val serialization = params.serialize()
 
@@ -46,7 +46,7 @@ class PublicNodeConnectionParamsTest {
 
         @Test
         fun `Session key id should be serialized`() {
-            val params = PublicNodeConnectionParams(internetAddress, identityKey, sessionKey)
+            val params = NodeConnectionParams(internetAddress, identityKey, sessionKey)
 
             val serialization = params.serialize()
 
@@ -59,7 +59,7 @@ class PublicNodeConnectionParamsTest {
 
         @Test
         fun `Session public key should be serialized`() {
-            val params = PublicNodeConnectionParams(internetAddress, identityKey, sessionKey)
+            val params = NodeConnectionParams(internetAddress, identityKey, sessionKey)
 
             val serialization = params.serialize()
 
@@ -79,7 +79,7 @@ class PublicNodeConnectionParamsTest {
         @Test
         fun `Serialization should be DER sequence`() {
             val exception = assertThrows<InvalidNodeConnectionParams> {
-                PublicNodeConnectionParams.deserialize(byteArrayOf(0))
+                NodeConnectionParams.deserialize(byteArrayOf(0))
             }
 
             assertEquals("Serialization is not a DER sequence", exception.message)
@@ -97,7 +97,7 @@ class PublicNodeConnectionParamsTest {
             )
 
             val exception = assertThrows<InvalidNodeConnectionParams> {
-                PublicNodeConnectionParams.deserialize(invalidSequence)
+                NodeConnectionParams.deserialize(invalidSequence)
             }
 
             assertEquals(
@@ -109,7 +109,7 @@ class PublicNodeConnectionParamsTest {
         @Test
         fun `Internet address should be syntactically valid`() {
             val malformedInternetAddress = "not really a domain name"
-            val invalidParams = PublicNodeConnectionParams(
+            val invalidParams = NodeConnectionParams(
                 malformedInternetAddress,
                 identityKey,
                 sessionKey
@@ -117,7 +117,7 @@ class PublicNodeConnectionParamsTest {
             val invalidSerialization = invalidParams.serialize()
 
             val exception = assertThrows<InvalidNodeConnectionParams> {
-                PublicNodeConnectionParams.deserialize(invalidSerialization)
+                NodeConnectionParams.deserialize(invalidSerialization)
             }
 
             assertEquals(
@@ -128,7 +128,7 @@ class PublicNodeConnectionParamsTest {
 
         @Test
         fun `Identity key should be a valid RSA public key`() {
-            val invalidParams = PublicNodeConnectionParams(
+            val invalidParams = NodeConnectionParams(
                 internetAddress,
                 sessionKey.publicKey, // Invalid
                 sessionKey
@@ -136,7 +136,7 @@ class PublicNodeConnectionParamsTest {
             val invalidSerialization = invalidParams.serialize()
 
             val exception = assertThrows<InvalidNodeConnectionParams> {
-                PublicNodeConnectionParams.deserialize(invalidSerialization)
+                NodeConnectionParams.deserialize(invalidSerialization)
             }
 
             assertEquals(
@@ -158,7 +158,7 @@ class PublicNodeConnectionParamsTest {
             )
 
             val exception = assertThrows<InvalidNodeConnectionParams> {
-                PublicNodeConnectionParams.deserialize(invalidSequence)
+                NodeConnectionParams.deserialize(invalidSequence)
             }
 
             assertEquals(
@@ -169,7 +169,7 @@ class PublicNodeConnectionParamsTest {
 
         @Test
         fun `Session key should be a valid ECDH public key`() {
-            val invalidParams = PublicNodeConnectionParams(
+            val invalidParams = NodeConnectionParams(
                 internetAddress,
                 identityKey,
                 SessionKey(sessionKey.keyId, identityKey) // Invalid
@@ -177,7 +177,7 @@ class PublicNodeConnectionParamsTest {
             val invalidSerialization = invalidParams.serialize()
 
             val exception = assertThrows<InvalidNodeConnectionParams> {
-                PublicNodeConnectionParams.deserialize(invalidSerialization)
+                NodeConnectionParams.deserialize(invalidSerialization)
             }
 
             assertEquals(
@@ -189,10 +189,10 @@ class PublicNodeConnectionParamsTest {
 
         @Test
         fun `Valid serialization should be deserialized`() {
-            val params = PublicNodeConnectionParams(internetAddress, identityKey, sessionKey)
+            val params = NodeConnectionParams(internetAddress, identityKey, sessionKey)
             val serialization = params.serialize()
 
-            val paramsDeserialized = PublicNodeConnectionParams.deserialize(serialization)
+            val paramsDeserialized = NodeConnectionParams.deserialize(serialization)
 
             assertEquals(internetAddress, paramsDeserialized.internetAddress)
             assertEquals(
