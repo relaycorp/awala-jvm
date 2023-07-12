@@ -1,68 +1,72 @@
 package tech.relaycorp.relaynet
 
+import java.security.PublicKey
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
+import org.bouncycastle.asn1.ASN1TaggedObject
+import org.bouncycastle.asn1.DERNull
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
-import tech.relaycorp.relaynet.wrappers.ECDH_CURVE_MAP
+import org.junit.jupiter.api.assertThrows
+import tech.relaycorp.relaynet.utils.toExplicitlyTaggedObject
+import tech.relaycorp.relaynet.utils.toImplicitlyTaggedObject
+import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.generateECDHKeyPair
 
 class SessionKeyTest {
+    val keyId = "foo".toByteArray()
+    val publicKey: PublicKey = generateECDHKeyPair().public
+    private val sessionKey = SessionKey(keyId, publicKey)
+
     @Nested
     inner class Equals {
-        private val stubSessionKey = SessionKeyPair.generate().sessionKey
-
         @Test
         fun `Null should not equal`() {
-            assertFalse(stubSessionKey.equals(null))
+            assertFalse(sessionKey.equals(null))
         }
 
         @Test
         fun `Different class instance should not equal`() {
-            assertFalse(stubSessionKey.equals("not a session key"))
+            assertFalse(sessionKey.equals("not a session key"))
         }
 
         @Test
         fun `Same object should equal`() {
-            assertEquals(stubSessionKey, stubSessionKey)
+            assertEquals(sessionKey, sessionKey)
         }
 
         @Test
         fun `Different key id should not equal`() {
-            val differentKey = stubSessionKey.copy("different id".toByteArray())
+            val differentKey = sessionKey.copy("different id".toByteArray())
 
-            assertNotEquals(differentKey, stubSessionKey)
+            assertNotEquals(differentKey, sessionKey)
         }
 
         @Test
         fun `Different public key should not equal`() {
             val differentPublicKey = generateECDHKeyPair().public
-            val differentKey = stubSessionKey.copy(publicKey = differentPublicKey)
+            val differentKey = sessionKey.copy(publicKey = differentPublicKey)
 
-            assertNotEquals(differentKey, stubSessionKey)
+            assertNotEquals(differentKey, sessionKey)
         }
 
         @Test
         fun `Same key id and public key should equal`() {
-            assertEquals(stubSessionKey, stubSessionKey.copy())
+            assertEquals(sessionKey, sessionKey.copy())
         }
     }
 
     @Nested
     inner class HashCode {
-        private val stubSessionKey = SessionKeyPair.generate().sessionKey
-
         @Test
         fun `Different key ids should produce different hash codes`() {
             assertNotEquals(
-                stubSessionKey.copy("foo".toByteArray()).hashCode(),
-                stubSessionKey.hashCode()
+                sessionKey.copy("bar".toByteArray()).hashCode(),
+                sessionKey.hashCode()
             )
         }
 
@@ -71,56 +75,155 @@ class SessionKeyTest {
             val differentPublicKey = generateECDHKeyPair().public
 
             assertNotEquals(
-                stubSessionKey.copy(publicKey = differentPublicKey).hashCode(),
-                stubSessionKey.hashCode()
+                sessionKey.copy(publicKey = differentPublicKey).hashCode(),
+                sessionKey.hashCode()
             )
         }
 
         @Test
         fun `Equivalent keys should produce the same hash codes`() {
-            assertEquals(stubSessionKey, stubSessionKey.copy())
+            assertEquals(sessionKey, sessionKey.copy())
         }
     }
 
     @Nested
-    inner class Generate {
+    inner class Encode {
         @Test
-        fun `keyId should be randomly generated, 64-bit ByteArray`() {
-            val (sessionKey) = SessionKeyPair.generate()
+        fun `Key id should be encoded`() {
+            val encoding = sessionKey.encode()
 
-            assertEquals(8, sessionKey.keyId.size)
+            val keyIdASN1 =
+                ASN1Utils.getOctetString(encoding.getObjectAt(0) as ASN1TaggedObject)
+            assertEquals(sessionKey.keyId, keyIdASN1.octets)
         }
 
         @Test
-        fun `privateKey should correspond to public key`() {
-            val sessionKeyGeneration = SessionKeyPair.generate()
+        fun `Public key should be encoded`() {
+            val encoding = sessionKey.encode()
 
-            val ecPrivateKey = sessionKeyGeneration.privateKey as BCECPrivateKey
-            val ecPublicKey = sessionKeyGeneration.sessionKey.publicKey as BCECPublicKey
-            assertEquals(ecPrivateKey.parameters.g.multiply(ecPrivateKey.d), ecPublicKey.q)
-            assertEquals(ecPrivateKey.params, ecPublicKey.params)
+            val publicKeyASN1 = SubjectPublicKeyInfo.getInstance(
+                encoding.getObjectAt(1) as ASN1TaggedObject,
+                false
+            )
+            assertContentEquals(sessionKey.publicKey.encoded, publicKeyASN1.encoded)
         }
+    }
 
+    @Nested
+    inner class Decode {
         @Test
-        fun `Key pair should use P-256 by default`() {
-            val (sessionKey) = SessionKeyPair.generate()
+        fun `Encoding should be implicitly tagged`() {
+            val encoding = sessionKey.encode()
+
+            val exception = assertThrows<SessionKeyException> {
+                SessionKey.decode(encoding.toExplicitlyTaggedObject())
+            }
 
             assertEquals(
-                "P-256",
-                ((sessionKey.publicKey as BCECPublicKey).params as ECNamedCurveSpec).name
+                "Session key should be an implicitly-tagged SEQUENCE",
+                exception.message
             )
         }
 
-        @ParameterizedTest(name = "Key pair should use {0} if explicitly requested")
-        @EnumSource
-        fun explicitCurveName(curve: ECDHCurve) {
-            val (sessionKey) = SessionKeyPair.generate(curve)
+        @Test
+        fun `Encoding should be a SEQUENCE`() {
+            val exception = assertThrows<SessionKeyException> {
+                SessionKey.decode(DERNull.INSTANCE.toImplicitlyTaggedObject())
+            }
 
-            val curveName = ECDH_CURVE_MAP[curve]
             assertEquals(
-                curveName,
-                ((sessionKey.publicKey as BCECPublicKey).params as ECNamedCurveSpec).name
+                "Session key should be an implicitly-tagged SEQUENCE",
+                exception.message
             )
+        }
+
+        @Test
+        fun `Encoding should have at least two items`() {
+            val encoding = ASN1Utils.makeSequence(listOf(DEROctetString(keyId)))
+
+            val exception = assertThrows<SessionKeyException> {
+                SessionKey.decode(encoding.toImplicitlyTaggedObject())
+            }
+
+            assertEquals("Session key should have at least two items", exception.message)
+        }
+
+        @Test
+        fun `Key id should be an OCTET STRING`() {
+            val encoding = ASN1Utils.makeSequence(
+                listOf(
+                    DERNull.INSTANCE,
+                    SubjectPublicKeyInfo.getInstance(publicKey.encoded)
+                ),
+                false
+            )
+
+            val exception = assertThrows<SessionKeyException> {
+                SessionKey.decode(encoding.toImplicitlyTaggedObject())
+            }
+
+            assertEquals("Session key id should be an OCTET STRING", exception.message)
+        }
+
+        @Test
+        fun `Key id should be implicitly tagged`() {
+            val encoding = ASN1Utils.makeSequence(
+                listOf(
+                    DEROctetString(keyId),
+                    SubjectPublicKeyInfo.getInstance(publicKey.encoded)
+                )
+            )
+
+            val exception = assertThrows<SessionKeyException> {
+                SessionKey.decode(encoding.toImplicitlyTaggedObject())
+            }
+
+            assertEquals("Session key id should be implicitly tagged", exception.message)
+        }
+
+        @Test
+        fun `Public key should be a SUBJECT PUBLIC KEY INFO`() {
+            val encoding = ASN1Utils.makeSequence(
+                listOf(
+                    DEROctetString(keyId),
+                    DERNull.INSTANCE
+                ),
+                false
+            )
+
+            val exception = assertThrows<SessionKeyException> {
+                SessionKey.decode(encoding.toImplicitlyTaggedObject())
+            }
+
+            assertEquals(
+                "Public key should be a SubjectPublicKeyInfo",
+                exception.message
+            )
+        }
+
+        @Test
+        fun `Public key should be implicitly tagged`() {
+            val encoding = ASN1Utils.makeSequence(
+                listOf(
+                    DEROctetString(keyId).toImplicitlyTaggedObject(),
+                    SubjectPublicKeyInfo.getInstance(publicKey.encoded)
+                )
+            )
+
+            val exception = assertThrows<SessionKeyException> {
+                SessionKey.decode(encoding.toImplicitlyTaggedObject())
+            }
+
+            assertEquals("Public key should be implicitly tagged", exception.message)
+        }
+
+        @Test
+        fun `Valid session key should be output`() {
+            val encoding = sessionKey.encode()
+
+            val decodedSessionKey = SessionKey.decode(encoding.toImplicitlyTaggedObject())
+
+            assertEquals(sessionKey, decodedSessionKey)
         }
     }
 }
