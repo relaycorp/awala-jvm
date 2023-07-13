@@ -4,6 +4,8 @@ import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
+import org.bouncycastle.asn1.x509.Certificate as BCCertificate
+import org.bouncycastle.cert.X509CertificateHolder
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -29,7 +31,7 @@ class CertificationPath(
     }
 
     internal fun encode(): DERSequence {
-        val leafCertificateASN1 = DEROctetString(leafCertificate.serialize())
+        val leafCertificateASN1 = leafCertificate.certificateHolder.toASN1Structure()
         val casASN1 = ASN1Utils.makeSequence(
             certificateAuthorities.map { DEROctetString(it.serialize()) },
             true
@@ -72,13 +74,12 @@ class CertificationPath(
                 throw CertificationPathException("Path sequence should have at least 2 items")
             }
 
-            val leafCertificateASN1 =
-                ASN1Utils.getOctetString(sequence.getObjectAt(0) as ASN1TaggedObject)
-            val leafCertificate = try {
-                Certificate.deserialize(leafCertificateASN1.octets)
-            } catch (exc: CertificateException) {
+            val leafCertificateASN1 = try {
+                BCCertificate.getInstance(sequence.getObjectAt(0) as ASN1TaggedObject, false)
+            } catch (exc: IllegalStateException) {
                 throw CertificationPathException("Leaf certificate is malformed", exc)
             }
+            val leafCertificate = Certificate(X509CertificateHolder(leafCertificateASN1))
 
             val casSequence = try {
                 DERSequence.getInstance(sequence.getObjectAt(1) as ASN1TaggedObject, false)

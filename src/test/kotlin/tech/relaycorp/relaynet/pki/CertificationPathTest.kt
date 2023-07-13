@@ -5,6 +5,7 @@ import kotlin.test.assertTrue
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.DERNull
 import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.x509.Certificate as BCCertificate
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -26,9 +27,8 @@ class CertificationPathTest {
             val serialization = path.serialize()
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            val leafCertificateSerialized = ASN1Utils.getOctetString(sequence.first()).octets
-            val leafCertificate = Certificate.deserialize(leafCertificateSerialized)
-            assertEquals(PDACertPath.PDA, leafCertificate)
+            val leafCertificate = BCCertificate.getInstance(sequence.first(), false)
+            assertEquals(PDACertPath.PDA.certificateHolder.toASN1Structure(), leafCertificate)
         }
 
         @Test
@@ -127,14 +127,14 @@ class CertificationPathTest {
             }
 
             assertEquals("Leaf certificate is malformed", exception.message)
-            assertTrue(exception.cause is CertificateException)
+            assertTrue(exception.cause is IllegalStateException)
         }
 
         @Test
         fun `Malformed chain should be refused`() {
             val serialization = ASN1Utils.serializeSequence(
                 listOf(
-                    DEROctetString(PDACertPath.PDA.serialize()),
+                    PDACertPath.PDA.certificateHolder.toASN1Structure(),
                     DERNull.INSTANCE,
                 ),
                 false
@@ -152,7 +152,7 @@ class CertificationPathTest {
         fun `Malformed certificate in chain should be refused`() {
             val serialization = ASN1Utils.serializeSequence(
                 listOf(
-                    DEROctetString(PDACertPath.PDA.serialize()),
+                    PDACertPath.PDA.certificateHolder.toASN1Structure(),
                     ASN1Utils.makeSequence(listOf(DEROctetString("malformed".toByteArray()))),
                 ),
                 false
@@ -170,7 +170,7 @@ class CertificationPathTest {
         fun `Malformed OCTET STRING in chain should be refused`() {
             val serialization = ASN1Utils.serializeSequence(
                 listOf(
-                    DEROctetString(PDACertPath.PDA.serialize()),
+                    PDACertPath.PDA.certificateHolder.toASN1Structure(),
                     ASN1Utils.makeSequence(listOf(DERNull.INSTANCE)),
                 ),
                 false
