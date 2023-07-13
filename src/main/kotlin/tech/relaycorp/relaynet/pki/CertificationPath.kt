@@ -1,5 +1,7 @@
 package tech.relaycorp.relaynet.pki
 
+import org.bouncycastle.asn1.ASN1Sequence
+import org.bouncycastle.asn1.ASN1TaggedObject
 import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
@@ -26,28 +28,52 @@ class CertificationPath(
         }
     }
 
-    fun serialize(): ByteArray {
+    internal fun encode(): DERSequence {
         val leafCertificateASN1 = DEROctetString(leafCertificate.serialize())
         val casASN1 = ASN1Utils.makeSequence(
             certificateAuthorities.map { DEROctetString(it.serialize()) },
             true
         )
-        return ASN1Utils.serializeSequence(listOf(leafCertificateASN1, casASN1), false)
+        return ASN1Utils.makeSequence(listOf(leafCertificateASN1, casASN1), false)
+    }
+
+    fun serialize(): ByteArray {
+        val sequence = encode()
+        return sequence.encoded
     }
 
     companion object {
         @Throws(CertificationPathException::class)
         fun deserialize(serialization: ByteArray): CertificationPath {
             val sequence = try {
-                ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                ASN1Utils.deserializeSequence(serialization)
             } catch (exc: ASN1Exception) {
                 throw CertificationPathException("Path is not a valid DER sequence", exc)
             }
-            if (sequence.size < 2) {
+            return decode(sequence)
+        }
+
+        @Throws(CertificationPathException::class)
+        internal fun decode(encoding: ASN1TaggedObject): CertificationPath {
+            val sequence = try {
+                DERSequence.getInstance(encoding, false)
+            } catch (exc: IllegalStateException) {
+                throw CertificationPathException(
+                    "Serialisation is not an implicitly-tagged sequence",
+                    exc
+                )
+            }
+            return decode(sequence)
+        }
+
+        @Throws(CertificationPathException::class)
+        private fun decode(sequence: ASN1Sequence): CertificationPath {
+            if (sequence.size() < 2) {
                 throw CertificationPathException("Path sequence should have at least 2 items")
             }
 
-            val leafCertificateASN1 = ASN1Utils.getOctetString(sequence.first())
+            val leafCertificateASN1 =
+                ASN1Utils.getOctetString(sequence.getObjectAt(0) as ASN1TaggedObject)
             val leafCertificate = try {
                 Certificate.deserialize(leafCertificateASN1.octets)
             } catch (exc: CertificateException) {
@@ -55,7 +81,7 @@ class CertificationPath(
             }
 
             val casSequence = try {
-                DERSequence.getInstance(sequence[1], false)
+                DERSequence.getInstance(sequence.getObjectAt(1) as ASN1TaggedObject, false)
             } catch (exc: IllegalStateException) {
                 throw CertificationPathException("Chain is malformed", exc)
             }
