@@ -35,9 +35,7 @@ internal object ASN1Utils {
     }
 
     @Throws(ASN1Exception::class)
-    inline fun <reified T : ASN1Encodable> deserializeHomogeneousSequence(
-        serialization: ByteArray
-    ): Array<T> {
+    fun deserializeSequence(serialization: ByteArray): ASN1Sequence {
         if (serialization.isEmpty()) {
             throw ASN1Exception("Value is empty")
         }
@@ -47,11 +45,18 @@ internal object ASN1Utils {
         } catch (_: IOException) {
             throw ASN1Exception("Value is not DER-encoded")
         }
-        val sequence = try {
+        return try {
             ASN1Sequence.getInstance(asn1Value)
         } catch (_: IllegalArgumentException) {
             throw ASN1Exception("Value is not an ASN.1 sequence")
         }
+    }
+
+    @Throws(ASN1Exception::class)
+    inline fun <reified T : ASN1Encodable> deserializeHomogeneousSequence(
+        serialization: ByteArray
+    ): Array<T> {
+        val sequence = deserializeSequence(serialization)
         return sequence.map {
             if (it !is T) {
                 throw ASN1Exception(

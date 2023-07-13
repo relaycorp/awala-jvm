@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.utils.PDACertPath
+import tech.relaycorp.relaynet.utils.toExplicitlyTaggedObject
+import tech.relaycorp.relaynet.utils.toImplicitlyTaggedObject
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
@@ -41,6 +43,45 @@ class CertificationPathTest {
             val caSerialized = (chainSequence.first() as DEROctetString).octets
             val ca = Certificate.deserialize(caSerialized)
             assertEquals(PDACertPath.PRIVATE_ENDPOINT, ca)
+        }
+    }
+
+    @Nested
+    inner class Decode {
+        @Test
+        fun `Encoding should be a sequence`() {
+            val encoding = DERNull.INSTANCE.toImplicitlyTaggedObject()
+
+            val exception = assertThrows<CertificationPathException> {
+                CertificationPath.decode(encoding)
+            }
+
+            assertEquals("Serialisation is not an implicitly-tagged sequence", exception.message)
+        }
+
+        @Test
+        fun `Encoding should be implicitly tagged`() {
+            val encoding = ASN1Utils.makeSequence(emptyList()).toExplicitlyTaggedObject()
+
+            val exception = assertThrows<CertificationPathException> {
+                CertificationPath.decode(encoding)
+            }
+
+            assertEquals("Serialisation is not an implicitly-tagged sequence", exception.message)
+        }
+
+        @Test
+        fun `Valid path should be output`() {
+            val path = CertificationPath(PDACertPath.PDA, listOf(PDACertPath.PRIVATE_ENDPOINT))
+            val encoding = path.encode()
+
+            val pathDecoded = CertificationPath.decode(encoding.toImplicitlyTaggedObject())
+
+            assertEquals(PDACertPath.PDA, pathDecoded.leafCertificate)
+            assertEquals(
+                listOf(PDACertPath.PRIVATE_ENDPOINT),
+                pathDecoded.certificateAuthorities,
+            )
         }
     }
 
