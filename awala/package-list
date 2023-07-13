@@ -353,6 +353,15 @@ $dokka.location:tech.relaycorp.relaynet/NodeConnectionParams/identityKey/#/Point
 $dokka.location:tech.relaycorp.relaynet/NodeConnectionParams/internetAddress/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-node-connection-params/internet-address.html
 $dokka.location:tech.relaycorp.relaynet/NodeConnectionParams/serialize/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-node-connection-params/serialize.html
 $dokka.location:tech.relaycorp.relaynet/NodeConnectionParams/sessionKey/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-node-connection-params/session-key.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/-companion/index.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams.Companion/deserialize/#kotlin.ByteArray/PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/-companion/deserialize.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams///PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/index.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams/PrivateEndpointConnParams/#java.security.PublicKey#kotlin.String#tech.relaycorp.relaynet.pki.CertificationPath#tech.relaycorp.relaynet.SessionKey/PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/-private-endpoint-conn-params.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams/deliveryAuth/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/delivery-auth.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams/identityKey/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/identity-key.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams/internetGatewayAddress/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/internet-gateway-address.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams/serialize/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/serialize.html
+$dokka.location:tech.relaycorp.relaynet/PrivateEndpointConnParams/sessionKey/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-private-endpoint-conn-params/session-key.html
 $dokka.location:tech.relaycorp.relaynet/RelaynetException///PointingToDeclaration/awala/tech.relaycorp.relaynet/-relaynet-exception/index.html
 $dokka.location:tech.relaycorp.relaynet/RelaynetException/RelaynetException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet/-relaynet-exception/-relaynet-exception.html
 $dokka.location:tech.relaycorp.relaynet/SessionKey///PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key/index.html
@@ -361,6 +370,8 @@ $dokka.location:tech.relaycorp.relaynet/SessionKey/equals/#kotlin.Any?/PointingT
 $dokka.location:tech.relaycorp.relaynet/SessionKey/hashCode/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key/hash-code.html
 $dokka.location:tech.relaycorp.relaynet/SessionKey/keyId/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key/key-id.html
 $dokka.location:tech.relaycorp.relaynet/SessionKey/publicKey/#/PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key/public-key.html
+$dokka.location:tech.relaycorp.relaynet/SessionKeyException///PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key-exception/index.html
+$dokka.location:tech.relaycorp.relaynet/SessionKeyException/SessionKeyException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key-exception/-session-key-exception.html
 $dokka.location:tech.relaycorp.relaynet/SessionKeyPair.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key-pair/-companion/index.html
 $dokka.location:tech.relaycorp.relaynet/SessionKeyPair.Companion/generate/#tech.relaycorp.relaynet.ECDHCurve/PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key-pair/-companion/generate.html
 $dokka.location:tech.relaycorp.relaynet/SessionKeyPair///PointingToDeclaration/awala/tech.relaycorp.relaynet/-session-key-pair/index.html
