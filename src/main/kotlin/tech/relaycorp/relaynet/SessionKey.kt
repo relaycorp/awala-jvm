@@ -33,6 +33,7 @@ data class SessionKey(val keyId: ByteArray, val publicKey: PublicKey) {
     )
 
     internal companion object {
+        @Throws(SessionKeyException::class)
         fun decode(encoding: ASN1TaggedObject): SessionKey {
             val sequence = try {
                 DERSequence.getInstance(encoding, false)
