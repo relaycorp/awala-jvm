@@ -14,7 +14,6 @@ import tech.relaycorp.relaynet.utils.toExplicitlyTaggedObject
 import tech.relaycorp.relaynet.utils.toImplicitlyTaggedObject
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Exception
 import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
-import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class CertificationPathTest {
@@ -28,7 +27,7 @@ class CertificationPathTest {
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val leafCertificate = BCCertificate.getInstance(sequence.first(), false)
-            assertEquals(PDACertPath.PDA.certificateHolder.toASN1Structure(), leafCertificate)
+            assertEquals(PDACertPath.PDA.encode(), leafCertificate)
         }
 
         @Test
@@ -40,9 +39,8 @@ class CertificationPathTest {
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val chainSequence = ASN1Sequence.getInstance(sequence[1], false)
             assertEquals(1, chainSequence.size())
-            val caSerialized = (chainSequence.first() as DEROctetString).octets
-            val ca = Certificate.deserialize(caSerialized)
-            assertEquals(PDACertPath.PRIVATE_ENDPOINT, ca)
+            val ca = BCCertificate.getInstance(chainSequence.first())
+            assertEquals(PDACertPath.PRIVATE_ENDPOINT.encode(), ca)
         }
     }
 
@@ -163,24 +161,6 @@ class CertificationPathTest {
             }
 
             assertEquals("Chain contains malformed certificate", exception.message)
-            assertTrue(exception.cause is CertificateException)
-        }
-
-        @Test
-        fun `Malformed OCTET STRING in chain should be refused`() {
-            val serialization = ASN1Utils.serializeSequence(
-                listOf(
-                    PDACertPath.PDA.certificateHolder.toASN1Structure(),
-                    ASN1Utils.makeSequence(listOf(DERNull.INSTANCE)),
-                ),
-                false
-            )
-
-            val exception = assertThrows<CertificationPathException> {
-                CertificationPath.deserialize(serialization)
-            }
-
-            assertEquals("Chain contains non-OCTET STRING item", exception.message)
             assertTrue(exception.cause is IllegalArgumentException)
         }
 

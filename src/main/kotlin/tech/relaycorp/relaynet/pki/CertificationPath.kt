@@ -2,7 +2,6 @@ package tech.relaycorp.relaynet.pki
 
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1TaggedObject
-import org.bouncycastle.asn1.DEROctetString
 import org.bouncycastle.asn1.DERSequence
 import org.bouncycastle.asn1.x509.Certificate as BCCertificate
 import org.bouncycastle.cert.X509CertificateHolder
@@ -31,9 +30,9 @@ class CertificationPath(
     }
 
     internal fun encode(): DERSequence {
-        val leafCertificateASN1 = leafCertificate.certificateHolder.toASN1Structure()
+        val leafCertificateASN1 = leafCertificate.encode()
         val casASN1 = ASN1Utils.makeSequence(
-            certificateAuthorities.map { DEROctetString(it.serialize()) },
+            certificateAuthorities.map { it.encode() },
             true
         )
         return ASN1Utils.makeSequence(listOf(leafCertificateASN1, casASN1), false)
@@ -88,12 +87,10 @@ class CertificationPath(
             }
             val certificateAuthorities = try {
                 casSequence.toList()
-                    .map { DEROctetString.getInstance(it).octets }
-                    .map { Certificate.deserialize(it) }
-            } catch (exc: CertificateException) {
-                throw CertificationPathException("Chain contains malformed certificate", exc)
+                    .map { BCCertificate.getInstance(it) }
+                    .map { Certificate(X509CertificateHolder(it)) }
             } catch (exc: IllegalArgumentException) {
-                throw CertificationPathException("Chain contains non-OCTET STRING item", exc)
+                throw CertificationPathException("Chain contains malformed certificate", exc)
             }
 
             return CertificationPath(leafCertificate, certificateAuthorities)
