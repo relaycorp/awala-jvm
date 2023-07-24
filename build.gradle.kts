@@ -32,7 +32,7 @@ repositories {
 dependencies {
     val kotlinCoroutinesVersion = "1.7.2"
     val bouncyCastleVersion = "1.70"
-    val junitJuniperVersion = "5.9.3"
+    val junitJuniperVersion = "5.10.0"
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
