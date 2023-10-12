@@ -50,12 +50,9 @@ interface PDCClient : Closeable {
      *
      * @param nonceSigners The nonce signers for each node whose parcels should be collected
      * @param streamingMode Which streaming mode to ask the server to use
+     * @return A flow of [ParcelCollection]s that can throw [ServerException]s,
+     *   [NonceSignerException]s and [ClientBindingException]s
      */
-    @Throws(
-        ServerException::class,
-        NonceSignerException::class,
-        ClientBindingException::class
-    )
     suspend fun collectParcels(
         nonceSigners: Array<Signer>,
         streamingMode: StreamingMode = StreamingMode.KeepAlive
