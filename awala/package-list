@@ -271,6 +271,7 @@ $dokka.location:tech.relaycorp.relaynet.ramf/InvalidPayloadException/InvalidPayl
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFException///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-exception/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFException/RAMFException/#kotlin.String#kotlin.Throwable?/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-exception/-r-a-m-f-exception.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage.Companion///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/-companion/index.html
+$dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage.Companion/MAX_PAYLOAD_LENGTH/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/-companion/-m-a-x_-p-a-y-l-o-a-d_-l-e-n-g-t-h.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage///PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/index.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/creationDate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/creation-date.html
 $dokka.location:tech.relaycorp.relaynet.ramf/RAMFMessage/expiryDate/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.ramf/-r-a-m-f-message/expiry-date.html
