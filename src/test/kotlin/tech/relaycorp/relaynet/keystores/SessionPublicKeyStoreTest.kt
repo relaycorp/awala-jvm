@@ -5,7 +5,6 @@ import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,9 +12,10 @@ import org.junit.jupiter.api.assertThrows
 import tech.relaycorp.relaynet.SessionKeyPair
 import tech.relaycorp.relaynet.utils.MockSessionPublicKeyStore
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SessionPublicKeyStoreTest {
+    private val nodeId = "0deadc0de"
     private val peerId = "0deadbeef"
+    private val storeKey = "$nodeId,$peerId"
     private val creationTime: ZonedDateTime = ZonedDateTime.now(UTC).withNano(0)
 
     private val sessionKeyGeneration = SessionKeyPair.generate()
@@ -27,10 +27,10 @@ class SessionPublicKeyStoreTest {
         fun `Key data should be saved if there is no prior key for recipient`() = runTest {
             val store = MockSessionPublicKeyStore()
 
-            store.save(sessionKey, peerId)
+            store.save(sessionKey, nodeId, peerId)
 
-            assertTrue(store.keys.containsKey(peerId))
-            val keyData = store.keys[peerId]!!
+            assertTrue(store.keys.containsKey(storeKey))
+            val keyData = store.keys[storeKey]!!
             assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
         }
@@ -39,11 +39,11 @@ class SessionPublicKeyStoreTest {
         fun `Key data should be saved if prior key is older`() = runTest {
             val store = MockSessionPublicKeyStore()
             val (oldSessionKey) = SessionKeyPair.generate()
-            store.save(oldSessionKey, peerId, creationTime.minusSeconds(1))
+            store.save(oldSessionKey, nodeId, peerId, creationTime.minusSeconds(1))
 
-            store.save(sessionKey, peerId, creationTime)
+            store.save(sessionKey, nodeId, peerId, creationTime)
 
-            val keyData = store.keys[peerId]!!
+            val keyData = store.keys[storeKey]!!
             assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime.toEpochSecond(), keyData.creationTimestamp)
@@ -52,12 +52,12 @@ class SessionPublicKeyStoreTest {
         @Test
         fun `Key data should not be saved if prior key is newer`() = runTest {
             val store = MockSessionPublicKeyStore()
-            store.save(sessionKey, peerId, creationTime)
+            store.save(sessionKey, nodeId, peerId, creationTime)
 
             val (oldSessionKey) = SessionKeyPair.generate()
-            store.save(oldSessionKey, peerId, creationTime.minusSeconds(1))
+            store.save(oldSessionKey, nodeId, peerId, creationTime.minusSeconds(1))
 
-            val keyData = store.keys[peerId]!!
+            val keyData = store.keys[storeKey]!!
             assertEquals(sessionKey.keyId.asList(), keyData.keyId.asList())
             assertEquals(sessionKey.publicKey.encoded.asList(), keyData.keyDer.asList())
             assertEquals(creationTime.toEpochSecond(), keyData.creationTimestamp)
@@ -70,9 +70,9 @@ class SessionPublicKeyStoreTest {
                 val now = ZonedDateTime.now(UTC)
                 val store = MockSessionPublicKeyStore()
 
-                store.save(sessionKey, peerId)
+                store.save(sessionKey, nodeId, peerId)
 
-                val keyData = store.keys[peerId]!!
+                val keyData = store.keys[storeKey]!!
                 val creationTimestamp = keyData.creationTimestamp
                 assertTrue(now.toEpochSecond() <= creationTimestamp)
                 assertTrue(creationTimestamp <= ZonedDateTime.now(UTC).toEpochSecond())
@@ -82,9 +82,9 @@ class SessionPublicKeyStoreTest {
             fun `Any explicit time should be honored`() = runTest {
                 val store = MockSessionPublicKeyStore()
 
-                store.save(sessionKey, peerId, creationTime)
+                store.save(sessionKey, nodeId, peerId, creationTime)
 
-                val keyData = store.keys[peerId]!!
+                val keyData = store.keys[storeKey]!!
                 assertEquals(creationTime.toEpochSecond(), keyData.creationTimestamp)
             }
 
@@ -93,9 +93,9 @@ class SessionPublicKeyStoreTest {
                 val creationTime = ZonedDateTime.now(ZoneId.of("America/Caracas")).minusDays(1)
                 val store = MockSessionPublicKeyStore()
 
-                store.save(sessionKey, peerId, creationTime)
+                store.save(sessionKey, nodeId, peerId, creationTime)
 
-                val keyData = store.keys[peerId]!!
+                val keyData = store.keys[storeKey]!!
                 assertEquals(
                     creationTime.withZoneSameInstant(UTC).toEpochSecond(),
                     keyData.creationTimestamp
@@ -109,9 +109,9 @@ class SessionPublicKeyStoreTest {
         @Test
         fun `Key data should be returned if key for recipient exists`() = runTest {
             val store = MockSessionPublicKeyStore()
-            store.save(sessionKey, peerId, creationTime)
+            store.save(sessionKey, nodeId, peerId, creationTime)
 
-            val fetchedSessionKey = store.retrieve(peerId)
+            val fetchedSessionKey = store.retrieve(nodeId, peerId)
 
             assertEquals(sessionKey, fetchedSessionKey)
         }
@@ -121,9 +121,9 @@ class SessionPublicKeyStoreTest {
             val store = MockSessionPublicKeyStore()
 
             val exception =
-                assertThrows<MissingKeyException> { (store.retrieve(peerId)) }
+                assertThrows<MissingKeyException> { (store.retrieve(nodeId, peerId)) }
 
-            assertEquals("There is no session key for $peerId", exception.message)
+            assertEquals("Node $nodeId has no session key for $peerId", exception.message)
         }
     }
 }
