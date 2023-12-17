@@ -104,7 +104,7 @@ tasks.test {
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
         allWarningsAsErrors = true
         freeCompilerArgs = freeCompilerArgs + arrayOf(
             "-opt-in=kotlin.RequiresOptIn"
