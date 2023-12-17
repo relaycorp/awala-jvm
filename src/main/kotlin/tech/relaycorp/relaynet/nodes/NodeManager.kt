@@ -44,7 +44,7 @@ abstract class NodeManager<P : Payload>(
         peerId: String,
         nodeId: String,
     ): ByteArray {
-        val recipientSessionKey = sessionPublicKeyStore.retrieve(peerId)
+        val recipientSessionKey = sessionPublicKeyStore.retrieve(nodeId, peerId)
         val senderSessionKeyPair = generateSessionKeyPair(nodeId, peerId)
         return payload.encrypt(
             recipientSessionKey,
@@ -74,6 +74,7 @@ abstract class NodeManager<P : Payload>(
         val unwrapping = message.unwrapPayload(privateKeyStore)
         sessionPublicKeyStore.save(
             unwrapping.peerSessionKey,
+            message.recipient.id,
             message.senderCertificate.subjectId,
             message.creationDate
         )

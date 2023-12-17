@@ -132,7 +132,7 @@ class NodeManagerTest {
     inner class WrapMessagePayload {
         @BeforeEach
         fun registerPeerSessionKey() = runTest {
-            publicKeyStore.save(peerSessionKey, peerId)
+            publicKeyStore.save(peerSessionKey, nodeId, peerId)
         }
 
         @Test
@@ -144,7 +144,7 @@ class NodeManagerTest {
                 manager.wrapMessagePayload(payload, peerId, nodeId)
             }
 
-            assertEquals("There is no session key for $peerId", exception.message)
+            assertEquals("Node $nodeId has no session key for $peerId", exception.message)
         }
 
         @Test
@@ -328,8 +328,8 @@ class NodeManagerTest {
 
             manager.unwrapMessagePayload(message)
 
-            assertEquals(peerSessionKey, publicKeyStore.retrieve(peerId))
-            val storedKey = publicKeyStore.keys[peerId]!!
+            assertEquals(peerSessionKey, publicKeyStore.retrieve(nodeId, peerId))
+            val storedKey = publicKeyStore.keys["$nodeId,$peerId"]!!
             assertEquals(message.creationDate.toEpochSecond(), storedKey.creationTimestamp)
         }
     }
