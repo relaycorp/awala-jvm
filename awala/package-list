@@ -78,8 +78,8 @@ $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData/PrivateKeyData/
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyData/privateKeyDer/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-data/private-key-der.html
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore///PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/index.html
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/PrivateKeyStore/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/-private-key-store.html
+$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/deleteBoundSessionKeys/#kotlin.String#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/delete-bound-session-keys.html
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/deleteKeys/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/delete-keys.html
-$dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/deleteSessionKeysForPeer/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/delete-session-keys-for-peer.html
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/retrieveAllIdentityKeys/#/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/retrieve-all-identity-keys.html
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/retrieveIdentityKey/#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/retrieve-identity-key.html
 $dokka.location:tech.relaycorp.relaynet.keystores/PrivateKeyStore/retrieveSessionKey/#kotlin.ByteArray#kotlin.String#kotlin.String/PointingToDeclaration/awala/tech.relaycorp.relaynet.keystores/-private-key-store/retrieve-session-key.html
