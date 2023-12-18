@@ -18,7 +18,7 @@ fun issueStubCertificate(
     subjectPublicKey: PublicKey,
     issuerPrivateKey: PrivateKey,
     issuerCertificate: Certificate? = null,
-    isCA: Boolean = false
+    isCA: Boolean = false,
 ): Certificate {
     return Certificate.issue(
         "the subject for the stub cert",
@@ -26,7 +26,7 @@ fun issueStubCertificate(
         issuerPrivateKey,
         ZonedDateTime.now().plusDays(1),
         isCA = isCA,
-        issuerCertificate = issuerCertificate
+        issuerCertificate = issuerCertificate,
     )
 }
 

@@ -15,59 +15,65 @@ class BatchTest {
     private val messageSerialized = "I'm a parcel. Pinky promise.".toByteArray()
 
     @Test
-    fun `Zero messages should result in zero batches`() = runTest {
-        val batches = emptySequence<CargoMessageWithExpiry>().batch()
+    fun `Zero messages should result in zero batches`() =
+        runTest {
+            val batches = emptySequence<CargoMessageWithExpiry>().batch()
 
-        assertEquals(0, batches.count())
-    }
-
-    @Test
-    fun `A single message should result in one batch`() = runTest {
-        val batches = sequenceOf(CargoMessageWithExpiry(messageSerialized, expiryDate)).batch()
-
-        assertEquals(1, batches.count())
-        val cargoMessageSet = batches.first().cargoMessageSet
-        assertEquals(1, cargoMessageSet.messages.size)
-        assertEquals(messageSerialized.asList(), cargoMessageSet.messages.first().asList())
-    }
+            assertEquals(0, batches.count())
+        }
 
     @Test
-    fun `Multiple small messages should be put in the same batch`() = runTest {
-        val message2Serialized = "I'm a PCA. *wink wink*".toByteArray()
+    fun `A single message should result in one batch`() =
+        runTest {
+            val batches = sequenceOf(CargoMessageWithExpiry(messageSerialized, expiryDate)).batch()
 
-        val batches = sequenceOf(
-            CargoMessageWithExpiry(messageSerialized, expiryDate),
-            CargoMessageWithExpiry(message2Serialized, expiryDate)
-        ).batch()
-
-        assertEquals(1, batches.count())
-        val cargoMessageSet = batches.first().cargoMessageSet
-        assertEquals(2, cargoMessageSet.messages.size)
-        assertEquals(messageSerialized.asList(), cargoMessageSet.messages.first().asList())
-        assertEquals(message2Serialized.asList(), cargoMessageSet.messages[1].asList())
-    }
+            assertEquals(1, batches.count())
+            val cargoMessageSet = batches.first().cargoMessageSet
+            assertEquals(1, cargoMessageSet.messages.size)
+            assertEquals(messageSerialized.asList(), cargoMessageSet.messages.first().asList())
+        }
 
     @Test
-    fun `Messages should be put into as few batches as possible`() = runTest {
-        val octetsIn3Mib = 3145728
-        val messageSerialized = "a".repeat(octetsIn3Mib).toByteArray()
+    fun `Multiple small messages should be put in the same batch`() =
+        runTest {
+            val message2Serialized = "I'm a PCA. *wink wink*".toByteArray()
 
-        val batches = sequenceOf(
-            CargoMessageWithExpiry(messageSerialized, expiryDate),
-            CargoMessageWithExpiry(messageSerialized, expiryDate),
-            CargoMessageWithExpiry(messageSerialized, expiryDate)
-        ).batch()
+            val batches =
+                sequenceOf(
+                    CargoMessageWithExpiry(messageSerialized, expiryDate),
+                    CargoMessageWithExpiry(message2Serialized, expiryDate),
+                ).batch()
 
-        assertEquals(2, batches.count())
-        val cargoMessageSet1 = batches.first().cargoMessageSet
-        assertEquals(
-            listOf(messageSerialized.asList(), messageSerialized.asList()),
-            cargoMessageSet1.messages.map { it.asList() }
-        )
-        val cargoMessageSet2 = batches.last().cargoMessageSet
-        assertEquals(1, cargoMessageSet2.messages.size)
-        assertEquals(messageSerialized.asList(), cargoMessageSet2.messages.first().asList())
-    }
+            assertEquals(1, batches.count())
+            val cargoMessageSet = batches.first().cargoMessageSet
+            assertEquals(2, cargoMessageSet.messages.size)
+            assertEquals(messageSerialized.asList(), cargoMessageSet.messages.first().asList())
+            assertEquals(message2Serialized.asList(), cargoMessageSet.messages[1].asList())
+        }
+
+    @Test
+    fun `Messages should be put into as few batches as possible`() =
+        runTest {
+            val octetsIn3Mib = 3145728
+            val messageSerialized = "a".repeat(octetsIn3Mib).toByteArray()
+
+            val batches =
+                sequenceOf(
+                    CargoMessageWithExpiry(messageSerialized, expiryDate),
+                    CargoMessageWithExpiry(messageSerialized, expiryDate),
+                    CargoMessageWithExpiry(messageSerialized, expiryDate),
+                ).batch()
+
+            assertEquals(2, batches.count())
+            val cargoMessageSet1 = batches.first().cargoMessageSet
+            assertEquals(
+                listOf(messageSerialized.asList(), messageSerialized.asList()),
+                cargoMessageSet1.messages.map { it.asList() },
+            )
+            val cargoMessageSet2 = batches.last().cargoMessageSet
+            assertEquals(1, cargoMessageSet2.messages.size)
+            assertEquals(messageSerialized.asList(), cargoMessageSet2.messages.first().asList())
+        }
 
     @Test
     fun `Messages collectively reaching the max length should be placed together`() =
@@ -76,10 +82,11 @@ class BatchTest {
             val message1Serialized = "a".repeat(halfLimit - 3).toByteArray()
             val message2Serialized = "a".repeat(halfLimit - 2).toByteArray()
 
-            val batches = sequenceOf(
-                CargoMessageWithExpiry(message1Serialized, expiryDate),
-                CargoMessageWithExpiry(message2Serialized, expiryDate)
-            ).batch()
+            val batches =
+                sequenceOf(
+                    CargoMessageWithExpiry(message1Serialized, expiryDate),
+                    CargoMessageWithExpiry(message2Serialized, expiryDate),
+                ).batch()
 
             assertEquals(1, batches.count())
             val cargoMessageSet = batches.first().cargoMessageSet
@@ -100,12 +107,13 @@ class BatchTest {
             val message3ExpiryDate = now.plusDays(3)
             val message4ExpiryDate = now.plusDays(4)
 
-            val batches = sequenceOf(
-                CargoMessageWithExpiry(messageSerialized, message1ExpiryDate),
-                CargoMessageWithExpiry(messageSerialized, message2ExpiryDate),
-                CargoMessageWithExpiry(messageSerialized, message3ExpiryDate),
-                CargoMessageWithExpiry(messageSerialized, message4ExpiryDate)
-            ).batch()
+            val batches =
+                sequenceOf(
+                    CargoMessageWithExpiry(messageSerialized, message1ExpiryDate),
+                    CargoMessageWithExpiry(messageSerialized, message2ExpiryDate),
+                    CargoMessageWithExpiry(messageSerialized, message3ExpiryDate),
+                    CargoMessageWithExpiry(messageSerialized, message4ExpiryDate),
+                ).batch()
 
             assertEquals(2, batches.count())
             assertEquals(2, batches.first().cargoMessageSet.messages.size)
@@ -127,14 +135,15 @@ class CargoMessageWithExpiryTest {
     fun `Messages exceeding the max per-message size should be refused`() {
         val messageSerialized = "a".repeat(CargoMessage.MAX_LENGTH + 1).toByteArray()
 
-        val exception = assertThrows<InvalidMessageException> {
-            CargoMessageWithExpiry(messageSerialized, expiryDate)
-        }
+        val exception =
+            assertThrows<InvalidMessageException> {
+                CargoMessageWithExpiry(messageSerialized, expiryDate)
+            }
 
         assertEquals(
             "Message must not be longer than ${CargoMessage.MAX_LENGTH} octets " +
                 "(got ${messageSerialized.size})",
-            exception.message
+            exception.message,
         )
     }
 }

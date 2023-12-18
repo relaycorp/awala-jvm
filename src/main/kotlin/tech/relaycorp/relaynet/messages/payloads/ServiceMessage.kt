@@ -16,14 +16,16 @@ class ServiceMessage(val type: String, val content: ByteArray) : EncryptedPayloa
     companion object {
         @Throws(InvalidPayloadException::class)
         fun deserialize(serialization: ByteArray): ServiceMessage {
-            val sequence = try {
-                ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            } catch (exc: ASN1Exception) {
-                throw InvalidPayloadException("Service message is not a DER sequence", exc)
-            }
+            val sequence =
+                try {
+                    ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                } catch (exc: ASN1Exception) {
+                    throw InvalidPayloadException("Service message is not a DER sequence", exc)
+                }
             if (sequence.size < 2) {
                 throw InvalidPayloadException(
-                    "Service message sequence should have at least two items (got ${sequence.size})"
+                    "Service message sequence should have at least two items " +
+                        "(got ${sequence.size})",
                 )
             }
             val type = ASN1Utils.getVisibleString(sequence.first())

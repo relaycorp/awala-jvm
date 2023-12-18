@@ -31,7 +31,7 @@ class PrivateNodeRegistrationRequestTest {
             val privateNodePublicKeyRaw = sequence[0]
             assertEquals(
                 keyPair.public.encoded.asList(),
-                ASN1Utils.getOctetString(privateNodePublicKeyRaw).octets.asList()
+                ASN1Utils.getOctetString(privateNodePublicKeyRaw).octets.asList(),
             )
         }
 
@@ -45,7 +45,7 @@ class PrivateNodeRegistrationRequestTest {
             val pnraDeserialized = ASN1Utils.getOctetString(sequence[1]).octets
             assertEquals(
                 pnraSerialized.asList(),
-                pnraDeserialized.asList()
+                pnraDeserialized.asList(),
             )
         }
 
@@ -59,10 +59,11 @@ class PrivateNodeRegistrationRequestTest {
             val pnraCountersignatureASN1 = sequence[2]
             val pnraCountersignature =
                 ASN1Utils.getOctetString(pnraCountersignatureASN1).octets
-            val expectedPlaintext = ASN1Utils.serializeSequence(
-                listOf(OIDs.PNRA_COUNTERSIGNATURE, DEROctetString(pnraSerialized)),
-                false
-            )
+            val expectedPlaintext =
+                ASN1Utils.serializeSequence(
+                    listOf(OIDs.PNRA_COUNTERSIGNATURE, DEROctetString(pnraSerialized)),
+                    false,
+                )
             assertTrue(RSASigning.verify(pnraCountersignature, keyPair.public, expectedPlaintext))
         }
     }
@@ -73,9 +74,10 @@ class PrivateNodeRegistrationRequestTest {
         fun `Malformed sequence should be refused`() {
             val serialization = "invalid".toByteArray()
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationRequest.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationRequest.deserialize(serialization)
+                }
 
             assertEquals("PNRR is not a DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
@@ -86,27 +88,30 @@ class PrivateNodeRegistrationRequestTest {
             val serialization =
                 ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE, DERNull.INSTANCE), false)
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationRequest.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationRequest.deserialize(serialization)
+                }
 
             assertEquals("PNRR sequence should have at least 3 items (got 2)", exception.message)
         }
 
         @Test
         fun `Malformed private node public key should be refused`() {
-            val serialization = ASN1Utils.serializeSequence(
-                listOf(
-                    DEROctetString("foo".toByteArray()),
-                    DERNull.INSTANCE,
-                    DERNull.INSTANCE
-                ),
-                false
-            )
+            val serialization =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        DEROctetString("foo".toByteArray()),
+                        DERNull.INSTANCE,
+                        DERNull.INSTANCE,
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationRequest.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationRequest.deserialize(serialization)
+                }
 
             assertEquals("Private node public key is invalid", exception.message)
             assertTrue(exception.cause is KeyException)
@@ -114,18 +119,20 @@ class PrivateNodeRegistrationRequestTest {
 
         @Test
         fun `Invalid PNRA countersignatures should be refused`() {
-            val serialization = ASN1Utils.serializeSequence(
-                listOf(
-                    DEROctetString(keyPair.public.encoded),
-                    DEROctetString(pnraSerialized),
-                    DEROctetString(RSASigning.sign("foo".toByteArray(), keyPair.private))
-                ),
-                false
-            )
+            val serialization =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        DEROctetString(keyPair.public.encoded),
+                        DEROctetString(pnraSerialized),
+                        DEROctetString(RSASigning.sign("foo".toByteArray(), keyPair.private)),
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationRequest.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationRequest.deserialize(serialization)
+                }
 
             assertEquals("PNRA countersignature is invalid", exception.message)
         }
@@ -139,7 +146,7 @@ class PrivateNodeRegistrationRequestTest {
 
             assertEquals(
                 crr.privateNodePublicKey.encoded.asList(),
-                crrDeserialized.privateNodePublicKey.encoded.asList()
+                crrDeserialized.privateNodePublicKey.encoded.asList(),
             )
             assertEquals(crr.pnraSerialized.asList(), crrDeserialized.pnraSerialized.asList())
         }

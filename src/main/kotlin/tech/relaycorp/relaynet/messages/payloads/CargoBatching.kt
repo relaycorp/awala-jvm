@@ -19,13 +19,13 @@ private const val MAX_BATCH_LENGTH =
 @Suppress("ArrayInDataClass")
 data class CargoMessageWithExpiry(
     val cargoMessageSerialized: ByteArray,
-    val expiryDate: ZonedDateTime
+    val expiryDate: ZonedDateTime,
 ) {
     init {
         if (CargoMessage.MAX_LENGTH < cargoMessageSerialized.size) {
             throw InvalidMessageException(
                 "Message must not be longer than ${CargoMessage.MAX_LENGTH} octets " +
-                    "(got ${cargoMessageSerialized.size})"
+                    "(got ${cargoMessageSerialized.size})",
             )
         }
     }
@@ -36,7 +36,7 @@ data class CargoMessageWithExpiry(
  */
 data class CargoMessageSetWithExpiry(
     val cargoMessageSet: CargoMessageSet,
-    val latestMessageExpiryDate: ZonedDateTime
+    val latestMessageExpiryDate: ZonedDateTime,
 )
 
 /**

@@ -20,7 +20,7 @@ import tech.relaycorp.relaynet.wrappers.deserializeRSAPublicKey
  */
 class PrivateNodeRegistrationRequest(
     val privateNodePublicKey: PublicKey,
-    val pnraSerialized: ByteArray
+    val pnraSerialized: ByteArray,
 ) {
     /**
      * Sign and serialize.
@@ -34,9 +34,9 @@ class PrivateNodeRegistrationRequest(
             listOf(
                 DEROctetString(privateNodePublicKey.encoded),
                 pnraSerializedASN1,
-                DEROctetString(pnraCountersignature)
+                DEROctetString(pnraCountersignature),
             ),
-            false
+            false,
         )
     }
 
@@ -46,22 +46,24 @@ class PrivateNodeRegistrationRequest(
          */
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): PrivateNodeRegistrationRequest {
-            val pnrrSequence = try {
-                ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("PNRR is not a DER sequence", exc)
-            }
+            val pnrrSequence =
+                try {
+                    ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                } catch (exc: ASN1Exception) {
+                    throw InvalidMessageException("PNRR is not a DER sequence", exc)
+                }
             if (pnrrSequence.size < 3) {
                 throw InvalidMessageException(
-                    "PNRR sequence should have at least 3 items (got ${pnrrSequence.size})"
+                    "PNRR sequence should have at least 3 items (got ${pnrrSequence.size})",
                 )
             }
             val privateNodePublicKeyASN1 = ASN1Utils.getOctetString(pnrrSequence[0])
-            val privateNodePublicKey = try {
-                privateNodePublicKeyASN1.octets.deserializeRSAPublicKey()
-            } catch (exc: KeyException) {
-                throw InvalidMessageException("Private node public key is invalid", exc)
-            }
+            val privateNodePublicKey =
+                try {
+                    privateNodePublicKeyASN1.octets.deserializeRSAPublicKey()
+                } catch (exc: KeyException) {
+                    throw InvalidMessageException("Private node public key is invalid", exc)
+                }
 
             val pnraSerialized = ASN1Utils.getOctetString(pnrrSequence[1])
             val pnraCounterSignature = ASN1Utils.getOctetString(pnrrSequence[2]).octets
@@ -74,7 +76,7 @@ class PrivateNodeRegistrationRequest(
         private fun verifyPNRACountersignature(
             pnraSerialized: ASN1OctetString,
             pnraCountersignature: ByteArray,
-            privateNodePublicKey: PublicKey
+            privateNodePublicKey: PublicKey,
         ) {
             val expectedPlaintext = makePNRACountersignaturePlaintext(pnraSerialized)
             if (!RSASigning.verify(pnraCountersignature, privateNodePublicKey, expectedPlaintext)) {
@@ -83,10 +85,11 @@ class PrivateNodeRegistrationRequest(
         }
 
         private fun makePNRACountersignaturePlaintext(
-            pnraSerializedASN1: ASN1OctetString
-        ): ByteArray = ASN1Utils.serializeSequence(
-            listOf(OIDs.PNRA_COUNTERSIGNATURE, pnraSerializedASN1),
-            false
-        )
+            pnraSerializedASN1: ASN1OctetString,
+        ): ByteArray =
+            ASN1Utils.serializeSequence(
+                listOf(OIDs.PNRA_COUNTERSIGNATURE, pnraSerializedASN1),
+                false,
+            )
     }
 }

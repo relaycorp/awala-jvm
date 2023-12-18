@@ -24,7 +24,8 @@ class CertificateRotationTest {
             val serialization = rotation.serialize()
 
             assertEquals(
-                formatSignature.asList(), serialization.slice(0..6)
+                formatSignature.asList(),
+                serialization.slice(0..6),
             )
         }
 
@@ -43,18 +44,20 @@ class CertificateRotationTest {
     inner class Deserialize {
         @Test
         fun `Serialization should be long enough to potentially contain format signature`() {
-            val exception = assertThrows<InvalidMessageException> {
-                CertificateRotation.deserialize("AwalaP".toByteArray())
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    CertificateRotation.deserialize("AwalaP".toByteArray())
+                }
 
             assertEquals("Message is too short to contain format signature", exception.message)
         }
 
         @Test
         fun `Serialization should start with format signature`() {
-            val exception = assertThrows<InvalidMessageException> {
-                CertificateRotation.deserialize("AwalaP0".toByteArray())
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    CertificateRotation.deserialize("AwalaP0".toByteArray())
+                }
 
             assertEquals("Format signature is not that of a CertificateRotation", exception.message)
         }
@@ -63,9 +66,10 @@ class CertificateRotationTest {
         fun `Serialization should contain a CertificationPath`() {
             val serialization = CertificateRotation.FORMAT_SIGNATURE + byteArrayOf(1)
 
-            val exception = assertThrows<InvalidMessageException> {
-                CertificateRotation.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    CertificateRotation.deserialize(serialization)
+                }
 
             assertEquals("CertificationPath is malformed", exception.message)
             assertTrue(exception.cause is CertificationPathException)
@@ -80,12 +84,12 @@ class CertificateRotationTest {
 
             assertEquals(
                 certificationPath.leafCertificate,
-                rotationDeserialized.certificationPath.leafCertificate
+                rotationDeserialized.certificationPath.leafCertificate,
             )
             assertEquals(1, rotationDeserialized.certificationPath.certificateAuthorities.size)
             assertEquals(
                 certificationPath.certificateAuthorities.first(),
-                rotationDeserialized.certificationPath.certificateAuthorities.first()
+                rotationDeserialized.certificationPath.certificateAuthorities.first(),
             )
         }
     }

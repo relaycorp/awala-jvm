@@ -27,7 +27,7 @@ class CargoMessage(val messageSerialized: ByteArray) {
     enum class Type(internal val formatSignature: List<Byte>) {
         PARCEL(PARCEL_SERIALIZER.formatSignature.asList()),
         PCA(ParcelCollectionAck.FORMAT_SIGNATURE.asList()),
-        CERTIFICATE_ROTATION(CertificateRotation.FORMAT_SIGNATURE.asList())
+        CERTIFICATE_ROTATION(CertificateRotation.FORMAT_SIGNATURE.asList()),
     }
 
     companion object {

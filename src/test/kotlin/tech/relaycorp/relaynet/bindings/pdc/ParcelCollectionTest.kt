@@ -57,16 +57,19 @@ class ParcelCollectionTest {
 
         @Test
         fun `Parcels from unauthorized senders should be refused`() {
-            val invalidParcel = Parcel(
-                Recipient(recipientCertificate.subjectId),
-                payload,
-                PDACertPath.INTERNET_GW // Unauthorized sender
-            )
-            val collector = ParcelCollection(
-                invalidParcel.serialize(KeyPairSet.INTERNET_GW.private),
-                setOf(recipientCertificate),
-                dummyACK
-            )
+            val invalidParcel =
+                Parcel(
+                    Recipient(recipientCertificate.subjectId),
+                    payload,
+                    // Unauthorized sender
+                    PDACertPath.INTERNET_GW,
+                )
+            val collector =
+                ParcelCollection(
+                    invalidParcel.serialize(KeyPairSet.INTERNET_GW.private),
+                    setOf(recipientCertificate),
+                    dummyACK,
+                )
 
             val exception =
                 assertThrows<InvalidMessageException> { collector.deserializeAndValidateParcel() }
@@ -75,16 +78,18 @@ class ParcelCollectionTest {
 
         @Test
         fun `Valid parcels should be returned`() {
-            val parcel = Parcel(
-                Recipient(recipientCertificate.subjectId),
-                payload,
-                senderCertificate
-            )
-            val collector = ParcelCollection(
-                parcel.serialize(KeyPairSet.PDA_GRANTEE.private),
-                setOf(recipientCertificate),
-                dummyACK
-            )
+            val parcel =
+                Parcel(
+                    Recipient(recipientCertificate.subjectId),
+                    payload,
+                    senderCertificate,
+                )
+            val collector =
+                ParcelCollection(
+                    parcel.serialize(KeyPairSet.PDA_GRANTEE.private),
+                    setOf(recipientCertificate),
+                    dummyACK,
+                )
 
             val parcelDeserialized = collector.deserializeAndValidateParcel()
 

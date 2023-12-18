@@ -24,25 +24,27 @@ data class SessionKey(val keyId: ByteArray, val publicKey: PublicKey) {
         return result
     }
 
-    internal fun encode(): DERSequence = ASN1Utils.makeSequence(
-        listOf(
-            DEROctetString(keyId),
-            SubjectPublicKeyInfo.getInstance(publicKey.encoded)
-        ),
-        false
-    )
+    internal fun encode(): DERSequence =
+        ASN1Utils.makeSequence(
+            listOf(
+                DEROctetString(keyId),
+                SubjectPublicKeyInfo.getInstance(publicKey.encoded),
+            ),
+            false,
+        )
 
     internal companion object {
         @Throws(SessionKeyException::class)
         fun decode(encoding: ASN1TaggedObject): SessionKey {
-            val sequence = try {
-                DERSequence.getInstance(encoding, false)
-            } catch (exc: IllegalStateException) {
-                throw SessionKeyException(
-                    "Session key should be an implicitly-tagged SEQUENCE",
-                    exc
-                )
-            }
+            val sequence =
+                try {
+                    DERSequence.getInstance(encoding, false)
+                } catch (exc: IllegalStateException) {
+                    throw SessionKeyException(
+                        "Session key should be an implicitly-tagged SEQUENCE",
+                        exc,
+                    )
+                }
             if (sequence.size() != 2) {
                 throw SessionKeyException("Session key should have at least two items")
             }
@@ -57,11 +59,12 @@ data class SessionKey(val keyId: ByteArray, val publicKey: PublicKey) {
             if (publicKeyAsn1 !is ASN1TaggedObject) {
                 throw SessionKeyException("Public key should be implicitly tagged")
             }
-            val publicKeySki = try {
-                SubjectPublicKeyInfo.getInstance(publicKeyAsn1, false)
-            } catch (exc: IllegalStateException) {
-                throw SessionKeyException("Public key should be a SubjectPublicKeyInfo", exc)
-            }
+            val publicKeySki =
+                try {
+                    SubjectPublicKeyInfo.getInstance(publicKeyAsn1, false)
+                } catch (exc: IllegalStateException) {
+                    throw SessionKeyException("Public key should be a SubjectPublicKeyInfo", exc)
+                }
             return publicKeySki.encoded.deserializeECPublicKey()
         }
 
@@ -70,11 +73,12 @@ data class SessionKey(val keyId: ByteArray, val publicKey: PublicKey) {
             if (keyIdAsn1 !is ASN1TaggedObject) {
                 throw SessionKeyException("Session key id should be implicitly tagged")
             }
-            val keyId = try {
-                ASN1Utils.getOctetString(keyIdAsn1).octets
-            } catch (exc: IllegalStateException) {
-                throw SessionKeyException("Session key id should be an OCTET STRING", exc)
-            }
+            val keyId =
+                try {
+                    ASN1Utils.getOctetString(keyIdAsn1).octets
+                } catch (exc: IllegalStateException) {
+                    throw SessionKeyException("Session key id should be an OCTET STRING", exc)
+                }
             return keyId
         }
     }

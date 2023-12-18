@@ -66,7 +66,7 @@ class SessionKeyTest {
         fun `Different key ids should produce different hash codes`() {
             assertNotEquals(
                 sessionKey.copy("bar".toByteArray()).hashCode(),
-                sessionKey.hashCode()
+                sessionKey.hashCode(),
             )
         }
 
@@ -76,7 +76,7 @@ class SessionKeyTest {
 
             assertNotEquals(
                 sessionKey.copy(publicKey = differentPublicKey).hashCode(),
-                sessionKey.hashCode()
+                sessionKey.hashCode(),
             )
         }
 
@@ -101,10 +101,11 @@ class SessionKeyTest {
         fun `Public key should be encoded`() {
             val encoding = sessionKey.encode()
 
-            val publicKeyASN1 = SubjectPublicKeyInfo.getInstance(
-                encoding.getObjectAt(1) as ASN1TaggedObject,
-                false
-            )
+            val publicKeyASN1 =
+                SubjectPublicKeyInfo.getInstance(
+                    encoding.getObjectAt(1) as ASN1TaggedObject,
+                    false,
+                )
             assertContentEquals(sessionKey.publicKey.encoded, publicKeyASN1.encoded)
         }
     }
@@ -115,25 +116,27 @@ class SessionKeyTest {
         fun `Encoding should be implicitly tagged`() {
             val encoding = sessionKey.encode()
 
-            val exception = assertThrows<SessionKeyException> {
-                SessionKey.decode(encoding.toExplicitlyTaggedObject())
-            }
+            val exception =
+                assertThrows<SessionKeyException> {
+                    SessionKey.decode(encoding.toExplicitlyTaggedObject())
+                }
 
             assertEquals(
                 "Session key should be an implicitly-tagged SEQUENCE",
-                exception.message
+                exception.message,
             )
         }
 
         @Test
         fun `Encoding should be a SEQUENCE`() {
-            val exception = assertThrows<SessionKeyException> {
-                SessionKey.decode(DERNull.INSTANCE.toImplicitlyTaggedObject())
-            }
+            val exception =
+                assertThrows<SessionKeyException> {
+                    SessionKey.decode(DERNull.INSTANCE.toImplicitlyTaggedObject())
+                }
 
             assertEquals(
                 "Session key should be an implicitly-tagged SEQUENCE",
-                exception.message
+                exception.message,
             )
         }
 
@@ -141,78 +144,87 @@ class SessionKeyTest {
         fun `Encoding should have at least two items`() {
             val encoding = ASN1Utils.makeSequence(listOf(DEROctetString(keyId)))
 
-            val exception = assertThrows<SessionKeyException> {
-                SessionKey.decode(encoding.toImplicitlyTaggedObject())
-            }
+            val exception =
+                assertThrows<SessionKeyException> {
+                    SessionKey.decode(encoding.toImplicitlyTaggedObject())
+                }
 
             assertEquals("Session key should have at least two items", exception.message)
         }
 
         @Test
         fun `Key id should be an OCTET STRING`() {
-            val encoding = ASN1Utils.makeSequence(
-                listOf(
-                    DERNull.INSTANCE,
-                    SubjectPublicKeyInfo.getInstance(publicKey.encoded)
-                ),
-                false
-            )
+            val encoding =
+                ASN1Utils.makeSequence(
+                    listOf(
+                        DERNull.INSTANCE,
+                        SubjectPublicKeyInfo.getInstance(publicKey.encoded),
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<SessionKeyException> {
-                SessionKey.decode(encoding.toImplicitlyTaggedObject())
-            }
+            val exception =
+                assertThrows<SessionKeyException> {
+                    SessionKey.decode(encoding.toImplicitlyTaggedObject())
+                }
 
             assertEquals("Session key id should be an OCTET STRING", exception.message)
         }
 
         @Test
         fun `Key id should be implicitly tagged`() {
-            val encoding = ASN1Utils.makeSequence(
-                listOf(
-                    DEROctetString(keyId),
-                    SubjectPublicKeyInfo.getInstance(publicKey.encoded)
+            val encoding =
+                ASN1Utils.makeSequence(
+                    listOf(
+                        DEROctetString(keyId),
+                        SubjectPublicKeyInfo.getInstance(publicKey.encoded),
+                    ),
                 )
-            )
 
-            val exception = assertThrows<SessionKeyException> {
-                SessionKey.decode(encoding.toImplicitlyTaggedObject())
-            }
+            val exception =
+                assertThrows<SessionKeyException> {
+                    SessionKey.decode(encoding.toImplicitlyTaggedObject())
+                }
 
             assertEquals("Session key id should be implicitly tagged", exception.message)
         }
 
         @Test
         fun `Public key should be a SUBJECT PUBLIC KEY INFO`() {
-            val encoding = ASN1Utils.makeSequence(
-                listOf(
-                    DEROctetString(keyId),
-                    DERNull.INSTANCE
-                ),
-                false
-            )
+            val encoding =
+                ASN1Utils.makeSequence(
+                    listOf(
+                        DEROctetString(keyId),
+                        DERNull.INSTANCE,
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<SessionKeyException> {
-                SessionKey.decode(encoding.toImplicitlyTaggedObject())
-            }
+            val exception =
+                assertThrows<SessionKeyException> {
+                    SessionKey.decode(encoding.toImplicitlyTaggedObject())
+                }
 
             assertEquals(
                 "Public key should be a SubjectPublicKeyInfo",
-                exception.message
+                exception.message,
             )
         }
 
         @Test
         fun `Public key should be implicitly tagged`() {
-            val encoding = ASN1Utils.makeSequence(
-                listOf(
-                    DEROctetString(keyId).toImplicitlyTaggedObject(),
-                    SubjectPublicKeyInfo.getInstance(publicKey.encoded)
+            val encoding =
+                ASN1Utils.makeSequence(
+                    listOf(
+                        DEROctetString(keyId).toImplicitlyTaggedObject(),
+                        SubjectPublicKeyInfo.getInstance(publicKey.encoded),
+                    ),
                 )
-            )
 
-            val exception = assertThrows<SessionKeyException> {
-                SessionKey.decode(encoding.toImplicitlyTaggedObject())
-            }
+            val exception =
+                assertThrows<SessionKeyException> {
+                    SessionKey.decode(encoding.toImplicitlyTaggedObject())
+                }
 
             assertEquals("Public key should be implicitly tagged", exception.message)
         }

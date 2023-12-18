@@ -106,9 +106,10 @@ tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
         allWarningsAsErrors = true
-        freeCompilerArgs = freeCompilerArgs + arrayOf(
-            "-opt-in=kotlin.RequiresOptIn"
-        )
+        freeCompilerArgs = freeCompilerArgs +
+            arrayOf(
+                "-opt-in=kotlin.RequiresOptIn",
+            )
     }
 }
 
@@ -175,7 +176,7 @@ nexusPublishing {
         sonatype {
             nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
             snapshotRepositoryUrl.set(
-                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"),
             )
             username.set(System.getenv("MAVEN_USERNAME"))
             password.set(System.getenv("MAVEN_PASSWORD"))
@@ -187,5 +188,5 @@ tasks.publish {
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version.set("0.42.1")
+    version.set("1.0.1")
 }

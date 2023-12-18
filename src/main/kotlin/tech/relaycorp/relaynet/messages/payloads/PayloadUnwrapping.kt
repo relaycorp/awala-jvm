@@ -4,5 +4,5 @@ import tech.relaycorp.relaynet.SessionKey
 
 data class PayloadUnwrapping<P : EncryptedPayload>(
     val payload: P,
-    val peerSessionKey: SessionKey
+    val peerSessionKey: SessionKey,
 )

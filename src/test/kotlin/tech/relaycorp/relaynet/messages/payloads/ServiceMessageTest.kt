@@ -45,9 +45,10 @@ internal class ServiceMessageTest {
         fun `Serialization should be DER sequence`() {
             val invalidSerialization = "foo".toByteArray()
 
-            val exception = assertThrows<InvalidPayloadException> {
-                ServiceMessage.deserialize(invalidSerialization)
-            }
+            val exception =
+                assertThrows<InvalidPayloadException> {
+                    ServiceMessage.deserialize(invalidSerialization)
+                }
 
             assertEquals("Service message is not a DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
@@ -58,13 +59,14 @@ internal class ServiceMessageTest {
             val invalidSerialization =
                 ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE), false)
 
-            val exception = assertThrows<InvalidPayloadException> {
-                ServiceMessage.deserialize(invalidSerialization)
-            }
+            val exception =
+                assertThrows<InvalidPayloadException> {
+                    ServiceMessage.deserialize(invalidSerialization)
+                }
 
             assertEquals(
                 "Service message sequence should have at least two items (got 1)",
-                exception.message
+                exception.message,
             )
         }
 

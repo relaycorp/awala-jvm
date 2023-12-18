@@ -20,17 +20,17 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
     messageId: String?,
     creationDate: ZonedDateTime?,
     ttl: Int?,
-    senderCertificateChain: Set<Certificate>?
+    senderCertificateChain: Set<Certificate>?,
 ) : RAMFMessage<P>(
-    serializer,
-    recipient,
-    payload,
-    senderCertificate,
-    messageId,
-    creationDate,
-    ttl,
-    senderCertificateChain
-) {
+        serializer,
+        recipient,
+        payload,
+        senderCertificate,
+        messageId,
+        creationDate,
+        ttl,
+        senderCertificateChain,
+    ) {
     /**
      * Decrypt and deserialize payload.
      *
@@ -44,16 +44,17 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
         InvalidPayloadException::class,
         MissingKeyException::class,
         EnvelopedDataException::class,
-        NotImplementedError::class
+        NotImplementedError::class,
     )
     suspend fun unwrapPayload(privateKeyStore: PrivateKeyStore): PayloadUnwrapping<P> {
         val envelopedData = deserializeEnvelopedData()
         val keyId = envelopedData.getRecipientKeyId()
-        val privateKey = privateKeyStore.retrieveSessionKey(
-            keyId.id,
-            recipient.id,
-            senderCertificate.subjectId
-        )
+        val privateKey =
+            privateKeyStore.retrieveSessionKey(
+                keyId.id,
+                recipient.id,
+                senderCertificate.subjectId,
+            )
         return unwrapEnvelopedData(envelopedData, privateKey)
     }
 
@@ -72,7 +73,7 @@ abstract class EncryptedRAMFMessage<P : EncryptedPayload> internal constructor(
 
     private fun unwrapEnvelopedData(
         envelopedData: SessionEnvelopedData,
-        privateKey: PrivateKey
+        privateKey: PrivateKey,
     ): PayloadUnwrapping<P> {
         val plaintext = envelopedData.decrypt(privateKey)
         val payload = deserializePayload(plaintext)

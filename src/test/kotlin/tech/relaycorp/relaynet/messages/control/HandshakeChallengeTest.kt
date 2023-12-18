@@ -30,9 +30,10 @@ class HandshakeChallengeTest {
     inner class Deserialize {
         @Test
         fun `Serialization should be a DER sequence`() {
-            val exception = assertThrows<InvalidMessageException> {
-                HandshakeChallenge.deserialize(byteArrayOf(0))
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    HandshakeChallenge.deserialize(byteArrayOf(0))
+                }
 
             assertEquals("Handshake challenge is not a DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
@@ -42,13 +43,14 @@ class HandshakeChallengeTest {
         fun `Sequence should have at least one item`() {
             val invalidSequence = ASN1Utils.serializeSequence(listOf(), false)
 
-            val exception = assertThrows<InvalidMessageException> {
-                HandshakeChallenge.deserialize(invalidSequence)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    HandshakeChallenge.deserialize(invalidSequence)
+                }
 
             assertEquals(
                 "Handshake challenge sequence should have at least 1 item",
-                exception.message
+                exception.message,
             )
         }
 

@@ -13,31 +13,35 @@ object PDACertPath {
     private val twoSecondsAgo = now.minusSeconds(2)
     private val tomorrow = now.plusDays(1)
 
-    val INTERNET_GW = issueGatewayCertificate(
-        KeyPairSet.INTERNET_GW.public,
-        KeyPairSet.INTERNET_GW.private,
-        tomorrow,
-        validityStartDate = twoSecondsAgo
-    )
-    val PRIVATE_GW = issueGatewayCertificate(
-        KeyPairSet.PRIVATE_GW.public,
-        KeyPairSet.INTERNET_GW.private,
-        tomorrow,
-        INTERNET_GW,
-        twoSecondsAgo
-    )
-    val PRIVATE_ENDPOINT = issueEndpointCertificate(
-        KeyPairSet.PRIVATE_ENDPOINT.public,
-        KeyPairSet.PRIVATE_GW.private,
-        tomorrow,
-        PRIVATE_GW,
-        twoSecondsAgo
-    )
-    val PDA = issueDeliveryAuthorization(
-        KeyPairSet.PDA_GRANTEE.public,
-        KeyPairSet.PRIVATE_ENDPOINT.private,
-        tomorrow,
-        PRIVATE_ENDPOINT,
-        twoSecondsAgo
-    )
+    val INTERNET_GW =
+        issueGatewayCertificate(
+            KeyPairSet.INTERNET_GW.public,
+            KeyPairSet.INTERNET_GW.private,
+            tomorrow,
+            validityStartDate = twoSecondsAgo,
+        )
+    val PRIVATE_GW =
+        issueGatewayCertificate(
+            KeyPairSet.PRIVATE_GW.public,
+            KeyPairSet.INTERNET_GW.private,
+            tomorrow,
+            INTERNET_GW,
+            twoSecondsAgo,
+        )
+    val PRIVATE_ENDPOINT =
+        issueEndpointCertificate(
+            KeyPairSet.PRIVATE_ENDPOINT.public,
+            KeyPairSet.PRIVATE_GW.private,
+            tomorrow,
+            PRIVATE_GW,
+            twoSecondsAgo,
+        )
+    val PDA =
+        issueDeliveryAuthorization(
+            KeyPairSet.PDA_GRANTEE.public,
+            KeyPairSet.PRIVATE_ENDPOINT.private,
+            tomorrow,
+            PRIVATE_ENDPOINT,
+            twoSecondsAgo,
+        )
 }

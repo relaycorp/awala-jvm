@@ -9,7 +9,6 @@ class MockCertificateStore(
     private val savingException: Throwable? = null,
     private val retrievalException: Throwable? = null,
 ) : CertificateStore() {
-
     val data: MutableMap<Pair<String, String>, List<Pair<ZonedDateTime, ByteArray>>> =
         mutableMapOf()
 
@@ -17,7 +16,7 @@ class MockCertificateStore(
         subjectId: String,
         leafCertificateExpiryDate: ZonedDateTime,
         certificationPathData: ByteArray,
-        issuerId: String
+        issuerId: String,
     ) {
         if (savingException != null) {
             throw KeyStoreBackendException("Saving certificates isn't supported", savingException)
@@ -29,24 +28,24 @@ class MockCertificateStore(
 
     suspend fun forceSave(
         certificationPath: CertificationPath,
-        issuerId: String
+        issuerId: String,
     ) {
         saveData(
             certificationPath.leafCertificate.subjectId,
             certificationPath.leafCertificate.expiryDate,
             certificationPath.serialize(),
-            issuerId
+            issuerId,
         )
     }
 
     override suspend fun retrieveData(
         subjectId: String,
-        issuerId: String
+        issuerId: String,
     ): List<ByteArray> {
         if (retrievalException != null) {
             throw KeyStoreBackendException(
                 "Retrieving certificates isn't supported",
-                retrievalException
+                retrievalException,
             )
         }
         return data[subjectId to issuerId].orEmpty().map { it.second }
@@ -58,7 +57,10 @@ class MockCertificateStore(
         }
     }
 
-    override fun delete(subjectId: String, issuerId: String) {
+    override fun delete(
+        subjectId: String,
+        issuerId: String,
+    ) {
         data.remove(subjectId to issuerId)
     }
 }

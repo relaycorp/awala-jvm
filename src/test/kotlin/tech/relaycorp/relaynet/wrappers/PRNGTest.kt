@@ -17,7 +17,7 @@ class PRNGTest {
             assertEquals(1, value.signum(), "Value should be positive")
             assertTrue(
                 value.bitLength() in 48..64,
-                "Value should be between 48 and 64 bits; got ${value.bitLength()}"
+                "Value should be between 48 and 64 bits; got ${value.bitLength()}",
             )
         }
     }

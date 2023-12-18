@@ -59,12 +59,17 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
             issuerCertificate: Certificate? = null,
             isCA: Boolean = false,
             pathLenConstraint: Int = 0,
-            validityStartDate: ZonedDateTime = ZonedDateTime.now()
+            validityStartDate: ZonedDateTime = ZonedDateTime.now(),
         ): Certificate {
-            val expiryDate = if (issuerCertificate != null) minOf(
-                issuerCertificate.expiryDate,
-                validityEndDate
-            ) else validityEndDate
+            val expiryDate =
+                if (issuerCertificate != null) {
+                    minOf(
+                        issuerCertificate.expiryDate,
+                        validityEndDate,
+                    )
+                } else {
+                    validityEndDate
+                }
 
             if (validityStartDate >= expiryDate) {
                 throw CertificateException("The end date must be later than the start date")
@@ -74,19 +79,22 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
             }
 
             val subjectDistinguishedName = buildDistinguishedName(subjectCommonName)
-            val issuerDistinguishedName = if (issuerCertificate != null)
-                issuerCertificate.certificateHolder.subject
-            else
-                subjectDistinguishedName
+            val issuerDistinguishedName =
+                if (issuerCertificate != null) {
+                    issuerCertificate.certificateHolder.subject
+                } else {
+                    subjectDistinguishedName
+                }
             val subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(subjectPublicKey.encoded)
-            val builder = X509v3CertificateBuilder(
-                issuerDistinguishedName,
-                generateRandomBigInteger(),
-                Date.from(validityStartDate.toInstant()),
-                Date.from(expiryDate.toInstant()),
-                subjectDistinguishedName,
-                subjectPublicKeyInfo
-            )
+            val builder =
+                X509v3CertificateBuilder(
+                    issuerDistinguishedName,
+                    generateRandomBigInteger(),
+                    Date.from(validityStartDate.toInstant()),
+                    Date.from(expiryDate.toInstant()),
+                    subjectDistinguishedName,
+                    subjectPublicKeyInfo,
+                )
 
             val basicConstraints = BasicConstraintsExtension(isCA, pathLenConstraint)
             builder.addExtension(Extension.basicConstraints, true, basicConstraints)
@@ -99,17 +107,18 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
             if (issuerCertificate != null) {
                 issuerSKI =
                     SubjectKeyIdentifier.fromExtensions(
-                        issuerCertificate.certificateHolder.extensions
+                        issuerCertificate.certificateHolder.extensions,
                     ) ?: throw CertificateException(
-                        "Issuer must have the SubjectKeyIdentifier extension"
+                        "Issuer must have the SubjectKeyIdentifier extension",
                     )
             }
             val aki = AuthorityKeyIdentifier(issuerSKI.keyIdentifier)
             builder.addExtension(Extension.authorityKeyIdentifier, false, aki)
 
-            val signer = JcaContentSignerBuilder("SHA256WITHRSAANDMGF1")
-                .setProvider(BC_PROVIDER)
-                .build(issuerPrivateKey)
+            val signer =
+                JcaContentSignerBuilder("SHA256WITHRSAANDMGF1")
+                    .setProvider(BC_PROVIDER)
+                    .build(issuerPrivateKey)
             val certificateHolder = builder.build(signer)
             return Certificate(certificateHolder)
         }
@@ -128,14 +137,15 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
          */
         @Throws(CertificateException::class)
         fun deserialize(certificateSerialized: ByteArray): Certificate {
-            val certificateHolder = try {
-                X509CertificateHolder(certificateSerialized)
-            } catch (exc: IOException) {
-                throw CertificateException(
-                    "Value should be a DER-encoded, X.509 v3 certificate",
-                    exc
-                )
-            }
+            val certificateHolder =
+                try {
+                    X509CertificateHolder(certificateSerialized)
+                } catch (exc: IOException) {
+                    throw CertificateException(
+                        "Value should be a DER-encoded, X.509 v3 certificate",
+                        exc,
+                    )
+                }
             return Certificate(certificateHolder)
         }
 
@@ -262,25 +272,28 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
     @Throws(CertificateException::class)
     fun getCertificationPath(
         intermediateCAs: Collection<Certificate>,
-        trustedCAs: Collection<Certificate>
+        trustedCAs: Collection<Certificate>,
     ): Array<Certificate> {
-        val pathBuilderResult = try {
-            buildPath(intermediateCAs, trustedCAs)
-        } catch (exc: CertPathBuilderException) {
-            throw CertificateException("No certification path could be found", exc)
-        }
+        val pathBuilderResult =
+            try {
+                buildPath(intermediateCAs, trustedCAs)
+            } catch (exc: CertPathBuilderException) {
+                throw CertificateException("No certification path could be found", exc)
+            }
 
         // Convert the Java certificates in the path back to Bouncy Castle instances
-        val bcCertPath = pathBuilderResult.certPath.certificates.map {
-            // It's insane we have to serialize + deserialize, but I couldn't find any other way
-            // to convert a Java certificate to BouncyCastle
-            X509CertificateHolder(it.encoded)
-        }
+        val bcCertPath =
+            pathBuilderResult.certPath.certificates.map {
+                // It's insane we have to serialize + deserialize, but I couldn't find any other way
+                // to convert a Java certificate to BouncyCastle
+                X509CertificateHolder(it.encoded)
+            }
 
         // Convert the BC certificates back to the original Relaynet Certificate instances.
-        val cAs = bcCertPath.slice(1..bcCertPath.lastIndex).map { copy ->
-            intermediateCAs.single { original -> copy == original.certificateHolder }
-        }.toMutableList()
+        val cAs =
+            bcCertPath.slice(1..bcCertPath.lastIndex).map { copy ->
+                intermediateCAs.single { original -> copy == original.certificateHolder }
+            }.toMutableList()
 
         // Include the root certificate unless this is a self-signed certificate:
         val bcRootCACert = X509CertificateHolder(pathBuilderResult.trustAnchor.trustedCert.encoded)
@@ -295,7 +308,7 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
     @Throws(CertPathBuilderException::class)
     private fun buildPath(
         intermediateCAs: Collection<Certificate>,
-        trustedCAs: Collection<Certificate>
+        trustedCAs: Collection<Certificate>,
     ): PKIXCertPathBuilderResult {
         // We have to start by converting all BC certificates to Java certificates because we
         // can't do this with BouncyCastle:
@@ -306,37 +319,43 @@ class Certificate constructor(internal val certificateHolder: X509CertificateHol
 
         val trustAnchors = javaTrustedCACerts.map { TrustAnchor(it, null) }.toSet()
 
-        val intermediateCertStore = CertStore.getInstance(
-            "Collection",
-            CollectionCertStoreParameters(javaIntermediateCACerts),
-            BC_PROVIDER // Use BC for performance reasons
-        )
+        val intermediateCertStore =
+            CertStore.getInstance(
+                "Collection",
+                CollectionCertStoreParameters(javaIntermediateCACerts),
+                // Use BC for performance reasons
+                BC_PROVIDER,
+            )
 
         val endEntitySelector = X509CertSelector()
         endEntitySelector.certificate = javaEndEntityCert
 
-        val parameters: PKIXParameters = try {
-            PKIXBuilderParameters(trustAnchors, endEntitySelector)
-        } catch (exc: InvalidAlgorithmParameterException) {
-            throw CertificateException(
-                "Failed to initialize path builder; set of trusted CAs might be empty",
-                exc
-            )
-        }
+        val parameters: PKIXParameters =
+            try {
+                PKIXBuilderParameters(trustAnchors, endEntitySelector)
+            } catch (exc: InvalidAlgorithmParameterException) {
+                throw CertificateException(
+                    "Failed to initialize path builder; set of trusted CAs might be empty",
+                    exc,
+                )
+            }
         parameters.isRevocationEnabled = false
         parameters.addCertStore(intermediateCertStore)
 
-        val pathBuilder: CertPathBuilder = CertPathBuilder.getInstance(
-            "PKIX",
-            BC_PROVIDER // Use BC for performance reasons
-        )
+        val pathBuilder: CertPathBuilder =
+            CertPathBuilder.getInstance(
+                "PKIX",
+                // Use BC for performance reasons
+                BC_PROVIDER,
+            )
         return pathBuilder.build(parameters) as PKIXCertPathBuilderResult
     }
 
     private fun convertCertToJava(certificate: Certificate) =
         bcToJavaCertificateConverter.getCertificate(certificate.certificateHolder)
 
-    private fun dateToZonedDateTime(date: Date) = date.toInstant().atZone(
-        ZoneId.systemDefault()
-    )
+    private fun dateToZonedDateTime(date: Date) =
+        date.toInstant().atZone(
+            ZoneId.systemDefault(),
+        )
 }

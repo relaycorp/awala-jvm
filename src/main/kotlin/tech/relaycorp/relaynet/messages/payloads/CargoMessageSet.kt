@@ -27,11 +27,12 @@ class CargoMessageSet(val messages: Array<ByteArray>) : GatewayEncryptedPayload(
          * Deserialize a cargo message set.
          */
         fun deserialize(serialization: ByteArray): CargoMessageSet {
-            val items = try {
-                ASN1Utils.deserializeHomogeneousSequence<DEROctetString>(serialization)
-            } catch (exc: ASN1Exception) {
-                throw InvalidPayloadException("Invalid CargoMessageSet", exc)
-            }
+            val items =
+                try {
+                    ASN1Utils.deserializeHomogeneousSequence<DEROctetString>(serialization)
+                } catch (exc: ASN1Exception) {
+                    throw InvalidPayloadException("Invalid CargoMessageSet", exc)
+                }
             val messages = items.map { it.octets }
             return CargoMessageSet(messages.toTypedArray())
         }

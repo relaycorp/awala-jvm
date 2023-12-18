@@ -40,7 +40,7 @@ class HandshakeResponseTest {
                 listOf(nonceSignature.asList()),
                 nonceSignaturesASN1.objects.asSequence()
                     .map { (it as DEROctetString).octets.asList() }
-                    .toList()
+                    .toList(),
             )
         }
     }
@@ -49,9 +49,10 @@ class HandshakeResponseTest {
     inner class Deserialize {
         @Test
         fun `Serialization should be a DER sequence`() {
-            val exception = assertThrows<InvalidMessageException> {
-                HandshakeResponse.deserialize(byteArrayOf(0))
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    HandshakeResponse.deserialize(byteArrayOf(0))
+                }
 
             assertEquals("Handshake response is not a DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
@@ -61,13 +62,14 @@ class HandshakeResponseTest {
         fun `Sequence should have at least one item`() {
             val invalidSequence = ASN1Utils.serializeSequence(listOf(), false)
 
-            val exception = assertThrows<InvalidMessageException> {
-                HandshakeResponse.deserialize(invalidSequence)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    HandshakeResponse.deserialize(invalidSequence)
+                }
 
             assertEquals(
                 "Handshake response sequence should have at least 1 item",
-                exception.message
+                exception.message,
             )
         }
 
@@ -81,7 +83,7 @@ class HandshakeResponseTest {
             assertEquals(1, responseDeserialized.nonceSignatures.size)
             assertEquals(
                 nonceSignature.toList(),
-                responseDeserialized.nonceSignatures.first().toList()
+                responseDeserialized.nonceSignatures.first().toList(),
             )
         }
     }

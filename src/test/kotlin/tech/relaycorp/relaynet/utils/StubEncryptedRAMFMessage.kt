@@ -16,17 +16,17 @@ internal class StubEncryptedRAMFMessage(
     messageId: String? = null,
     creationDate: ZonedDateTime? = null,
     ttl: Int? = null,
-    senderCertificateChain: Set<Certificate>? = null
+    senderCertificateChain: Set<Certificate>? = null,
 ) : EncryptedRAMFMessage<StubEncryptedPayload>(
-    SERIALIZER,
-    recipient,
-    payload,
-    senderCertificate,
-    messageId,
-    creationDate,
-    ttl,
-    senderCertificateChain
-) {
+        SERIALIZER,
+        recipient,
+        payload,
+        senderCertificate,
+        messageId,
+        creationDate,
+        ttl,
+        senderCertificateChain,
+    ) {
     override fun deserializePayload(payloadPlaintext: ByteArray) =
         StubEncryptedPayload(payloadPlaintext.toString(Charset.forName("ASCII")))
 

@@ -47,13 +47,14 @@ class DetachedSignatureTypeTest {
             val serialization = signatureType.sign(plaintext, signerPrivateKey, signerCertificate)
 
             val signedData = SignedData.deserialize(serialization)
-            val expectedPlaintext = ASN1Utils.serializeSequence(
-                listOf(
-                    signatureType.oid,
-                    DEROctetString(plaintext)
-                ),
-                false
-            )
+            val expectedPlaintext =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        signatureType.oid,
+                        DEROctetString(plaintext),
+                    ),
+                    false,
+                )
             signedData.verify(expectedPlaintext)
         }
     }
@@ -62,16 +63,23 @@ class DetachedSignatureTypeTest {
     inner class Verify {
         @Test
         fun `SignedData value should be valid`() {
-            val invalidSignedData = SignedData.sign(
-                byteArrayOf(),
-                KeyPairSet.PDA_GRANTEE.private, // Key doesn't correspond to certificate
-                PDACertPath.PRIVATE_ENDPOINT,
-                setOf(PDACertPath.PRIVATE_ENDPOINT)
-            ).serialize()
+            val invalidSignedData =
+                SignedData.sign(
+                    byteArrayOf(),
+                    // Key doesn't correspond to certificate
+                    KeyPairSet.PDA_GRANTEE.private,
+                    PDACertPath.PRIVATE_ENDPOINT,
+                    setOf(PDACertPath.PRIVATE_ENDPOINT),
+                ).serialize()
 
-            val exception = assertThrows<InvalidSignatureException> {
-                signatureType.verify(invalidSignedData, plaintext, listOf(PDACertPath.PRIVATE_GW))
-            }
+            val exception =
+                assertThrows<InvalidSignatureException> {
+                    signatureType.verify(
+                        invalidSignedData,
+                        plaintext,
+                        listOf(PDACertPath.PRIVATE_GW),
+                    )
+                }
 
             assertEquals("SignedData value is invalid", exception.message)
             assertTrue(exception.cause is SignedDataException)
@@ -79,15 +87,17 @@ class DetachedSignatureTypeTest {
 
         @Test
         fun `Untrusted signers should be refused`() {
-            val serialization = signatureType.sign(
-                plaintext,
-                KeyPairSet.INTERNET_GW.private,
-                PDACertPath.INTERNET_GW
-            )
+            val serialization =
+                signatureType.sign(
+                    plaintext,
+                    KeyPairSet.INTERNET_GW.private,
+                    PDACertPath.INTERNET_GW,
+                )
 
-            val exception = assertThrows<InvalidSignatureException> {
-                signatureType.verify(serialization, plaintext, listOf(PDACertPath.PRIVATE_GW))
-            }
+            val exception =
+                assertThrows<InvalidSignatureException> {
+                    signatureType.verify(serialization, plaintext, listOf(PDACertPath.PRIVATE_GW))
+                }
 
             assertEquals("Signer is not trusted", exception.message)
             assertTrue(exception.cause is CertificateException)
@@ -110,7 +120,7 @@ class DetachedSignatureTypeTest {
         fun `PARCEL_DELIVERY should use the right OID`() {
             assertEquals(
                 OIDs.DETACHED_SIGNATURE.branch("0"),
-                DetachedSignatureType.PARCEL_DELIVERY.oid
+                DetachedSignatureType.PARCEL_DELIVERY.oid,
             )
         }
 

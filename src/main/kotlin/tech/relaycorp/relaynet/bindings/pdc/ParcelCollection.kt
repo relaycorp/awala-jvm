@@ -15,7 +15,7 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 class ParcelCollection(
     val parcelSerialized: ByteArray,
     val trustedCertificates: Collection<Certificate>,
-    val ack: suspend () -> Unit
+    val ack: suspend () -> Unit,
 ) {
     /**
      * Deserialize and validate the parcel being collected.

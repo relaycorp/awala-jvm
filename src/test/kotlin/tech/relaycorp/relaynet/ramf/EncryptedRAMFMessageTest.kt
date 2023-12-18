@@ -33,96 +33,109 @@ internal class EncryptedRAMFMessageTest {
         private val privateKeyStore = MockPrivateKeyStore()
 
         @BeforeEach
-        fun registerSessionKey() = runTest {
-            privateKeyStore.saveSessionKey(
-                recipientSessionKeyPair.privateKey,
-                recipientSessionKeyPair.sessionKey.keyId,
-                recipient.id,
-                senderId,
-            )
-        }
-
-        @Test
-        fun `Exception should be thrown if payload ciphertext is malformed`() = runTest {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                "this is not an EnvelopedData value".toByteArray(),
-                PDACertPath.PDA,
-            )
-
-            assertThrows<EnvelopedDataException> {
-                message.unwrapPayload(privateKeyStore)
-            }
-        }
-
-        @Test
-        fun `SessionlessEnvelopedData should not be supported`() = runTest {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                SessionlessEnvelopedData.encrypt(
-                    payload.serializePlaintext(),
-                    PDACertPath.PRIVATE_ENDPOINT
-                ).serialize(),
-                PDACertPath.PDA
-            )
-
-            val exception = assertThrows<InvalidPayloadException> {
-                message.unwrapPayload(privateKeyStore)
+        fun registerSessionKey() =
+            runTest {
+                privateKeyStore.saveSessionKey(
+                    recipientSessionKeyPair.privateKey,
+                    recipientSessionKeyPair.sessionKey.keyId,
+                    recipient.id,
+                    senderId,
+                )
             }
 
-            assertEquals("SessionlessEnvelopedData is no longer supported", exception.message)
-        }
-
         @Test
-        fun `Exception should be thrown if session key does not exist`() = runTest {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                PDACertPath.PDA,
-            )
-            privateKeyStore.clear()
+        fun `Exception should be thrown if payload ciphertext is malformed`() =
+            runTest {
+                val message =
+                    StubEncryptedRAMFMessage(
+                        recipient,
+                        "this is not an EnvelopedData value".toByteArray(),
+                        PDACertPath.PDA,
+                    )
 
-            assertThrows<MissingKeyException> {
-                message.unwrapPayload(privateKeyStore)
+                assertThrows<EnvelopedDataException> {
+                    message.unwrapPayload(privateKeyStore)
+                }
             }
-        }
 
         @Test
-        fun `SessionEnvelopedData payload should be decrypted`() = runTest {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                PDACertPath.PDA,
-            )
+        fun `SessionlessEnvelopedData should not be supported`() =
+            runTest {
+                val message =
+                    StubEncryptedRAMFMessage(
+                        recipient,
+                        SessionlessEnvelopedData.encrypt(
+                            payload.serializePlaintext(),
+                            PDACertPath.PRIVATE_ENDPOINT,
+                        ).serialize(),
+                        PDACertPath.PDA,
+                    )
 
-            val (plaintextDeserialized) = message.unwrapPayload(privateKeyStore)
+                val exception =
+                    assertThrows<InvalidPayloadException> {
+                        message.unwrapPayload(privateKeyStore)
+                    }
 
-            assertEquals(payload.payload, plaintextDeserialized.payload)
-        }
+                assertEquals("SessionlessEnvelopedData is no longer supported", exception.message)
+            }
 
         @Test
-        fun `Peer's session key should be output`() = runTest {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                PDACertPath.PDA,
-            )
+        fun `Exception should be thrown if session key does not exist`() =
+            runTest {
+                val message =
+                    StubEncryptedRAMFMessage(
+                        recipient,
+                        payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                        PDACertPath.PDA,
+                    )
+                privateKeyStore.clear()
 
-            val (_, senderSessionKey) = message.unwrapPayload(privateKeyStore)
+                assertThrows<MissingKeyException> {
+                    message.unwrapPayload(privateKeyStore)
+                }
+            }
 
-            assertEquals(senderSessionKeyPair.sessionKey, senderSessionKey)
-        }
+        @Test
+        fun `SessionEnvelopedData payload should be decrypted`() =
+            runTest {
+                val message =
+                    StubEncryptedRAMFMessage(
+                        recipient,
+                        payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                        PDACertPath.PDA,
+                    )
+
+                val (plaintextDeserialized) = message.unwrapPayload(privateKeyStore)
+
+                assertEquals(payload.payload, plaintextDeserialized.payload)
+            }
+
+        @Test
+        fun `Peer's session key should be output`() =
+            runTest {
+                val message =
+                    StubEncryptedRAMFMessage(
+                        recipient,
+                        payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                        PDACertPath.PDA,
+                    )
+
+                val (_, senderSessionKey) = message.unwrapPayload(privateKeyStore)
+
+                assertEquals(senderSessionKeyPair.sessionKey, senderSessionKey)
+            }
     }
 
     @Nested
     inner class UnwrapPayloadWithPrivateKey {
         @Test
         fun `Exception should be thrown if payload ciphertext is malformed`() {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                "this is not an EnvelopedData value".toByteArray(),
-                PDACertPath.PDA,
-            )
+            val message =
+                StubEncryptedRAMFMessage(
+                    recipient,
+                    "this is not an EnvelopedData value".toByteArray(),
+                    PDACertPath.PDA,
+                )
 
             assertThrows<EnvelopedDataException> {
                 message.unwrapPayload(recipientSessionKeyPair.privateKey)
@@ -131,29 +144,32 @@ internal class EncryptedRAMFMessageTest {
 
         @Test
         fun `SessionlessEnvelopedData should not be supported`() {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                SessionlessEnvelopedData.encrypt(
-                    payload.serializePlaintext(),
-                    PDACertPath.PRIVATE_ENDPOINT
-                ).serialize(),
-                PDACertPath.PDA
-            )
+            val message =
+                StubEncryptedRAMFMessage(
+                    recipient,
+                    SessionlessEnvelopedData.encrypt(
+                        payload.serializePlaintext(),
+                        PDACertPath.PRIVATE_ENDPOINT,
+                    ).serialize(),
+                    PDACertPath.PDA,
+                )
 
-            val exception = assertThrows<InvalidPayloadException> {
-                message.unwrapPayload(recipientSessionKeyPair.privateKey)
-            }
+            val exception =
+                assertThrows<InvalidPayloadException> {
+                    message.unwrapPayload(recipientSessionKeyPair.privateKey)
+                }
 
             assertEquals("SessionlessEnvelopedData is no longer supported", exception.message)
         }
 
         @Test
         fun `Exception should be thrown if wrong private key is passed`() {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                PDACertPath.PDA,
-            )
+            val message =
+                StubEncryptedRAMFMessage(
+                    recipient,
+                    payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                    PDACertPath.PDA,
+                )
             val wrongPrivateKey = generateECDHKeyPair().private
 
             assertThrows<EnvelopedDataException> {
@@ -163,11 +179,12 @@ internal class EncryptedRAMFMessageTest {
 
         @Test
         fun `SessionEnvelopedData payload should be decrypted`() {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                PDACertPath.PDA,
-            )
+            val message =
+                StubEncryptedRAMFMessage(
+                    recipient,
+                    payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                    PDACertPath.PDA,
+                )
 
             val (plaintextDeserialized) = message.unwrapPayload(recipientSessionKeyPair.privateKey)
 
@@ -176,11 +193,12 @@ internal class EncryptedRAMFMessageTest {
 
         @Test
         fun `Peer's session key should be output`() {
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                PDACertPath.PDA,
-            )
+            val message =
+                StubEncryptedRAMFMessage(
+                    recipient,
+                    payload.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                    PDACertPath.PDA,
+                )
 
             val (_, senderSessionKey) = message.unwrapPayload(recipientSessionKeyPair.privateKey)
 

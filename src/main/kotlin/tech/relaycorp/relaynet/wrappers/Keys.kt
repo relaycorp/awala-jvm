@@ -22,11 +22,12 @@ import tech.relaycorp.relaynet.getSHA256DigestHex
 private const val DEFAULT_RSA_KEY_MODULUS = 2048
 private const val MIN_RSA_KEY_MODULUS = 2048
 
-internal val ECDH_CURVE_MAP = mapOf(
-    ECDHCurve.P256 to "P-256",
-    ECDHCurve.P384 to "P-384",
-    ECDHCurve.P521 to "P-521"
-)
+internal val ECDH_CURVE_MAP =
+    mapOf(
+        ECDHCurve.P256 to "P-256",
+        ECDHCurve.P384 to "P-384",
+        ECDHCurve.P521 to "P-521",
+    )
 
 /**
  * Generate an RSA key pair.

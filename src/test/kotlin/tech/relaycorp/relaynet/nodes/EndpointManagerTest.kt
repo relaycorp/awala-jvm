@@ -24,11 +24,12 @@ class EndpointManagerTest {
 
         @Test
         fun `Custom crypto algorithms should be honored`() {
-            val options = NodeCryptoOptions(
-                ECDHCurve.P521,
-                SymmetricCipher.AES_256,
-                HashingAlgorithm.SHA512,
-            )
+            val options =
+                NodeCryptoOptions(
+                    ECDHCurve.P521,
+                    SymmetricCipher.AES_256,
+                    HashingAlgorithm.SHA512,
+                )
             val endpointManager = EndpointManager(privateKeyStore, sessionPublicKeyStore, options)
 
             assertEquals(options, endpointManager.cryptoOptions)

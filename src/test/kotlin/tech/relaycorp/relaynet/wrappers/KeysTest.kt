@@ -43,12 +43,13 @@ class KeysTest {
 
         @Test
         fun `Modulus should be 2048 or greater`() {
-            val exception = assertThrows<KeyException> {
-                generateRSAKeyPair(2047)
-            }
+            val exception =
+                assertThrows<KeyException> {
+                    generateRSAKeyPair(2047)
+                }
             assertEquals(
                 "Modulus should be at least 2048 (got 2047)",
-                exception.message
+                exception.message,
             )
         }
 
@@ -81,11 +82,11 @@ class KeysTest {
 
             assertEquals(
                 keyPair.private.encoded.asList(),
-                keyPairDeserialized.private.encoded.asList()
+                keyPairDeserialized.private.encoded.asList(),
             )
             assertEquals(
                 keyPair.public.encoded.asList(),
-                keyPairDeserialized.public.encoded.asList()
+                keyPairDeserialized.public.encoded.asList(),
             )
         }
 
@@ -153,11 +154,11 @@ class KeysTest {
 
             assertEquals(
                 keyPair.private.encoded.asList(),
-                keyPairDeserialized.private.encoded.asList()
+                keyPairDeserialized.private.encoded.asList(),
             )
             assertEquals(
                 keyPair.public.encoded.asList(),
-                keyPairDeserialized.public.encoded.asList()
+                keyPairDeserialized.public.encoded.asList(),
             )
         }
 
@@ -231,13 +232,19 @@ class KeysTest {
             assertPublicKeyCurveEquals("P-521", keyPair.public)
         }
 
-        private fun assertPrivateKeyCurveEquals(curveName: String, privateKey: PrivateKey) {
+        private fun assertPrivateKeyCurveEquals(
+            curveName: String,
+            privateKey: PrivateKey,
+        ) {
             assertTrue(privateKey is ECPrivateKey)
             assertEquals("EC", privateKey.algorithm)
             assertEquals(curveName, (privateKey.params as ECNamedCurveSpec).name)
         }
 
-        private fun assertPublicKeyCurveEquals(curveName: String, publicKey: PublicKey) {
+        private fun assertPublicKeyCurveEquals(
+            curveName: String,
+            publicKey: PublicKey,
+        ) {
             assertTrue(publicKey is ECPublicKey)
             assertEquals("EC", publicKey.algorithm)
             assertEquals(curveName, (publicKey.params as ECNamedCurveSpec).name)

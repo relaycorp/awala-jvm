@@ -17,7 +17,7 @@ interface PDCClient : Closeable {
      */
     @Throws(
         ServerException::class,
-        ClientBindingException::class
+        ClientBindingException::class,
     )
     suspend fun preRegisterNode(nodePublicKey: PublicKey): PrivateNodeRegistrationRequest
 
@@ -28,7 +28,7 @@ interface PDCClient : Closeable {
      */
     @Throws(
         ServerException::class,
-        ClientBindingException::class
+        ClientBindingException::class,
     )
     suspend fun registerNode(pnrrSerialized: ByteArray): PrivateNodeRegistration
 
@@ -41,9 +41,12 @@ interface PDCClient : Closeable {
     @Throws(
         ServerException::class,
         RejectedParcelException::class,
-        ClientBindingException::class
+        ClientBindingException::class,
     )
-    suspend fun deliverParcel(parcelSerialized: ByteArray, deliverySigner: Signer)
+    suspend fun deliverParcel(
+        parcelSerialized: ByteArray,
+        deliverySigner: Signer,
+    )
 
     /**
      * Collect parcels on behalf of the specified nodes.
@@ -55,6 +58,6 @@ interface PDCClient : Closeable {
      */
     suspend fun collectParcels(
         nonceSigners: Array<Signer>,
-        streamingMode: StreamingMode = StreamingMode.KeepAlive
+        streamingMode: StreamingMode = StreamingMode.KeepAlive,
     ): Flow<ParcelCollection>
 }

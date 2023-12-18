@@ -15,7 +15,7 @@ package tech.relaycorp.relaynet
 enum class HashingAlgorithm {
     SHA256,
     SHA384,
-    SHA512
+    SHA512,
 }
 
 /**
@@ -24,7 +24,7 @@ enum class HashingAlgorithm {
 enum class SymmetricCipher {
     AES_128,
     AES_192,
-    AES_256
+    AES_256,
 }
 
 /**

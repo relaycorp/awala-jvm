@@ -12,7 +12,7 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 class CertificationPath(
     val leafCertificate: Certificate,
-    val certificateAuthorities: List<Certificate>
+    val certificateAuthorities: List<Certificate>,
 ) {
     @Throws(CertificationPathException::class)
     fun validate() {
@@ -31,10 +31,11 @@ class CertificationPath(
 
     internal fun encode(): DERSequence {
         val leafCertificateASN1 = leafCertificate.encode()
-        val casASN1 = ASN1Utils.makeSequence(
-            certificateAuthorities.map { it.encode() },
-            true
-        )
+        val casASN1 =
+            ASN1Utils.makeSequence(
+                certificateAuthorities.map { it.encode() },
+                true,
+            )
         return ASN1Utils.makeSequence(listOf(leafCertificateASN1, casASN1), false)
     }
 
@@ -46,24 +47,26 @@ class CertificationPath(
     companion object {
         @Throws(CertificationPathException::class)
         fun deserialize(serialization: ByteArray): CertificationPath {
-            val sequence = try {
-                ASN1Utils.deserializeSequence(serialization)
-            } catch (exc: ASN1Exception) {
-                throw CertificationPathException("Path is not a valid DER sequence", exc)
-            }
+            val sequence =
+                try {
+                    ASN1Utils.deserializeSequence(serialization)
+                } catch (exc: ASN1Exception) {
+                    throw CertificationPathException("Path is not a valid DER sequence", exc)
+                }
             return decode(sequence)
         }
 
         @Throws(CertificationPathException::class)
         internal fun decode(encoding: ASN1TaggedObject): CertificationPath {
-            val sequence = try {
-                DERSequence.getInstance(encoding, false)
-            } catch (exc: IllegalStateException) {
-                throw CertificationPathException(
-                    "Serialisation is not an implicitly-tagged sequence",
-                    exc
-                )
-            }
+            val sequence =
+                try {
+                    DERSequence.getInstance(encoding, false)
+                } catch (exc: IllegalStateException) {
+                    throw CertificationPathException(
+                        "Serialisation is not an implicitly-tagged sequence",
+                        exc,
+                    )
+                }
             return decode(sequence)
         }
 
@@ -73,25 +76,28 @@ class CertificationPath(
                 throw CertificationPathException("Path sequence should have at least 2 items")
             }
 
-            val leafCertificateASN1 = try {
-                BCCertificate.getInstance(sequence.getObjectAt(0) as ASN1TaggedObject, false)
-            } catch (exc: IllegalStateException) {
-                throw CertificationPathException("Leaf certificate is malformed", exc)
-            }
+            val leafCertificateASN1 =
+                try {
+                    BCCertificate.getInstance(sequence.getObjectAt(0) as ASN1TaggedObject, false)
+                } catch (exc: IllegalStateException) {
+                    throw CertificationPathException("Leaf certificate is malformed", exc)
+                }
             val leafCertificate = Certificate(X509CertificateHolder(leafCertificateASN1))
 
-            val casSequence = try {
-                DERSequence.getInstance(sequence.getObjectAt(1) as ASN1TaggedObject, false)
-            } catch (exc: IllegalStateException) {
-                throw CertificationPathException("Chain is malformed", exc)
-            }
-            val certificateAuthorities = try {
-                casSequence.toList()
-                    .map { BCCertificate.getInstance(it) }
-                    .map { Certificate(X509CertificateHolder(it)) }
-            } catch (exc: IllegalArgumentException) {
-                throw CertificationPathException("Chain contains malformed certificate", exc)
-            }
+            val casSequence =
+                try {
+                    DERSequence.getInstance(sequence.getObjectAt(1) as ASN1TaggedObject, false)
+                } catch (exc: IllegalStateException) {
+                    throw CertificationPathException("Chain is malformed", exc)
+                }
+            val certificateAuthorities =
+                try {
+                    casSequence.toList()
+                        .map { BCCertificate.getInstance(it) }
+                        .map { Certificate(X509CertificateHolder(it)) }
+                } catch (exc: IllegalArgumentException) {
+                    throw CertificationPathException("Chain contains malformed certificate", exc)
+                }
 
             return CertificationPath(leafCertificate, certificateAuthorities)
         }

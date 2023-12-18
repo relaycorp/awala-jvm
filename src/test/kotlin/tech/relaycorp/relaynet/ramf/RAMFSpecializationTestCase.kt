@@ -18,7 +18,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
     private val requiredParamsConstructor: MinimalRAMFMessageConstructor<M>,
     private val expectedConcreteMessageType: Byte,
     private val expectedConcreteMessageVersion: Byte,
-    private val companion: RAMFMessageCompanion<M>
+    private val companion: RAMFMessageCompanion<M>,
 ) {
     val simpleMessage = requiredParamsConstructor(recipient, payload, senderCertificate)
 
@@ -40,15 +40,16 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
             val senderCertChain = setOf(ID_CERTIFICATE)
             val date = ZonedDateTime.now()
 
-            val message = messageConstructor(
-                recipient,
-                payload,
-                senderCertificate,
-                id,
-                date,
-                ttl,
-                senderCertChain
-            )
+            val message =
+                messageConstructor(
+                    recipient,
+                    payload,
+                    senderCertificate,
+                    id,
+                    date,
+                    ttl,
+                    senderCertChain,
+                )
 
             assertEquals(id, message.id)
             assertEquals(date, message.creationDate)
@@ -85,15 +86,16 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
         @Test
         fun `Message id should be honored if set`() {
             val messageId = "the-id"
-            val message = messageConstructor(
-                recipient,
-                payload,
-                senderCertificate,
-                messageId,
-                null,
-                null,
-                null
-            )
+            val message =
+                messageConstructor(
+                    recipient,
+                    payload,
+                    senderCertificate,
+                    messageId,
+                    null,
+                    null,
+                    null,
+                )
 
             assertEquals(messageId, message.id)
         }
@@ -109,7 +111,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
                     null,
                     creationDate,
                     null,
-                    null
+                    null,
                 )
 
             assertEquals(creationDate, message.creationDate)
@@ -126,7 +128,7 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
                     null,
                     null,
                     ttl,
-                    null
+                    null,
                 )
 
             assertEquals(ttl, message.ttl)
@@ -134,18 +136,20 @@ internal abstract class RAMFSpecializationTestCase<M : RAMFMessage<*>>(
 
         @Test
         fun `Sender certificate chain should be honored if set`() {
-            val senderCertificateChain = setOf(
-                issueStubCertificate(keyPair.public, keyPair.private)
-            )
-            val message = messageConstructor(
-                recipient,
-                payload,
-                senderCertificate,
-                null,
-                null,
-                null,
-                senderCertificateChain
-            )
+            val senderCertificateChain =
+                setOf(
+                    issueStubCertificate(keyPair.public, keyPair.private),
+                )
+            val message =
+                messageConstructor(
+                    recipient,
+                    payload,
+                    senderCertificate,
+                    null,
+                    null,
+                    null,
+                    senderCertificateChain,
+                )
 
             assertEquals(senderCertificateChain, message.senderCertificateChain)
         }
