@@ -18,7 +18,7 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
     { r: Recipient, p: ByteArray, s: Certificate -> Cargo(r, p, s) },
     0x43,
     0x00,
-    Cargo.Companion
+    Cargo.Companion,
 ) {
     private val recipientSessionKeyPair = SessionKeyPair.generate()
     private val senderSessionKeyPair = SessionKeyPair.generate()
@@ -26,29 +26,36 @@ internal class CargoTest : RAMFSpecializationTestCase<Cargo>(
     private val privateKeyStore = MockPrivateKeyStore()
 
     @BeforeEach
-    fun registerSessionKey() = runTest {
-        privateKeyStore.saveSessionKey(
-            recipientSessionKeyPair.privateKey,
-            recipientSessionKeyPair.sessionKey.keyId,
-            CDACertPath.PRIVATE_GW.subjectId,
-            CDACertPath.INTERNET_GW.subjectId,
-        )
-    }
+    fun registerSessionKey() =
+        runTest {
+            privateKeyStore.saveSessionKey(
+                recipientSessionKeyPair.privateKey,
+                recipientSessionKeyPair.sessionKey.keyId,
+                CDACertPath.PRIVATE_GW.subjectId,
+                CDACertPath.INTERNET_GW.subjectId,
+            )
+        }
 
     @Test
-    fun `Payload deserialization should be delegated to CargoMessageSet`() = runTest {
-        val cargoMessageSet = CargoMessageSet(arrayOf("msg1".toByteArray(), "msg2".toByteArray()))
-        val cargo = Cargo(
-            Recipient(CDACertPath.PRIVATE_GW.subjectId),
-            cargoMessageSet.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-            CDACertPath.INTERNET_GW
-        )
+    fun `Payload deserialization should be delegated to CargoMessageSet`() =
+        runTest {
+            val cargoMessageSet =
+                CargoMessageSet(arrayOf("msg1".toByteArray(), "msg2".toByteArray()))
+            val cargo =
+                Cargo(
+                    Recipient(CDACertPath.PRIVATE_GW.subjectId),
+                    cargoMessageSet.encrypt(
+                        recipientSessionKeyPair.sessionKey,
+                        senderSessionKeyPair,
+                    ),
+                    CDACertPath.INTERNET_GW,
+                )
 
-        val (payloadDeserialized) = cargo.unwrapPayload(privateKeyStore)
+            val (payloadDeserialized) = cargo.unwrapPayload(privateKeyStore)
 
-        assertEquals(
-            cargoMessageSet.messages.map { it.asList() },
-            payloadDeserialized.messages.map { it.asList() }
-        )
-    }
+            assertEquals(
+                cargoMessageSet.messages.map { it.asList() },
+                payloadDeserialized.messages.map { it.asList() },
+            )
+        }
 }

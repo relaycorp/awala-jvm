@@ -26,7 +26,7 @@ internal class CargoMessageSetTest {
 
         assertEquals(
             listOf(message1.asList(), message2.asList()),
-            cargoMessageSet.messages.map { it.asList() }
+            cargoMessageSet.messages.map { it.asList() },
         )
     }
 
@@ -73,9 +73,10 @@ internal class CargoMessageSetTest {
     inner class Deserialize {
         @Test
         fun `Non-DER-encoded values should be refused`() {
-            val exception = assertThrows<InvalidPayloadException> {
-                CargoMessageSet.deserialize("invalid".toByteArray())
-            }
+            val exception =
+                assertThrows<InvalidPayloadException> {
+                    CargoMessageSet.deserialize("invalid".toByteArray())
+                }
 
             assertEquals("Invalid CargoMessageSet", exception.message)
             assertNotNull(exception.cause)
@@ -84,9 +85,10 @@ internal class CargoMessageSetTest {
 
         @Test
         fun `Outer value should be an ASN1 SEQUENCE`() {
-            val exception = assertThrows<InvalidPayloadException> {
-                CargoMessageSet.deserialize(DERVisibleString("invalid").encoded)
-            }
+            val exception =
+                assertThrows<InvalidPayloadException> {
+                    CargoMessageSet.deserialize(DERVisibleString("invalid").encoded)
+                }
 
             assertEquals("Invalid CargoMessageSet", exception.message)
             assertNotNull(exception.cause)
@@ -143,8 +145,9 @@ internal class CargoMessageSetTest {
             val parcelSerialized =
                 Parcel(Recipient(RAMFStubs.recipientId), "".toByteArray(), ID_CERTIFICATE)
                     .serialize(ID_KEY_PAIR.private)
-            val pcaSerialized = ParcelCollectionAck("0deadbeef", "0deadc0de", "parcel-id")
-                .serialize()
+            val pcaSerialized =
+                ParcelCollectionAck("0deadbeef", "0deadc0de", "parcel-id")
+                    .serialize()
             val cargoMessageSet = CargoMessageSet(arrayOf(parcelSerialized, pcaSerialized))
 
             val cargoMessages = cargoMessageSet.classifyMessages().toList()

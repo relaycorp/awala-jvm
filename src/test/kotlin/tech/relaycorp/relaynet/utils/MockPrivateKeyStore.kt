@@ -20,7 +20,7 @@ class MockPrivateKeyStore(
 
     override suspend fun saveIdentityKeyData(
         nodeId: String,
-        keyData: PrivateKeyData
+        keyData: PrivateKeyData,
     ) {
         if (savingException != null) {
             throw KeyStoreBackendException("Saving identity keys isn't supported", savingException)
@@ -31,7 +31,10 @@ class MockPrivateKeyStore(
     /**
      * Set an identity key, bypassing all the usual validation.
      */
-    fun setIdentityKey(nodeId: String, keyData: PrivateKeyData) {
+    fun setIdentityKey(
+        nodeId: String,
+        keyData: PrivateKeyData,
+    ) {
         identityKeys[nodeId] = keyData
     }
 
@@ -39,7 +42,7 @@ class MockPrivateKeyStore(
         if (retrievalException != null) {
             throw KeyStoreBackendException(
                 "Retrieving identity keys isn't supported",
-                retrievalException
+                retrievalException,
             )
         }
 
@@ -52,7 +55,7 @@ class MockPrivateKeyStore(
         keyId: String,
         keySerialized: ByteArray,
         nodeId: String,
-        peerId: String?
+        peerId: String?,
     ) {
         if (savingException != null) {
             throw KeyStoreBackendException("Saving session keys isn't supported", savingException)
@@ -67,7 +70,7 @@ class MockPrivateKeyStore(
         nodeId: String,
         peerId: String?,
         keyId: String,
-        keySerialized: ByteArray
+        keySerialized: ByteArray,
     ) {
         sessionKeys.putIfAbsent(nodeId, mutableMapOf())
         val peerKey = peerId ?: "unbound"
@@ -83,7 +86,7 @@ class MockPrivateKeyStore(
         if (retrievalException != null) {
             throw KeyStoreBackendException(
                 "Retrieving session keys isn't supported",
-                retrievalException
+                retrievalException,
             )
         }
 

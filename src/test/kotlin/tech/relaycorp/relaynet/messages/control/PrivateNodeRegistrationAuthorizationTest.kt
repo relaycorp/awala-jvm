@@ -58,14 +58,15 @@ class PrivateNodeRegistrationAuthorizationTest {
 
             val sequence = ASN1Utils.deserializeHeterogeneousSequence(serialization)
             val signature = ASN1Utils.getOctetString(sequence[2]).octets
-            val expectedPlaintext = ASN1Utils.serializeSequence(
-                listOf(
-                    OIDs.PNRA,
-                    ASN1Utils.derEncodeUTCDate(tomorrow),
-                    DEROctetString(gatewayData)
-                ),
-                false
-            )
+            val expectedPlaintext =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        OIDs.PNRA,
+                        ASN1Utils.derEncodeUTCDate(tomorrow),
+                        DEROctetString(gatewayData),
+                    ),
+                    false,
+                )
             assertTrue(RSASigning.verify(signature, keyPair.public, expectedPlaintext))
         }
     }
@@ -76,9 +77,10 @@ class PrivateNodeRegistrationAuthorizationTest {
         fun `Malformed values should be refused`() {
             val serialization = "invalid".toByteArray()
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                }
 
             assertEquals("PNRA is not a valid DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
@@ -86,18 +88,20 @@ class PrivateNodeRegistrationAuthorizationTest {
 
         @Test
         fun `Sequence should have at least 3 items`() {
-            val serialization = ASN1Utils.serializeSequence(
-                listOf(DERVisibleString("a"), DERVisibleString("b")),
-                false
-            )
+            val serialization =
+                ASN1Utils.serializeSequence(
+                    listOf(DERVisibleString("a"), DERVisibleString("b")),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                }
 
             assertEquals(
                 "PNRA plaintext should have at least 3 items (got 2)",
-                exception.message
+                exception.message,
             )
         }
 
@@ -107,9 +111,10 @@ class PrivateNodeRegistrationAuthorizationTest {
             val authorization = PrivateNodeRegistrationAuthorization(oneSecondAgo, gatewayData)
             val serialization = authorization.serialize(keyPair.private)
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                }
 
             assertEquals("PNRA already expired", exception.message)
         }
@@ -117,18 +122,20 @@ class PrivateNodeRegistrationAuthorizationTest {
         @Test
         fun `Invalid signatures should be refused`() {
             val invalidSignature = "not a valid signature".toByteArray()
-            val serialization = ASN1Utils.serializeSequence(
-                listOf(
-                    ASN1Utils.derEncodeUTCDate(tomorrow),
-                    DEROctetString(gatewayData),
-                    DEROctetString(invalidSignature)
-                ),
-                false
-            )
+            val serialization =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        ASN1Utils.derEncodeUTCDate(tomorrow),
+                        DEROctetString(gatewayData),
+                        DEROctetString(invalidSignature),
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidMessageException> {
-                PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    PrivateNodeRegistrationAuthorization.deserialize(serialization, keyPair.public)
+                }
 
             assertEquals("PNRA signature is invalid", exception.message)
         }

@@ -41,44 +41,48 @@ import tech.relaycorp.relaynet.wrappers.generateRandomOctets
 import tech.relaycorp.relaynet.wrappers.x509.Certificate
 
 // CBC mode is temporary. See: https://github.com/relaycorp/relayverse/issues/16
-private val CMS_CONTENT_ENCRYPTION_ALGORITHMS = mapOf(
-    SymmetricCipher.AES_128 to CMSAlgorithm.AES128_CBC,
-    SymmetricCipher.AES_192 to CMSAlgorithm.AES192_CBC,
-    SymmetricCipher.AES_256 to CMSAlgorithm.AES256_CBC
-)
-internal val CMS_KW_ALGORITHMS = mapOf(
-    SymmetricCipher.AES_128 to CMSAlgorithm.AES128_WRAP,
-    SymmetricCipher.AES_192 to CMSAlgorithm.AES192_WRAP,
-    SymmetricCipher.AES_256 to CMSAlgorithm.AES256_WRAP
-)
+private val CMS_CONTENT_ENCRYPTION_ALGORITHMS =
+    mapOf(
+        SymmetricCipher.AES_128 to CMSAlgorithm.AES128_CBC,
+        SymmetricCipher.AES_192 to CMSAlgorithm.AES192_CBC,
+        SymmetricCipher.AES_256 to CMSAlgorithm.AES256_CBC,
+    )
+internal val CMS_KW_ALGORITHMS =
+    mapOf(
+        SymmetricCipher.AES_128 to CMSAlgorithm.AES128_WRAP,
+        SymmetricCipher.AES_192 to CMSAlgorithm.AES192_WRAP,
+        SymmetricCipher.AES_256 to CMSAlgorithm.AES256_WRAP,
+    )
 
 internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
     companion object {
         @Throws(EnvelopedDataException::class)
         fun deserialize(envelopedDataSerialized: ByteArray): EnvelopedData {
-            val bcEnvelopedData = try {
-                CMSEnvelopedData(envelopedDataSerialized)
-            } catch (exception: CMSException) {
-                throw EnvelopedDataException(
-                    "Value should be a DER-encoded CMS EnvelopedData",
-                    exception
-                )
-            }
+            val bcEnvelopedData =
+                try {
+                    CMSEnvelopedData(envelopedDataSerialized)
+                } catch (exception: CMSException) {
+                    throw EnvelopedDataException(
+                        "Value should be a DER-encoded CMS EnvelopedData",
+                        exception,
+                    )
+                }
 
             val recipientsSize = bcEnvelopedData.recipientInfos.size()
             if (recipientsSize != 1) {
                 throw EnvelopedDataException(
-                    "Exactly one RecipientInfo is required (got $recipientsSize)"
+                    "Exactly one RecipientInfo is required (got $recipientsSize)",
                 )
             }
 
-            val envelopedData = when (val recipient = bcEnvelopedData.recipientInfos.first()) {
-                is KeyTransRecipientInformation -> SessionlessEnvelopedData(bcEnvelopedData)
-                is KeyAgreeRecipientInformation -> SessionEnvelopedData(bcEnvelopedData)
-                else -> throw EnvelopedDataException(
-                    "Unsupported RecipientInfo (got ${recipient::class.java.simpleName})"
-                )
-            }
+            val envelopedData =
+                when (val recipient = bcEnvelopedData.recipientInfos.first()) {
+                    is KeyTransRecipientInformation -> SessionlessEnvelopedData(bcEnvelopedData)
+                    is KeyAgreeRecipientInformation -> SessionEnvelopedData(bcEnvelopedData)
+                    else -> throw EnvelopedDataException(
+                        "Unsupported RecipientInfo (got ${recipient::class.java.simpleName})",
+                    )
+                }
 
             envelopedData.validate()
             return envelopedData
@@ -93,11 +97,12 @@ internal abstract class EnvelopedData(val bcEnvelopedData: CMSEnvelopedData) {
     fun decrypt(privateKey: PrivateKey): ByteArray {
         val recipients = bcEnvelopedData.recipientInfos.recipients
         val recipientInfo = recipients.first()
-        val recipient = if (privateKey is ECKey) {
-            JceKeyAgreeEnvelopedRecipient(privateKey).setProvider(BC_PROVIDER)
-        } else {
-            JceKeyTransEnvelopedRecipient(privateKey).setProvider(BC_PROVIDER)
-        }
+        val recipient =
+            if (privateKey is ECKey) {
+                JceKeyAgreeEnvelopedRecipient(privateKey).setProvider(BC_PROVIDER)
+            } else {
+                JceKeyTransEnvelopedRecipient(privateKey).setProvider(BC_PROVIDER)
+            }
         return try {
             recipientInfo.getContent(recipient)
         } catch (exception: Exception) {
@@ -126,34 +131,37 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         fun encrypt(
             plaintext: ByteArray,
             recipientCertificate: Certificate,
-            symmetricCipher: SymmetricCipher = SymmetricCipher.AES_128
+            symmetricCipher: SymmetricCipher = SymmetricCipher.AES_128,
         ): SessionlessEnvelopedData {
             val recipientInfoGenerator = makeRecipientInfoGenerator(recipientCertificate)
-            val bcEnvelopedData = bcEncrypt(
-                plaintext,
-                symmetricCipher,
-                recipientInfoGenerator
-            )
+            val bcEnvelopedData =
+                bcEncrypt(
+                    plaintext,
+                    symmetricCipher,
+                    recipientInfoGenerator,
+                )
             return SessionlessEnvelopedData(bcEnvelopedData)
         }
 
         private fun makeRecipientInfoGenerator(
-            recipientCertificate: Certificate
+            recipientCertificate: Certificate,
         ): JceKeyTransRecipientInfoGenerator {
-            val x509Certificate = JcaX509CertificateConverter()
-                .getCertificate(recipientCertificate.certificateHolder)
-            val algorithmIdentifier = JcaAlgorithmParametersConverter().getAlgorithmIdentifier(
-                PKCSObjectIdentifiers.id_RSAES_OAEP,
-                OAEPParameterSpec(
-                    "SHA-256",
-                    "MGF1",
-                    MGF1ParameterSpec.SHA256,
-                    PSource.PSpecified.DEFAULT
+            val x509Certificate =
+                JcaX509CertificateConverter()
+                    .getCertificate(recipientCertificate.certificateHolder)
+            val algorithmIdentifier =
+                JcaAlgorithmParametersConverter().getAlgorithmIdentifier(
+                    PKCSObjectIdentifiers.id_RSAES_OAEP,
+                    OAEPParameterSpec(
+                        "SHA-256",
+                        "MGF1",
+                        MGF1ParameterSpec.SHA256,
+                        PSource.PSpecified.DEFAULT,
+                    ),
                 )
-            )
             return JceKeyTransRecipientInfoGenerator(
                 x509Certificate,
-                algorithmIdentifier
+                algorithmIdentifier,
             ).setProvider(BC_PROVIDER)
         }
     }
@@ -173,7 +181,7 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
             // spec. So for simplicity, we'll assume that if the serial number is missing, the
             // key id is a SubjectKeyIdentifier.
             throw EnvelopedDataException(
-                "Required recipient key id to be IssuerAndSerialNumber (got SubjectKeyIdentifier)"
+                "Required recipient key id to be IssuerAndSerialNumber (got SubjectKeyIdentifier)",
             )
         }
     }
@@ -182,43 +190,47 @@ internal class SessionlessEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
 internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     EnvelopedData(bcEnvelopedData) {
     companion object {
-        val ecdhAlgorithmByHashingAlgorithm = mapOf(
-            HashingAlgorithm.SHA256 to CMSAlgorithm.ECDH_SHA256KDF,
-            HashingAlgorithm.SHA384 to CMSAlgorithm.ECDH_SHA384KDF,
-            HashingAlgorithm.SHA512 to CMSAlgorithm.ECDH_SHA512KDF
-        )
+        val ecdhAlgorithmByHashingAlgorithm =
+            mapOf(
+                HashingAlgorithm.SHA256 to CMSAlgorithm.ECDH_SHA256KDF,
+                HashingAlgorithm.SHA384 to CMSAlgorithm.ECDH_SHA384KDF,
+                HashingAlgorithm.SHA512 to CMSAlgorithm.ECDH_SHA512KDF,
+            )
 
         fun encrypt(
             plaintext: ByteArray,
             recipientKey: SessionKey,
             senderKeyPair: SessionKeyPair,
             symmetricCipher: SymmetricCipher = SymmetricCipher.AES_128,
-            hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256
+            hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256,
         ): SessionEnvelopedData {
-            val recipientInfoGenerator = makeRecipientInfoGenerator(
-                senderKeyPair,
-                symmetricCipher,
-                hashingAlgorithm
-            )
+            val recipientInfoGenerator =
+                makeRecipientInfoGenerator(
+                    senderKeyPair,
+                    symmetricCipher,
+                    hashingAlgorithm,
+                )
             recipientInfoGenerator.addRecipient(recipientKey.keyId, recipientKey.publicKey)
             val unprotectedAttrs = Hashtable<ASN1ObjectIdentifier, Attribute>()
-            unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] = Attribute(
-                OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
-                DERSet(DEROctetString(senderKeyPair.sessionKey.keyId))
-            )
-            val bcEnvelopedData = bcEncrypt(
-                plaintext,
-                symmetricCipher,
-                recipientInfoGenerator,
-                AttributeTable(unprotectedAttrs),
-            )
+            unprotectedAttrs[OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER] =
+                Attribute(
+                    OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER,
+                    DERSet(DEROctetString(senderKeyPair.sessionKey.keyId)),
+                )
+            val bcEnvelopedData =
+                bcEncrypt(
+                    plaintext,
+                    symmetricCipher,
+                    recipientInfoGenerator,
+                    AttributeTable(unprotectedAttrs),
+                )
             return SessionEnvelopedData(bcEnvelopedData)
         }
 
         private fun makeRecipientInfoGenerator(
             originatorKeyPair: SessionKeyPair,
             symmetricCipher: SymmetricCipher,
-            hashingAlgorithm: HashingAlgorithm
+            hashingAlgorithm: HashingAlgorithm,
         ): JceKeyAgreeRecipientInfoGenerator {
             val ecdhAlgorithm = ecdhAlgorithmByHashingAlgorithm[hashingAlgorithm]
             val keyWrapCipher = CMS_KW_ALGORITHMS[symmetricCipher]
@@ -226,7 +238,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
                 ecdhAlgorithm,
                 originatorKeyPair.privateKey,
                 originatorKeyPair.sessionKey.publicKey,
-                keyWrapCipher
+                keyWrapCipher,
             )
                 .setUserKeyingMaterial(generateRandomOctets(64))
                 .setProvider(BC_PROVIDER)
@@ -239,21 +251,23 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
     }
 
     fun getOriginatorKey(): SessionKey {
-        val originatorKeyIdAttribute = bcEnvelopedData.unprotectedAttributes
-            .get(OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER)
+        val originatorKeyIdAttribute =
+            bcEnvelopedData.unprotectedAttributes
+                .get(OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER)
         val keyIdASN1 = originatorKeyIdAttribute.attrValues.getObjectAt(0) as DEROctetString
 
         val recipientInfo = bcEnvelopedData.recipientInfos.first() as KeyAgreeRecipientInformation
         val originator = recipientInfo.originator
         return SessionKey(
             keyIdASN1.octets,
-            originator.originatorKey.encoded.deserializeECPublicKey()
+            originator.originatorKey.encoded.deserializeECPublicKey(),
         )
     }
 
     override fun validate() {
-        val unprotectedAttrs = bcEnvelopedData.unprotectedAttributes
-            ?: throw EnvelopedDataException("unprotectedAttrs is missing")
+        val unprotectedAttrs =
+            bcEnvelopedData.unprotectedAttributes
+                ?: throw EnvelopedDataException("unprotectedAttrs is missing")
         if (unprotectedAttrs.size() == 0) {
             throw EnvelopedDataException("unprotectedAttrs is empty")
         }
@@ -261,7 +275,7 @@ internal class SessionEnvelopedData(bcEnvelopedData: CMSEnvelopedData) :
         val originatorKeyIdAttributeContainer =
             unprotectedAttrs.get(OIDs.ORIGINATOR_EPHEMERAL_CERT_SERIAL_NUMBER)
                 ?: throw EnvelopedDataException(
-                    "Originator key id is missing from unprotectedAttrs"
+                    "Originator key id is missing from unprotectedAttrs",
                 )
         if (originatorKeyIdAttributeContainer.attrValues.size() == 0) {
             throw EnvelopedDataException("Originator key id is empty")
@@ -280,7 +294,7 @@ private fun bcEncrypt(
     plaintext: ByteArray,
     symmetricCipher: SymmetricCipher,
     recipientInfoGenerator: RecipientInfoGenerator,
-    unprotectedAttrs: AttributeTable? = null
+    unprotectedAttrs: AttributeTable? = null,
 ): CMSEnvelopedData {
     // We'd ideally take the plaintext as an InputStream but the Bouncy Castle class
     // CMSProcessableInputStream doesn't seem to be accessible here

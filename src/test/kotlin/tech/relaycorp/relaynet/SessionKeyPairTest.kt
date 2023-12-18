@@ -36,7 +36,7 @@ class SessionKeyPairTest {
 
             assertEquals(
                 "P-256",
-                ((sessionKey.publicKey as BCECPublicKey).params as ECNamedCurveSpec).name
+                ((sessionKey.publicKey as BCECPublicKey).params as ECNamedCurveSpec).name,
             )
         }
 
@@ -48,7 +48,7 @@ class SessionKeyPairTest {
             val curveName = ECDH_CURVE_MAP[curve]
             assertEquals(
                 curveName,
-                ((sessionKey.publicKey as BCECPublicKey).params as ECNamedCurveSpec).name
+                ((sessionKey.publicKey as BCECPublicKey).params as ECNamedCurveSpec).name,
             )
         }
     }

@@ -17,21 +17,20 @@ abstract class PrivateKeyStore {
     @Throws(KeyStoreBackendException::class)
     protected abstract suspend fun saveIdentityKeyData(
         nodeId: String,
-        keyData: PrivateKeyData
+        keyData: PrivateKeyData,
     )
 
     @Throws(MissingKeyException::class, KeyStoreBackendException::class)
     suspend fun retrieveIdentityKey(nodeId: String): PrivateKey {
-        val keyData = retrieveIdentityKeyData(nodeId)
-            ?: throw MissingKeyException("There is no identity key for $nodeId")
+        val keyData =
+            retrieveIdentityKeyData(nodeId)
+                ?: throw MissingKeyException("There is no identity key for $nodeId")
 
         return keyData.toIdentityPrivateKey()
     }
 
     @Throws(KeyStoreBackendException::class)
-    protected abstract suspend fun retrieveIdentityKeyData(
-        nodeId: String,
-    ): PrivateKeyData?
+    protected abstract suspend fun retrieveIdentityKeyData(nodeId: String): PrivateKeyData?
 
     @Throws(KeyStoreBackendException::class)
     suspend fun retrieveAllIdentityKeys(): List<PrivateKey> =
@@ -45,12 +44,12 @@ abstract class PrivateKeyStore {
         privateKey: PrivateKey,
         keyId: ByteArray,
         nodeId: String,
-        peerId: String? = null
+        peerId: String? = null,
     ) = saveSessionKeySerialized(
         formatSessionKeyId(keyId),
         privateKey.encoded,
         nodeId,
-        peerId
+        peerId,
     )
 
     @Throws(KeyStoreBackendException::class)
@@ -65,14 +64,15 @@ abstract class PrivateKeyStore {
     suspend fun retrieveSessionKey(
         keyId: ByteArray,
         nodeId: String,
-        peerId: String
+        peerId: String,
     ): PrivateKey {
         val keyIdString = formatSessionKeyId(keyId)
-        val privateKeySerialized = retrieveSessionKeySerialized(
-            keyIdString,
-            nodeId,
-            peerId
-        ) ?: throw MissingKeyException("There is no session key for $peerId")
+        val privateKeySerialized =
+            retrieveSessionKeySerialized(
+                keyIdString,
+                nodeId,
+                peerId,
+            ) ?: throw MissingKeyException("There is no session key for $peerId")
         return try {
             privateKeySerialized.deserializeECKeyPair().private
         } catch (exc: KeyException) {
@@ -105,9 +105,10 @@ abstract class PrivateKeyStore {
 
     private fun formatSessionKeyId(keyId: ByteArray) = Hex.toHexString(keyId)
 
-    private fun PrivateKeyData.toIdentityPrivateKey() = try {
-        privateKeyDer.deserializeRSAKeyPair().private
-    } catch (exc: KeyException) {
-        throw KeyStoreBackendException("Private key is malformed", exc)
-    }
+    private fun PrivateKeyData.toIdentityPrivateKey() =
+        try {
+            privateKeyDer.deserializeRSAKeyPair().private
+        } catch (exc: KeyException) {
+            throw KeyStoreBackendException("Private key is malformed", exc)
+        }
 }

@@ -18,7 +18,7 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     { r: Recipient, p: ByteArray, s: Certificate -> Parcel(r, p, s) },
     0x50,
     0x00,
-    Parcel.Companion
+    Parcel.Companion,
 ) {
     private val recipientSessionKeyPair = SessionKeyPair.generate()
     private val senderSessionKeyPair = SessionKeyPair.generate()
@@ -26,27 +26,36 @@ internal class ParcelTest : RAMFSpecializationTestCase<Parcel>(
     private val privateKeyStore = MockPrivateKeyStore()
 
     @BeforeEach
-    fun registerSessionKey() = runTest {
-        privateKeyStore.saveSessionKey(
-            recipientSessionKeyPair.privateKey,
-            recipientSessionKeyPair.sessionKey.keyId,
-            PDACertPath.PRIVATE_ENDPOINT.subjectId,
-            PDACertPath.PDA.subjectId,
-        )
-    }
+    fun registerSessionKey() =
+        runTest {
+            privateKeyStore.saveSessionKey(
+                recipientSessionKeyPair.privateKey,
+                recipientSessionKeyPair.sessionKey.keyId,
+                PDACertPath.PRIVATE_ENDPOINT.subjectId,
+                PDACertPath.PDA.subjectId,
+            )
+        }
 
     @Test
-    fun `Payload deserialization should be delegated to ServiceMessage`() = runTest {
-        val serviceMessage = ServiceMessage("the type", "the content".toByteArray())
-        val parcel = Parcel(
-            Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId),
-            serviceMessage.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-            PDACertPath.PDA
-        )
+    fun `Payload deserialization should be delegated to ServiceMessage`() =
+        runTest {
+            val serviceMessage = ServiceMessage("the type", "the content".toByteArray())
+            val parcel =
+                Parcel(
+                    Recipient(PDACertPath.PRIVATE_ENDPOINT.subjectId),
+                    serviceMessage.encrypt(
+                        recipientSessionKeyPair.sessionKey,
+                        senderSessionKeyPair,
+                    ),
+                    PDACertPath.PDA,
+                )
 
-        val (serviceMessageDeserialized) = parcel.unwrapPayload(privateKeyStore)
+            val (serviceMessageDeserialized) = parcel.unwrapPayload(privateKeyStore)
 
-        assertEquals(serviceMessage.type, serviceMessageDeserialized.type)
-        assertEquals(serviceMessage.content.asList(), serviceMessageDeserialized.content.asList())
-    }
+            assertEquals(serviceMessage.type, serviceMessageDeserialized.type)
+            assertEquals(
+                serviceMessage.content.asList(),
+                serviceMessageDeserialized.content.asList(),
+            )
+        }
 }

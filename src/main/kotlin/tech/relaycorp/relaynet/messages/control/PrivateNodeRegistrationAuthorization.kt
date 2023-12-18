@@ -19,7 +19,7 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
  */
 class PrivateNodeRegistrationAuthorization(
     val expiryDate: ZonedDateTime,
-    val gatewayData: ByteArray
+    val gatewayData: ByteArray,
 ) {
     /**
      * Sign and serialize.
@@ -31,7 +31,7 @@ class PrivateNodeRegistrationAuthorization(
         val signature = RSASigning.sign(signaturePlaintext, gatewayPrivateKey)
         return ASN1Utils.serializeSequence(
             listOf(expiryDateASN1, gatewayDataASN1, DEROctetString(signature)),
-            false
+            false,
         )
     }
 
@@ -42,17 +42,18 @@ class PrivateNodeRegistrationAuthorization(
         @Throws(InvalidMessageException::class)
         fun deserialize(
             serialization: ByteArray,
-            gatewayPublicKey: PublicKey
+            gatewayPublicKey: PublicKey,
         ): PrivateNodeRegistrationAuthorization {
-            val sequence = try {
-                ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("PNRA is not a valid DER sequence", exc)
-            }
+            val sequence =
+                try {
+                    ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                } catch (exc: ASN1Exception) {
+                    throw InvalidMessageException("PNRA is not a valid DER sequence", exc)
+                }
 
             if (sequence.size < 3) {
                 throw InvalidMessageException(
-                    "PNRA plaintext should have at least 3 items (got ${sequence.size})"
+                    "PNRA plaintext should have at least 3 items (got ${sequence.size})",
                 )
             }
 
@@ -76,7 +77,7 @@ class PrivateNodeRegistrationAuthorization(
 
         private fun makeSignaturePlaintext(
             expiryDateASN1: ASN1GeneralizedTime,
-            gatewayDataASN1: ASN1OctetString
+            gatewayDataASN1: ASN1OctetString,
         ) = ASN1Utils.serializeSequence(listOf(OIDs.PNRA, expiryDateASN1, gatewayDataASN1), false)
     }
 }

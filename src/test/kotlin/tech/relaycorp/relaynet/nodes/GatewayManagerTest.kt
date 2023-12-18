@@ -24,11 +24,12 @@ class GatewayManagerTest {
 
         @Test
         fun `Custom crypto algorithms should be honored`() {
-            val options = NodeCryptoOptions(
-                ECDHCurve.P521,
-                SymmetricCipher.AES_256,
-                HashingAlgorithm.SHA512,
-            )
+            val options =
+                NodeCryptoOptions(
+                    ECDHCurve.P521,
+                    SymmetricCipher.AES_256,
+                    HashingAlgorithm.SHA512,
+                )
             val gatewayManager = GatewayManager(privateKeyStore, sessionPublicKeyStore, options)
 
             assertEquals(options, gatewayManager.cryptoOptions)

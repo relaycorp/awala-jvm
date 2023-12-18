@@ -10,7 +10,10 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
  * @param privateKey The private key of the private node
  */
 class Signer(val certificate: Certificate, private val privateKey: PrivateKey) {
-    fun sign(plaintext: ByteArray, detachedSignatureType: DetachedSignatureType): ByteArray {
+    fun sign(
+        plaintext: ByteArray,
+        detachedSignatureType: DetachedSignatureType,
+    ): ByteArray {
         return detachedSignatureType.sign(plaintext, privateKey, certificate)
     }
 }

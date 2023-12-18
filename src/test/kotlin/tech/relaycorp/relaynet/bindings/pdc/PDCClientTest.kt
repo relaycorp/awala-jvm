@@ -16,32 +16,35 @@ class MockPDCClient : PDCClient {
 
     override fun close() = throw NotImplementedError()
 
-    override suspend fun preRegisterNode(
-        nodePublicKey: PublicKey
-    ): PrivateNodeRegistrationRequest = throw NotImplementedError()
+    override suspend fun preRegisterNode(nodePublicKey: PublicKey): PrivateNodeRegistrationRequest =
+        throw NotImplementedError()
 
     override suspend fun registerNode(pnrrSerialized: ByteArray): PrivateNodeRegistration =
         throw NotImplementedError()
 
-    override suspend fun deliverParcel(parcelSerialized: ByteArray, deliverySigner: Signer) =
-        throw NotImplementedError()
+    override suspend fun deliverParcel(
+        parcelSerialized: ByteArray,
+        deliverySigner: Signer,
+    ) = throw NotImplementedError()
 
     override suspend fun collectParcels(
         nonceSigners: Array<Signer>,
-        streamingMode: StreamingMode
-    ): Flow<ParcelCollection> = flow {
-        parcelsCollected = true
-    }
+        streamingMode: StreamingMode,
+    ): Flow<ParcelCollection> =
+        flow {
+            parcelsCollected = true
+        }
 }
 
 @ExperimentalCoroutinesApi
 class PDCClientTest {
     @Test
-    fun `Parcels can be collected without a explicit streaming mode`() = runTest {
-        val client = MockPDCClient()
+    fun `Parcels can be collected without a explicit streaming mode`() =
+        runTest {
+            val client = MockPDCClient()
 
-        client.collectParcels(emptyArray()).toList()
+            client.collectParcels(emptyArray()).toList()
 
-        assertTrue(client.parcelsCollected)
-    }
+            assertTrue(client.parcelsCollected)
+        }
 }

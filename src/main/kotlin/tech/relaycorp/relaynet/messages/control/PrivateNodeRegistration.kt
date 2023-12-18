@@ -38,22 +38,24 @@ class PrivateNodeRegistration(
         val nodeCertificateASN1 = DEROctetString(privateNodeCertificate.serialize())
         val gatewayCertificateASN1 = DEROctetString(gatewayCertificate.serialize())
         val gatewayInternetAddressASN1 = DERVisibleString(gatewayInternetAddress)
-        val gatewaySessionKeyASN1 = if (gatewaySessionKey != null) {
-            ASN1Utils.makeSequence(
-                listOf(
-                    DEROctetString(gatewaySessionKey.keyId),
-                    DEROctetString(gatewaySessionKey.publicKey.encoded),
-                ),
-                false
-            )
-        } else {
-            null
-        }
-        val rootSequence = listOf(
-            nodeCertificateASN1,
-            gatewayCertificateASN1,
-            gatewayInternetAddressASN1,
-        ) + listOfNotNull(gatewaySessionKeyASN1)
+        val gatewaySessionKeyASN1 =
+            if (gatewaySessionKey != null) {
+                ASN1Utils.makeSequence(
+                    listOf(
+                        DEROctetString(gatewaySessionKey.keyId),
+                        DEROctetString(gatewaySessionKey.publicKey.encoded),
+                    ),
+                    false,
+                )
+            } else {
+                null
+            }
+        val rootSequence =
+            listOf(
+                nodeCertificateASN1,
+                gatewayCertificateASN1,
+                gatewayInternetAddressASN1,
+            ) + listOfNotNull(gatewaySessionKeyASN1)
         return ASN1Utils.serializeSequence(rootSequence, false)
     }
 
@@ -63,33 +65,36 @@ class PrivateNodeRegistration(
          */
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): PrivateNodeRegistration {
-            val sequence = try {
-                ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("Node registration is not a DER sequence", exc)
-            }
+            val sequence =
+                try {
+                    ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                } catch (exc: ASN1Exception) {
+                    throw InvalidMessageException("Node registration is not a DER sequence", exc)
+                }
             if (sequence.size < 3) {
                 throw InvalidMessageException(
                     "Node registration sequence should have at least three items (got " +
-                        "${sequence.size})"
+                        "${sequence.size})",
                 )
             }
-            val nodeCertificate = try {
-                deserializeCertificate(sequence[0])
-            } catch (exc: CertificateException) {
-                throw InvalidMessageException(
-                    "Node registration contains invalid node certificate",
-                    exc
-                )
-            }
-            val gatewayCertificate = try {
-                deserializeCertificate(sequence[1])
-            } catch (exc: CertificateException) {
-                throw InvalidMessageException(
-                    "Node registration contains invalid gateway certificate",
-                    exc
-                )
-            }
+            val nodeCertificate =
+                try {
+                    deserializeCertificate(sequence[0])
+                } catch (exc: CertificateException) {
+                    throw InvalidMessageException(
+                        "Node registration contains invalid node certificate",
+                        exc,
+                    )
+                }
+            val gatewayCertificate =
+                try {
+                    deserializeCertificate(sequence[1])
+                } catch (exc: CertificateException) {
+                    throw InvalidMessageException(
+                        "Node registration contains invalid gateway certificate",
+                        exc,
+                    )
+                }
             val gatewayInternetAddress = ASN1Utils.getVisibleString(sequence[2]).string
             if (!DNS.isValidDomainName(gatewayInternetAddress)) {
                 throw InvalidMessageException(
@@ -102,7 +107,7 @@ class PrivateNodeRegistration(
                 nodeCertificate,
                 gatewayCertificate,
                 gatewayInternetAddress,
-                gatewaySessionKey
+                gatewaySessionKey,
             )
         }
 
@@ -111,23 +116,25 @@ class PrivateNodeRegistration(
             if (sessionKeySequence.size() < 2) {
                 throw InvalidMessageException(
                     "Session key SEQUENCE should have at least 2 items " +
-                        "(got ${sessionKeySequence.size()})"
+                        "(got ${sessionKeySequence.size()})",
                 )
             }
-            val sessionKeyId = ASN1Utils.getOctetString(
-                sessionKeySequence.getObjectAt(0) as ASN1TaggedObject,
-            ).octets
+            val sessionKeyId =
+                ASN1Utils.getOctetString(
+                    sessionKeySequence.getObjectAt(0) as ASN1TaggedObject,
+                ).octets
 
             val sessionPublicKeyASN1 =
                 ASN1Utils.getOctetString(sessionKeySequence.getObjectAt(1) as ASN1TaggedObject)
-            val sessionPublicKey = try {
-                sessionPublicKeyASN1.octets.deserializeECPublicKey()
-            } catch (exc: KeyException) {
-                throw InvalidMessageException(
-                    "Session key is not a valid ECDH public key",
-                    exc
-                )
-            }
+            val sessionPublicKey =
+                try {
+                    sessionPublicKeyASN1.octets.deserializeECPublicKey()
+                } catch (exc: KeyException) {
+                    throw InvalidMessageException(
+                        "Session key is not a valid ECDH public key",
+                        exc,
+                    )
+                }
             return SessionKey(sessionKeyId, sessionPublicKey)
         }
 

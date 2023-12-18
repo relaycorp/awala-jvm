@@ -17,7 +17,8 @@ import tech.relaycorp.relaynet.wrappers.x509.CertificateException
  */
 enum class DetachedSignatureType(internal val oid: ASN1ObjectIdentifier) {
     PARCEL_DELIVERY(OIDs.DETACHED_SIGNATURE.branch("0").intern()),
-    NONCE(OIDs.DETACHED_SIGNATURE.branch("1").intern());
+    NONCE(OIDs.DETACHED_SIGNATURE.branch("1").intern()),
+    ;
 
     /**
      * Sign the `plaintext` and return the CMS SignedData serialized.
@@ -25,16 +26,17 @@ enum class DetachedSignatureType(internal val oid: ASN1ObjectIdentifier) {
     fun sign(
         plaintext: ByteArray,
         privateKey: PrivateKey,
-        signerCertificate: Certificate
+        signerCertificate: Certificate,
     ): ByteArray {
         val safePlaintext = makePlaintextSafe(plaintext)
-        val signedData = SignedData.sign(
-            safePlaintext,
-            privateKey,
-            signerCertificate,
-            encapsulatedCertificates = setOf(signerCertificate),
-            encapsulatePlaintext = false
-        )
+        val signedData =
+            SignedData.sign(
+                safePlaintext,
+                privateKey,
+                signerCertificate,
+                encapsulatedCertificates = setOf(signerCertificate),
+                encapsulatePlaintext = false,
+            )
         return signedData.serialize()
     }
 
@@ -45,14 +47,15 @@ enum class DetachedSignatureType(internal val oid: ASN1ObjectIdentifier) {
     fun verify(
         signatureSerialized: ByteArray,
         expectedPlaintext: ByteArray,
-        trustedCertificates: List<Certificate>
+        trustedCertificates: List<Certificate>,
     ): Certificate {
         val safePlaintext = makePlaintextSafe(expectedPlaintext)
-        val signedData = try {
-            SignedData.deserialize(signatureSerialized).also { it.verify(safePlaintext) }
-        } catch (exc: SignedDataException) {
-            throw InvalidSignatureException("SignedData value is invalid", exc)
-        }
+        val signedData =
+            try {
+                SignedData.deserialize(signatureSerialized).also { it.verify(safePlaintext) }
+            } catch (exc: SignedDataException) {
+                throw InvalidSignatureException("SignedData value is invalid", exc)
+            }
         val signerCertificate = signedData.signerCertificate!!
         try {
             signerCertificate.getCertificationPath(emptyList(), trustedCertificates)
@@ -62,8 +65,9 @@ enum class DetachedSignatureType(internal val oid: ASN1ObjectIdentifier) {
         return signerCertificate
     }
 
-    private fun makePlaintextSafe(plaintext: ByteArray) = ASN1Utils.serializeSequence(
-        listOf(oid, DEROctetString(plaintext)),
-        false
-    )
+    private fun makePlaintextSafe(plaintext: ByteArray) =
+        ASN1Utils.serializeSequence(
+            listOf(oid, DEROctetString(plaintext)),
+            false,
+        )
 }

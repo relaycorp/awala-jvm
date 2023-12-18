@@ -7,13 +7,14 @@ class CertificateRotation(val certificationPath: CertificationPath) {
     fun serialize(): ByteArray = FORMAT_SIGNATURE + certificationPath.serialize()
 
     companion object {
-        private const val concreteMessageType: Byte = 0x10
-        private const val concreteMessageVersion: Byte = 0
-        internal val FORMAT_SIGNATURE = byteArrayOf(
-            *"Awala".toByteArray(),
-            concreteMessageType,
-            concreteMessageVersion
-        )
+        private const val CONCRETE_MESSAGE_TYPE: Byte = 0x10
+        private const val CONCRETE_MESSAGE_VERSION: Byte = 0
+        internal val FORMAT_SIGNATURE =
+            byteArrayOf(
+                *"Awala".toByteArray(),
+                CONCRETE_MESSAGE_TYPE,
+                CONCRETE_MESSAGE_VERSION,
+            )
 
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): CertificateRotation {
@@ -23,17 +24,18 @@ class CertificateRotation(val certificationPath: CertificationPath) {
             val formatSignature = serialization.slice(FORMAT_SIGNATURE.indices)
             if (formatSignature != FORMAT_SIGNATURE.asList()) {
                 throw InvalidMessageException(
-                    "Format signature is not that of a CertificateRotation"
+                    "Format signature is not that of a CertificateRotation",
                 )
             }
 
             val certificationPathSerialized =
                 serialization.sliceArray(FORMAT_SIGNATURE.size until serialization.size)
-            val certificationPath = try {
-                CertificationPath.deserialize(certificationPathSerialized)
-            } catch (exc: CertificationPathException) {
-                throw InvalidMessageException("CertificationPath is malformed", exc)
-            }
+            val certificationPath =
+                try {
+                    CertificationPath.deserialize(certificationPathSerialized)
+                } catch (exc: CertificationPathException) {
+                    throw InvalidMessageException("CertificationPath is malformed", exc)
+                }
 
             return CertificateRotation(certificationPath)
         }

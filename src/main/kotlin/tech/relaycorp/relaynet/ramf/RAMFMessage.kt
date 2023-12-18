@@ -36,7 +36,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     id: String?,
     creationDate: ZonedDateTime?,
     ttl: Int?,
-    senderCertificateChain: Set<Certificate>?
+    senderCertificateChain: Set<Certificate>?,
 ) {
     /**
      * The id of the message
@@ -67,15 +67,16 @@ abstract class RAMFMessage<P : Payload> internal constructor(
      * The recipient's certificate, if attached.
      */
     val recipientCertificate: Certificate?
-        get() = senderCertificateChain.firstOrNull {
-            it.subjectId == recipient.id && senderCertificate.isLikelyIssuer(it)
-        }
+        get() =
+            senderCertificateChain.firstOrNull {
+                it.subjectId == recipient.id && senderCertificate.isLikelyIssuer(it)
+            }
 
     init {
         if (MAX_MESSAGE_ID_LENGTH < this.id.length) {
             throw RAMFException(
                 "Message id cannot span more than $MAX_MESSAGE_ID_LENGTH octets " +
-                    "(got ${this.id.length})"
+                    "(got ${this.id.length})",
             )
         }
         if (this.ttl < 0) {
@@ -83,12 +84,12 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         }
         if (MAX_TTL < this.ttl) {
             throw RAMFException(
-                "TTL cannot be greater than $MAX_TTL (got ${this.ttl})"
+                "TTL cannot be greater than $MAX_TTL (got ${this.ttl})",
             )
         }
         if (MAX_PAYLOAD_LENGTH < payload.size) {
             throw RAMFException(
-                "Payload cannot span more than $MAX_PAYLOAD_LENGTH octets (got ${payload.size})"
+                "Payload cannot span more than $MAX_PAYLOAD_LENGTH octets (got ${payload.size})",
             )
         }
     }
@@ -101,7 +102,7 @@ abstract class RAMFMessage<P : Payload> internal constructor(
      */
     fun serialize(
         senderPrivateKey: PrivateKey,
-        hashingAlgorithm: HashingAlgorithm? = null
+        hashingAlgorithm: HashingAlgorithm? = null,
     ): ByteArray {
         return this.serializer.serialize(this, senderPrivateKey, hashingAlgorithm)
     }
@@ -156,14 +157,13 @@ abstract class RAMFMessage<P : Payload> internal constructor(
     }
 
     @Throws(InvalidMessageException::class)
-    private fun validateAuthorization(
-        trustedCAs: Collection<Certificate>,
-    ) {
-        val certificationPath = try {
-            getSenderCertificationPath(trustedCAs)
-        } catch (exc: CertificateException) {
-            throw InvalidMessageException("Sender is not trusted", exc)
-        }
+    private fun validateAuthorization(trustedCAs: Collection<Certificate>) {
+        val certificationPath =
+            try {
+                getSenderCertificationPath(trustedCAs)
+            } catch (exc: CertificateException) {
+                throw InvalidMessageException("Sender is not trusted", exc)
+            }
 
         val recipientCertificate = certificationPath[1]
         val recipientId = recipientCertificate.subjectId

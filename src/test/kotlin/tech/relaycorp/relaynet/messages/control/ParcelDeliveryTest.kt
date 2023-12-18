@@ -37,7 +37,7 @@ class ParcelDeliveryTest {
             val parcelSerializedASN1 = ASN1Utils.getOctetString(sequenceASN1[1])
             assertEquals(
                 parcelSerialized.asList(),
-                parcelSerializedASN1.octets.asList()
+                parcelSerializedASN1.octets.asList(),
             )
         }
     }
@@ -46,9 +46,10 @@ class ParcelDeliveryTest {
     inner class Deserialize {
         @Test
         fun `Serialization should be a DER sequence`() {
-            val exception = assertThrows<InvalidMessageException> {
-                ParcelDelivery.deserialize(byteArrayOf(0))
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    ParcelDelivery.deserialize(byteArrayOf(0))
+                }
 
             assertEquals("Delivery is not a DER sequence", exception.message)
             assertTrue(exception.cause is ASN1Exception)
@@ -58,13 +59,14 @@ class ParcelDeliveryTest {
         fun `Sequence should have at least two items`() {
             val invalidSequence = ASN1Utils.serializeSequence(listOf(DERNull.INSTANCE), false)
 
-            val exception = assertThrows<InvalidMessageException> {
-                ParcelDelivery.deserialize(invalidSequence)
-            }
+            val exception =
+                assertThrows<InvalidMessageException> {
+                    ParcelDelivery.deserialize(invalidSequence)
+                }
 
             assertEquals(
                 "Delivery sequence should have at least 2 items (got 1)",
-                exception.message
+                exception.message,
             )
         }
 

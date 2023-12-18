@@ -41,10 +41,12 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
 
         // We shouldn't have to force this type cast but this is the only way I could get the code to work and, based on
         // what I found online, that's what others have had to do as well
-        @Suppress("UNCHECKED_CAST") val signerCertSelector = X509CertificateHolderSelector(
-            signerInfo.sid.issuer,
-            signerInfo.sid.serialNumber
-        ) as Selector<X509CertificateHolder>
+        @Suppress("UNCHECKED_CAST")
+        val signerCertSelector =
+            X509CertificateHolderSelector(
+                signerInfo.sid.issuer,
+                signerInfo.sid.serialNumber,
+            ) as Selector<X509CertificateHolder>
 
         val signerCertMatches = bcSignedData.certificates.getMatches(signerCertSelector)
         try {
@@ -72,39 +74,43 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
     fun verify(expectedPlaintext: ByteArray? = null) {
         if (plaintext != null && expectedPlaintext != null) {
             throw SignedDataException(
-                "No specific plaintext should be expected because one is already encapsulated"
+                "No specific plaintext should be expected because one is already encapsulated",
             )
         }
-        val signedPlaintext = plaintext
-            ?: expectedPlaintext
-            ?: throw SignedDataException("Plaintext should be encapsulated or explicitly set")
+        val signedPlaintext =
+            plaintext
+                ?: expectedPlaintext
+                ?: throw SignedDataException("Plaintext should be encapsulated or explicitly set")
 
         if (signerCertificate == null) {
             throw SignedDataException("Signer certificate should be encapsulated")
         }
-        val signedData = CMSSignedData(
-            CMSProcessableByteArray(signedPlaintext),
-            bcSignedData.toASN1Structure()
-        )
+        val signedData =
+            CMSSignedData(
+                CMSProcessableByteArray(signedPlaintext),
+                bcSignedData.toASN1Structure(),
+            )
         val signerInfo = getSignerInfo(signedData)
         val verifierBuilder = JcaSimpleSignerInfoVerifierBuilder().setProvider(BC_PROVIDER)
         val verifier = verifierBuilder.build(signerCertificate!!.certificateHolder)
-        val isValid = try {
-            signerInfo.verify(verifier)
-        } catch (exc: CMSException) {
-            throw SignedDataException("Could not verify signature", exc)
-        }
+        val isValid =
+            try {
+                signerInfo.verify(verifier)
+            } catch (exc: CMSException) {
+                throw SignedDataException("Could not verify signature", exc)
+            }
         if (!isValid) {
             throw SignedDataException("Invalid signature")
         }
     }
 
     companion object {
-        private val signatureAlgorithmMap = mapOf(
-            HashingAlgorithm.SHA256 to "SHA256WITHRSAANDMGF1",
-            HashingAlgorithm.SHA384 to "SHA384WITHRSAANDMGF1",
-            HashingAlgorithm.SHA512 to "SHA512WITHRSAANDMGF1"
-        )
+        private val signatureAlgorithmMap =
+            mapOf(
+                HashingAlgorithm.SHA256 to "SHA256WITHRSAANDMGF1",
+                HashingAlgorithm.SHA384 to "SHA384WITHRSAANDMGF1",
+                HashingAlgorithm.SHA512 to "SHA512WITHRSAANDMGF1",
+            )
 
         /**
          * Generate SignedData value with a SignerInfo using an IssuerAndSerialNumber id.
@@ -116,36 +122,43 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
             signerCertificate: Certificate,
             encapsulatedCertificates: Set<Certificate> = setOf(),
             hashingAlgorithm: HashingAlgorithm? = null,
-            encapsulatePlaintext: Boolean = true
+            encapsulatePlaintext: Boolean = true,
         ): SignedData {
             val contentSigner = makeContentSigner(signerPrivateKey, hashingAlgorithm)
-            val signerInfoGenerator = makeSignerInfoGeneratorBuilder().build(
-                contentSigner,
-                signerCertificate.certificateHolder
-            )
+            val signerInfoGenerator =
+                makeSignerInfoGeneratorBuilder().build(
+                    contentSigner,
+                    signerCertificate.certificateHolder,
+                )
             val signedDataGenerator = CMSSignedDataGenerator()
             signedDataGenerator.addSignerInfoGenerator(signerInfoGenerator)
             val certs = JcaCertStore(encapsulatedCertificates.map { it.certificateHolder })
             signedDataGenerator.addCertificates(certs)
             val plaintextCms: CMSTypedData = CMSProcessableByteArray(plaintext)
-            val bcSignedData = signedDataGenerator.generate(
-                plaintextCms, encapsulatePlaintext
-            )
+            val bcSignedData =
+                signedDataGenerator.generate(
+                    plaintextCms,
+                    encapsulatePlaintext,
+                )
             return SignedData(
                 // Work around BC bug that keeps the plaintext encapsulated in the CMSSignedData
                 // instance even if it's not encapsulated
-                if (encapsulatePlaintext) bcSignedData
-                else CMSSignedData(bcSignedData.toASN1Structure())
+                if (encapsulatePlaintext) {
+                    bcSignedData
+                } else {
+                    CMSSignedData(bcSignedData.toASN1Structure())
+                },
             )
         }
 
-        private fun makeSignerInfoGeneratorBuilder() = JcaSignerInfoGeneratorBuilder(
-            JcaDigestCalculatorProviderBuilder().build()
-        )
+        private fun makeSignerInfoGeneratorBuilder() =
+            JcaSignerInfoGeneratorBuilder(
+                JcaDigestCalculatorProviderBuilder().build(),
+            )
 
         private fun makeContentSigner(
             signerPrivateKey: PrivateKey,
-            hashingAlgorithm: HashingAlgorithm?
+            hashingAlgorithm: HashingAlgorithm?,
         ): ContentSigner {
             val algorithm = hashingAlgorithm ?: HashingAlgorithm.SHA256
             val signerBuilder =
@@ -159,21 +172,24 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
                 throw SignedDataException("Value cannot be empty")
             }
             val asn1Stream = ASN1InputStream(serialization)
-            val asn1Sequence = try {
-                asn1Stream.readObject()
-            } catch (_: IOException) {
-                throw SignedDataException("Value is not DER-encoded")
-            }
-            val contentInfo = try {
-                ContentInfo.getInstance(asn1Sequence)
-            } catch (_: IllegalArgumentException) {
-                throw SignedDataException("SignedData value is not wrapped in ContentInfo")
-            }
-            val bcSignedData = try {
-                CMSSignedData(contentInfo)
-            } catch (_: CMSException) {
-                throw SignedDataException("ContentInfo wraps invalid SignedData value")
-            }
+            val asn1Sequence =
+                try {
+                    asn1Stream.readObject()
+                } catch (_: IOException) {
+                    throw SignedDataException("Value is not DER-encoded")
+                }
+            val contentInfo =
+                try {
+                    ContentInfo.getInstance(asn1Sequence)
+                } catch (_: IllegalArgumentException) {
+                    throw SignedDataException("SignedData value is not wrapped in ContentInfo")
+                }
+            val bcSignedData =
+                try {
+                    CMSSignedData(contentInfo)
+                } catch (_: CMSException) {
+                    throw SignedDataException("ContentInfo wraps invalid SignedData value")
+                }
             return SignedData(bcSignedData)
         }
 
@@ -181,7 +197,7 @@ internal class SignedData(internal val bcSignedData: CMSSignedData) {
             val signersCount = bcSignedData.signerInfos.size()
             if (signersCount != 1) {
                 throw SignedDataException(
-                    "SignedData should contain exactly one SignerInfo (got $signersCount)"
+                    "SignedData should contain exactly one SignerInfo (got $signersCount)",
                 )
             }
             return bcSignedData.signerInfos.first()

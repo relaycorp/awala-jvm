@@ -21,17 +21,17 @@ class Cargo(
     messageId: String? = null,
     creationDate: ZonedDateTime? = null,
     ttl: Int? = null,
-    senderCertificateChain: Set<Certificate>? = null
+    senderCertificateChain: Set<Certificate>? = null,
 ) : EncryptedRAMFMessage<CargoMessageSet>(
-    SERIALIZER,
-    recipient,
-    payload,
-    senderCertificate,
-    messageId,
-    creationDate,
-    ttl,
-    senderCertificateChain
-) {
+        SERIALIZER,
+        recipient,
+        payload,
+        senderCertificate,
+        messageId,
+        creationDate,
+        ttl,
+        senderCertificateChain,
+    ) {
     override fun deserializePayload(payloadPlaintext: ByteArray) =
         CargoMessageSet.deserialize(payloadPlaintext)
 

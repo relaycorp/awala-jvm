@@ -10,14 +10,21 @@ import tech.relaycorp.relaynet.BC_PROVIDER
  * doesn't (yet) have a certificate.
  */
 internal object RSASigning {
-    fun sign(plaintext: ByteArray, privateKey: PrivateKey): ByteArray {
+    fun sign(
+        plaintext: ByteArray,
+        privateKey: PrivateKey,
+    ): ByteArray {
         val signature = makeSignature()
         signature.initSign(privateKey)
         signature.update(plaintext)
         return signature.sign()
     }
 
-    fun verify(ciphertext: ByteArray, publicKey: PublicKey, expectedPlaintext: ByteArray): Boolean {
+    fun verify(
+        ciphertext: ByteArray,
+        publicKey: PublicKey,
+        expectedPlaintext: ByteArray,
+    ): Boolean {
         val signature = makeSignature()
         signature.initVerify(publicKey)
         signature.update(expectedPlaintext)

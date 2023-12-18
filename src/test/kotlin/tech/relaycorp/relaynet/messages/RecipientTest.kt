@@ -57,7 +57,8 @@ class RecipientTest {
 
             @Test
             fun `Internet address should be second item in sub-sequence`() {
-                val recipient = Recipient(RAMFStubs.recipientId, RAMFStubs.recipientInternetAddress)
+                val recipient =
+                    Recipient(RAMFStubs.recipientId, RAMFStubs.RECIPIENT_INTERNET_ADDRESS)
 
                 val serialization = recipient.serialize()
 
@@ -69,7 +70,8 @@ class RecipientTest {
 
             @Test
             fun `Internet address should be implicitly tagged`() {
-                val recipient = Recipient(RAMFStubs.recipientId, RAMFStubs.recipientInternetAddress)
+                val recipient =
+                    Recipient(RAMFStubs.recipientId, RAMFStubs.RECIPIENT_INTERNET_ADDRESS)
 
                 val serialization = recipient.serialize()
 
@@ -83,9 +85,10 @@ class RecipientTest {
     inner class Deserialize {
         @Test
         fun `Implicitly-tagged serialization should be a SEQUENCE`() {
-            val exception = assertThrows<RAMFException> {
-                Recipient.deserialize(DLTaggedObject(false, 0, DERNull.INSTANCE))
-            }
+            val exception =
+                assertThrows<RAMFException> {
+                    Recipient.deserialize(DLTaggedObject(false, 0, DERNull.INSTANCE))
+                }
 
             assertEquals("Recipient is not an implicitly-tagged SEQUENCE", exception.message)
             assertTrue(exception.cause is IllegalStateException)
@@ -93,9 +96,10 @@ class RecipientTest {
 
         @Test
         fun `SEQUENCE should have at least one item`() {
-            val exception = assertThrows<RAMFException> {
-                Recipient.deserialize(DERSequence())
-            }
+            val exception =
+                assertThrows<RAMFException> {
+                    Recipient.deserialize(DERSequence())
+                }
 
             assertEquals("Recipient SEQUENCE is empty", exception.message)
         }
@@ -136,13 +140,14 @@ class RecipientTest {
                 val recipient = Recipient("0${"a".repeat(1024)}")
                 val serialization = recipient.serialize()
 
-                val exception = assertThrows<RAMFException> {
-                    Recipient.deserialize(serialization)
-                }
+                val exception =
+                    assertThrows<RAMFException> {
+                        Recipient.deserialize(serialization)
+                    }
 
                 assertEquals(
                     "Recipient id should not span more than 1024 characters (got 1025)",
-                    exception.message
+                    exception.message,
                 )
             }
 
@@ -151,13 +156,14 @@ class RecipientTest {
                 val recipient = Recipient("not an id")
                 val serialization = recipient.serialize()
 
-                val exception = assertThrows<RAMFException> {
-                    Recipient.deserialize(serialization)
-                }
+                val exception =
+                    assertThrows<RAMFException> {
+                        Recipient.deserialize(serialization)
+                    }
 
                 assertEquals(
                     "Recipient id is malformed (${recipient.id})",
-                    exception.message
+                    exception.message,
                 )
             }
         }
@@ -166,10 +172,11 @@ class RecipientTest {
         inner class InternetAddress {
             @Test
             fun `Address should be null if absent`() {
-                val serialization = ASN1Utils.makeSequence(
-                    listOf(DERVisibleString(RAMFStubs.recipientId)),
-                    false,
-                )
+                val serialization =
+                    ASN1Utils.makeSequence(
+                        listOf(DERVisibleString(RAMFStubs.recipientId)),
+                        false,
+                    )
 
                 val recipientDeserialized = Recipient.deserialize(serialization)
 
@@ -178,13 +185,14 @@ class RecipientTest {
 
             @Test
             fun `Domain name should be accepted`() {
-                val recipient = Recipient(RAMFStubs.recipientId, RAMFStubs.recipientInternetAddress)
+                val recipient =
+                    Recipient(RAMFStubs.recipientId, RAMFStubs.RECIPIENT_INTERNET_ADDRESS)
 
                 val recipientDeserialized = Recipient.deserialize(recipient.serialize())
 
                 assertEquals(
-                    RAMFStubs.recipientInternetAddress,
-                    recipientDeserialized.internetAddress
+                    RAMFStubs.RECIPIENT_INTERNET_ADDRESS,
+                    recipientDeserialized.internetAddress,
                 )
             }
 
@@ -198,7 +206,7 @@ class RecipientTest {
 
                 assertEquals(
                     "Internet address should not span more than 1024 characters (got 1025)",
-                    exception.message
+                    exception.message,
                 )
             }
 
@@ -212,7 +220,7 @@ class RecipientTest {
 
                 assertEquals(
                     "Internet address is malformed ($malformedDomain)",
-                    exception.message
+                    exception.message,
                 )
             }
         }

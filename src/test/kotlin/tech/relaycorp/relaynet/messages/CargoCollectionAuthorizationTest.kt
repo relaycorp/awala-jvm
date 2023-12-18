@@ -20,7 +20,7 @@ internal class CargoCollectionAuthorizationTest :
         { r: Recipient, p: ByteArray, s: Certificate -> CargoCollectionAuthorization(r, p, s) },
         0x44,
         0x00,
-        CargoCollectionAuthorization.Companion
+        CargoCollectionAuthorization.Companion,
     ) {
     private val recipientSessionKeyPair = SessionKeyPair.generate()
     private val senderSessionKeyPair = SessionKeyPair.generate()
@@ -28,30 +28,32 @@ internal class CargoCollectionAuthorizationTest :
     private val privateKeyStore = MockPrivateKeyStore()
 
     @BeforeEach
-    fun registerSessionKey() = runTest {
-        privateKeyStore.saveSessionKey(
-            recipientSessionKeyPair.privateKey,
-            recipientSessionKeyPair.sessionKey.keyId,
-            CDACertPath.PRIVATE_GW.subjectId,
-            CDACertPath.INTERNET_GW.subjectId,
-        )
-    }
+    fun registerSessionKey() =
+        runTest {
+            privateKeyStore.saveSessionKey(
+                recipientSessionKeyPair.privateKey,
+                recipientSessionKeyPair.sessionKey.keyId,
+                CDACertPath.PRIVATE_GW.subjectId,
+                CDACertPath.INTERNET_GW.subjectId,
+            )
+        }
 
     @Test
     fun `Payload deserialization should be delegated to CargoCollectionRequest`() =
         runTest {
             val ccr = CargoCollectionRequest(CDACertPath.INTERNET_GW)
-            val cca = CargoCollectionAuthorization(
-                Recipient(CDACertPath.INTERNET_GW.subjectId),
-                ccr.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
-                ID_CERTIFICATE
-            )
+            val cca =
+                CargoCollectionAuthorization(
+                    Recipient(CDACertPath.INTERNET_GW.subjectId),
+                    ccr.encrypt(recipientSessionKeyPair.sessionKey, senderSessionKeyPair),
+                    ID_CERTIFICATE,
+                )
 
             val (payloadDeserialized) = cca.unwrapPayload(recipientSessionKeyPair.privateKey)
 
             assertEquals(
                 ccr.cargoDeliveryAuthorization,
-                payloadDeserialized.cargoDeliveryAuthorization
+                payloadDeserialized.cargoDeliveryAuthorization,
             )
         }
 }

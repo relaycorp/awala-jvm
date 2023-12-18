@@ -17,17 +17,18 @@ class PDCExceptionTest {
             ServerBindingException::class,
             ClientBindingException::class,
             RejectedParcelException::class,
-            NonceSignerException::class
-        ]
+            NonceSignerException::class,
+        ],
     )
     fun message(clazz: Class<PDCException>) {
         val exceptionMessage = "message"
-        val exception = try {
-            clazz.getConstructor(String::class.java).newInstance(exceptionMessage)
-        } catch (_: NoSuchMethodException) {
-            clazz.getConstructor(String::class.java, Throwable::class.java)
-                .newInstance(exceptionMessage, null)
-        }
+        val exception =
+            try {
+                clazz.getConstructor(String::class.java).newInstance(exceptionMessage)
+            } catch (_: NoSuchMethodException) {
+                clazz.getConstructor(String::class.java, Throwable::class.java)
+                    .newInstance(exceptionMessage, null)
+            }
 
         assertEquals(exceptionMessage, exception.message)
     }

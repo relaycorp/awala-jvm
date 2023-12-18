@@ -27,12 +27,13 @@ internal class EncryptedPayloadTest {
         fun `Payload should be encrypted with the specified recipient key`() {
             val payload = StubEncryptedPayload(payloadPlaintext)
 
-            val payloadSerialized = payload.encrypt(
-                recipientSessionKeyPair.sessionKey,
-                senderSessionKeyPair,
-                SymmetricCipher.AES_128,
-                HashingAlgorithm.SHA256
-            )
+            val payloadSerialized =
+                payload.encrypt(
+                    recipientSessionKeyPair.sessionKey,
+                    senderSessionKeyPair,
+                    SymmetricCipher.AES_128,
+                    HashingAlgorithm.SHA256,
+                )
 
             val envelopedData = EnvelopedData.deserialize(payloadSerialized)
             val payloadDecrypted = envelopedData.decrypt(recipientSessionKeyPair.privateKey)
@@ -43,17 +44,18 @@ internal class EncryptedPayloadTest {
         fun `Sender's key should have been used in encryption`() {
             val payload = StubEncryptedPayload(payloadPlaintext)
 
-            val payloadSerialized = payload.encrypt(
-                recipientSessionKeyPair.sessionKey,
-                senderSessionKeyPair,
-                SymmetricCipher.AES_128,
-                HashingAlgorithm.SHA256
-            )
+            val payloadSerialized =
+                payload.encrypt(
+                    recipientSessionKeyPair.sessionKey,
+                    senderSessionKeyPair,
+                    SymmetricCipher.AES_128,
+                    HashingAlgorithm.SHA256,
+                )
 
             val envelopedData = EnvelopedData.deserialize(payloadSerialized) as SessionEnvelopedData
             assertEquals(
                 senderSessionKeyPair.sessionKey.keyId.asList(),
-                envelopedData.getOriginatorKey().keyId.asList()
+                envelopedData.getOriginatorKey().keyId.asList(),
             )
         }
 
@@ -61,15 +63,16 @@ internal class EncryptedPayloadTest {
         fun `Cipher AES-128 should be used by default`() {
             val payload = StubEncryptedPayload(payloadPlaintext)
 
-            val payloadSerialized = payload.encrypt(
-                recipientSessionKeyPair.sessionKey,
-                senderSessionKeyPair,
-            )
+            val payloadSerialized =
+                payload.encrypt(
+                    recipientSessionKeyPair.sessionKey,
+                    senderSessionKeyPair,
+                )
 
             val envelopedData = EnvelopedData.deserialize(payloadSerialized)
             assertEquals(
                 PAYLOAD_SYMMETRIC_CIPHER_OIDS[SymmetricCipher.AES_128],
-                envelopedData.bcEnvelopedData.encryptionAlgOID
+                envelopedData.bcEnvelopedData.encryptionAlgOID,
             )
         }
 
@@ -78,16 +81,17 @@ internal class EncryptedPayloadTest {
         fun symmetricCiphers(algorithm: SymmetricCipher) {
             val payload = StubEncryptedPayload(payloadPlaintext)
 
-            val payloadSerialized = payload.encrypt(
-                recipientSessionKeyPair.sessionKey,
-                senderSessionKeyPair,
-                algorithm,
-            )
+            val payloadSerialized =
+                payload.encrypt(
+                    recipientSessionKeyPair.sessionKey,
+                    senderSessionKeyPair,
+                    algorithm,
+                )
 
             val envelopedData = EnvelopedData.deserialize(payloadSerialized)
             assertEquals(
                 PAYLOAD_SYMMETRIC_CIPHER_OIDS[algorithm],
-                envelopedData.bcEnvelopedData.encryptionAlgOID
+                envelopedData.bcEnvelopedData.encryptionAlgOID,
             )
         }
 
@@ -95,14 +99,16 @@ internal class EncryptedPayloadTest {
         fun `Hashing algorithm SHA-256 should be used by default`() {
             val payload = StubEncryptedPayload(payloadPlaintext)
 
-            val payloadSerialized = payload.encrypt(
-                recipientSessionKeyPair.sessionKey,
-                senderSessionKeyPair,
-            )
+            val payloadSerialized =
+                payload.encrypt(
+                    recipientSessionKeyPair.sessionKey,
+                    senderSessionKeyPair,
+                )
 
             val envelopedData = EnvelopedData.deserialize(payloadSerialized)
-            val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
-                KeyAgreeRecipientInformation
+            val recipientInfo =
+                envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
             val ecdhAlgorithmOID =
                 SessionEnvelopedData.ecdhAlgorithmByHashingAlgorithm[HashingAlgorithm.SHA256]!!
             assertEquals(ecdhAlgorithmOID.id, recipientInfo.keyEncryptionAlgOID)
@@ -113,15 +119,17 @@ internal class EncryptedPayloadTest {
         fun hashingAlgorithms(algorithm: HashingAlgorithm) {
             val payload = StubEncryptedPayload(payloadPlaintext)
 
-            val payloadSerialized = payload.encrypt(
-                recipientSessionKeyPair.sessionKey,
-                senderSessionKeyPair,
-                hashingAlgorithm = algorithm,
-            )
+            val payloadSerialized =
+                payload.encrypt(
+                    recipientSessionKeyPair.sessionKey,
+                    senderSessionKeyPair,
+                    hashingAlgorithm = algorithm,
+                )
 
             val envelopedData = EnvelopedData.deserialize(payloadSerialized)
-            val recipientInfo = envelopedData.bcEnvelopedData.recipientInfos.first() as
-                KeyAgreeRecipientInformation
+            val recipientInfo =
+                envelopedData.bcEnvelopedData.recipientInfos.first() as
+                    KeyAgreeRecipientInformation
             val ecdhAlgorithmOID =
                 SessionEnvelopedData.ecdhAlgorithmByHashingAlgorithm[algorithm]!!
             assertEquals(ecdhAlgorithmOID.id, recipientInfo.keyEncryptionAlgOID)

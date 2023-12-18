@@ -18,20 +18,22 @@ import tech.relaycorp.relaynet.wrappers.asn1.ASN1Utils
 class PrivateEndpointConnParamsTest {
     val internetAddress = "foo.relaycorp.tech"
     val identityKey: PublicKey = KeyPairSet.INTERNET_GW.public
-    val deliveryAuth = CertificationPath(
-        PDACertPath.PDA,
-        listOf(PDACertPath.PRIVATE_ENDPOINT)
-    )
+    val deliveryAuth =
+        CertificationPath(
+            PDACertPath.PDA,
+            listOf(PDACertPath.PRIVATE_ENDPOINT),
+        )
     val sessionKey = SessionKeyPair.generate().sessionKey
 
     @Nested
     inner class Serialize {
-        val params = PrivateEndpointConnParams(
-            identityKey,
-            internetAddress,
-            deliveryAuth,
-            sessionKey
-        )
+        val params =
+            PrivateEndpointConnParams(
+                identityKey,
+                internetAddress,
+                deliveryAuth,
+                sessionKey,
+            )
 
         @Test
         fun `Identity key should be serialized`() {
@@ -61,7 +63,7 @@ class PrivateEndpointConnParamsTest {
             assertEquals(deliveryAuth.leafCertificate, deliveryAuthDecoded.leafCertificate)
             assertEquals(
                 deliveryAuth.certificateAuthorities,
-                deliveryAuthDecoded.certificateAuthorities
+                deliveryAuthDecoded.certificateAuthorities,
             )
         }
 
@@ -80,46 +82,52 @@ class PrivateEndpointConnParamsTest {
     inner class Deserialize {
         @Test
         fun `Serialization should be DER sequence`() {
-            val exception = assertThrows<InvalidNodeConnectionParams> {
-                PrivateEndpointConnParams.deserialize("foo".toByteArray())
-            }
+            val exception =
+                assertThrows<InvalidNodeConnectionParams> {
+                    PrivateEndpointConnParams.deserialize("foo".toByteArray())
+                }
 
             assertEquals("Serialization is not a DER sequence", exception.message)
         }
 
         @Test
         fun `Sequence should have at least 4 items`() {
-            val serialization = ASN1Utils.serializeSequence(
-                listOf(
-                    SubjectPublicKeyInfo.getInstance(identityKey.encoded),
-                    DERVisibleString(internetAddress),
-                    deliveryAuth.encode(),
-                ),
-                false
-            )
+            val serialization =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        SubjectPublicKeyInfo.getInstance(identityKey.encoded),
+                        DERVisibleString(internetAddress),
+                        deliveryAuth.encode(),
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidNodeConnectionParams> {
-                PrivateEndpointConnParams.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidNodeConnectionParams> {
+                    PrivateEndpointConnParams.deserialize(serialization)
+                }
 
             assertEquals("Connection params should have at least 4 items", exception.message)
         }
 
         @Test
         fun `Identity key should be a valid public key`() {
-            val serialization = ASN1Utils.serializeSequence(
-                listOf(
-                    DERNull.INSTANCE, // Invalid
-                    DERVisibleString(internetAddress),
-                    deliveryAuth.encode(),
-                    sessionKey.encode(),
-                ),
-                false
-            )
+            val serialization =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        // Invalid
+                        DERNull.INSTANCE,
+                        DERVisibleString(internetAddress),
+                        deliveryAuth.encode(),
+                        sessionKey.encode(),
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidNodeConnectionParams> {
-                PrivateEndpointConnParams.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidNodeConnectionParams> {
+                    PrivateEndpointConnParams.deserialize(serialization)
+                }
 
             assertEquals("Invalid identity key", exception.message)
             assert(exception.cause is IllegalStateException)
@@ -128,39 +136,44 @@ class PrivateEndpointConnParamsTest {
         @Test
         fun `Internet address should be syntactically valid`() {
             val malformedInternetAddress = "not really a domain name"
-            val invalidParams = PrivateEndpointConnParams(
-                identityKey,
-                malformedInternetAddress,
-                deliveryAuth,
-                sessionKey
-            )
+            val invalidParams =
+                PrivateEndpointConnParams(
+                    identityKey,
+                    malformedInternetAddress,
+                    deliveryAuth,
+                    sessionKey,
+                )
             val serialization = invalidParams.serialize()
 
-            val exception = assertThrows<InvalidNodeConnectionParams> {
-                PrivateEndpointConnParams.deserialize(serialization)
-            }
+            val exception =
+                assertThrows<InvalidNodeConnectionParams> {
+                    PrivateEndpointConnParams.deserialize(serialization)
+                }
 
             assertEquals(
                 "Internet address is syntactically invalid ($malformedInternetAddress)",
-                exception.message
+                exception.message,
             )
         }
 
         @Test
         fun `Delivery auth should be valid`() {
-            val encoding = ASN1Utils.serializeSequence(
-                listOf(
-                    SubjectPublicKeyInfo.getInstance(identityKey.encoded),
-                    DERVisibleString(internetAddress),
-                    DERNull.INSTANCE, // Invalid
-                    sessionKey.encode(),
-                ),
-                false
-            )
+            val encoding =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        SubjectPublicKeyInfo.getInstance(identityKey.encoded),
+                        DERVisibleString(internetAddress),
+                        // Invalid
+                        DERNull.INSTANCE,
+                        sessionKey.encode(),
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidNodeConnectionParams> {
-                PrivateEndpointConnParams.deserialize(encoding)
-            }
+            val exception =
+                assertThrows<InvalidNodeConnectionParams> {
+                    PrivateEndpointConnParams.deserialize(encoding)
+                }
 
             assertEquals("Invalid delivery auth", exception.message)
             assert(exception.cause is CertificationPathException)
@@ -168,19 +181,22 @@ class PrivateEndpointConnParamsTest {
 
         @Test
         fun `Session key should be valid`() {
-            val encoding = ASN1Utils.serializeSequence(
-                listOf(
-                    SubjectPublicKeyInfo.getInstance(identityKey.encoded),
-                    DERVisibleString(internetAddress),
-                    deliveryAuth.encode(),
-                    DERNull.INSTANCE, // Invalid
-                ),
-                false
-            )
+            val encoding =
+                ASN1Utils.serializeSequence(
+                    listOf(
+                        SubjectPublicKeyInfo.getInstance(identityKey.encoded),
+                        DERVisibleString(internetAddress),
+                        deliveryAuth.encode(),
+                        // Invalid
+                        DERNull.INSTANCE,
+                    ),
+                    false,
+                )
 
-            val exception = assertThrows<InvalidNodeConnectionParams> {
-                PrivateEndpointConnParams.deserialize(encoding)
-            }
+            val exception =
+                assertThrows<InvalidNodeConnectionParams> {
+                    PrivateEndpointConnParams.deserialize(encoding)
+                }
 
             assertEquals("Invalid session key", exception.message)
             assert(exception.cause is SessionKeyException)
@@ -188,12 +204,13 @@ class PrivateEndpointConnParamsTest {
 
         @Test
         fun `Params should be output if serialization is valid`() {
-            val params = PrivateEndpointConnParams(
-                identityKey,
-                internetAddress,
-                deliveryAuth,
-                sessionKey
-            )
+            val params =
+                PrivateEndpointConnParams(
+                    identityKey,
+                    internetAddress,
+                    deliveryAuth,
+                    sessionKey,
+                )
             val serialization = params.serialize()
 
             val deserializedParams = PrivateEndpointConnParams.deserialize(serialization)

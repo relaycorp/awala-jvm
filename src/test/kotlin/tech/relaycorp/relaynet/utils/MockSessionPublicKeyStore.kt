@@ -24,7 +24,10 @@ class MockSessionPublicKeyStore(
         this.keys["$nodeId,$peerId"] = keyData
     }
 
-    override suspend fun retrieveKeyData(nodeId: String, peerId: String): SessionPublicKeyData? {
+    override suspend fun retrieveKeyData(
+        nodeId: String,
+        peerId: String,
+    ): SessionPublicKeyData? {
         if (retrievalException != null) {
             throw retrievalException
         }
@@ -32,7 +35,10 @@ class MockSessionPublicKeyStore(
         return keys["$nodeId,$peerId"]
     }
 
-    override suspend fun delete(nodeId: String, peerId: String) {
+    override suspend fun delete(
+        nodeId: String,
+        peerId: String,
+    ) {
         keys.remove("$nodeId,$peerId")
     }
 }

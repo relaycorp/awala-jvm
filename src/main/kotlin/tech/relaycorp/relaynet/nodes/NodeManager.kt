@@ -17,7 +17,7 @@ abstract class NodeManager<P : Payload>(
 ) {
     suspend fun generateSessionKeyPair(
         nodeId: String,
-        peerId: String? = null
+        peerId: String? = null,
     ): SessionKeyPair {
         val keyGeneration = SessionKeyPair.generate(this.cryptoOptions.ecdhCurve)
         privateKeyStore.saveSessionKey(
@@ -76,7 +76,7 @@ abstract class NodeManager<P : Payload>(
             unwrapping.peerSessionKey,
             message.recipient.id,
             message.senderCertificate.subjectId,
-            message.creationDate
+            message.creationDate,
         )
         return unwrapping.payload
     }

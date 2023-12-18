@@ -11,7 +11,7 @@ data class SessionKeyPair(val sessionKey: SessionKey, val privateKey: PrivateKey
             val sessionKeyPair = generateECDHKeyPair(curve)
             return SessionKeyPair(
                 SessionKey(keyId, sessionKeyPair.public),
-                sessionKeyPair.private
+                sessionKeyPair.private,
             )
         }
     }

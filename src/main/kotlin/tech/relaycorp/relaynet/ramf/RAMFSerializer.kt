@@ -30,7 +30,7 @@ private data class FieldSet(
     val messageId: String,
     val creationDate: ZonedDateTime,
     val ttl: Int,
-    val payload: ByteArray
+    val payload: ByteArray,
 )
 
 internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessageVersion: Byte) {
@@ -40,20 +40,21 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
     fun serialize(
         message: RAMFMessage<*>,
         signerPrivateKey: PrivateKey,
-        hashingAlgorithm: HashingAlgorithm? = null
+        hashingAlgorithm: HashingAlgorithm? = null,
     ): ByteArray {
         val output = ByteArrayOutputStream()
 
         output.write(formatSignature)
 
         val fieldSetSerialized = serializeMessage(message)
-        val signedData = SignedData.sign(
-            fieldSetSerialized,
-            signerPrivateKey,
-            message.senderCertificate,
-            setOf(message.senderCertificate) + message.senderCertificateChain,
-            hashingAlgorithm
-        )
+        val signedData =
+            SignedData.sign(
+                fieldSetSerialized,
+                signerPrivateKey,
+                message.senderCertificate,
+                setOf(message.senderCertificate) + message.senderCertificateChain,
+                hashingAlgorithm,
+            )
         output.write(signedData.serialize())
 
         return output.toByteArray()
@@ -69,16 +70,16 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
                 DERVisibleString(message.id),
                 DERGeneralizedTime(creationTimeUtcString),
                 ASN1Integer(message.ttl.toLong()),
-                DEROctetString(message.payload)
+                DEROctetString(message.payload),
             ),
-            false
+            false,
         )
     }
 
     @Throws(RAMFException::class)
     fun <T> deserialize(
         serialization: ByteArray,
-        messageClazz: RAMFMessageConstructor<T>
+        messageClazz: RAMFMessageConstructor<T>,
     ): T {
         return deserialize(serialization.inputStream(), messageClazz)
     }
@@ -86,7 +87,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
     @Throws(RAMFException::class)
     fun <T> deserialize(
         serializationStream: InputStream,
-        messageClazz: RAMFMessageConstructor<T>
+        messageClazz: RAMFMessageConstructor<T>,
     ): T {
         val serializationSize = serializationStream.available()
 
@@ -107,47 +108,51 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         val messageType = serializationStream.read()
         if (messageType != concreteMessageType.toInt()) {
             throw RAMFException(
-                "Message type should be $concreteMessageType (got $messageType)"
+                "Message type should be $concreteMessageType (got $messageType)",
             )
         }
 
         val messageVersion = serializationStream.read()
         if (messageVersion != concreteMessageVersion.toInt()) {
             throw RAMFException(
-                "Message version should be $concreteMessageVersion (got $messageVersion)"
+                "Message version should be $concreteMessageVersion (got $messageVersion)",
             )
         }
 
-        val cmsSignedData = try {
-            SignedData.deserialize(serializationStream.readBytes()).also { it.verify() }
-        } catch (exc: SignedDataException) {
-            throw RAMFException("Invalid CMS SignedData value", exc)
-        }
+        val cmsSignedData =
+            try {
+                SignedData.deserialize(serializationStream.readBytes()).also { it.verify() }
+            } catch (exc: SignedDataException) {
+                throw RAMFException("Invalid CMS SignedData value", exc)
+            }
         val fields = deserializeFields(cmsSignedData.plaintext!!)
-        val intermediateCACerts = cmsSignedData.certificates.filter {
-            it != cmsSignedData.signerCertificate
-        }.toSet()
+        val intermediateCACerts =
+            cmsSignedData.certificates.filter {
+                it != cmsSignedData.signerCertificate
+            }.toSet()
         return messageClazz(
             fields.recipient,
             fields.payload,
-            cmsSignedData.signerCertificate!!, // Verification passed, so the cert is present
+            // Verification passed, so the cert is present
+            cmsSignedData.signerCertificate!!,
             fields.messageId,
             fields.creationDate,
             fields.ttl,
-            intermediateCACerts
+            intermediateCACerts,
         )
     }
 
     @Throws(RAMFException::class)
     private fun deserializeFields(serialization: ByteArray): FieldSet {
-        val fields = try {
-            ASN1Utils.deserializeHeterogeneousSequence(serialization)
-        } catch (exc: ASN1Exception) {
-            throw RAMFException("Invalid RAMF message", exc)
-        }
+        val fields =
+            try {
+                ASN1Utils.deserializeHeterogeneousSequence(serialization)
+            } catch (exc: ASN1Exception) {
+                throw RAMFException("Invalid RAMF message", exc)
+            }
         if (fields.size != 5) {
             throw RAMFException(
-                "Field sequence should contain 5 items (got ${fields.size})"
+                "Field sequence should contain 5 items (got ${fields.size})",
             )
         }
 
@@ -159,13 +164,14 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
         // ourselves. We could use a DerGeneralizedTime but that's a bit risky because it may
         // contain a timezone.
         val creationTimeDer = ASN1Utils.getVisibleString(fields[2])
-        val creationTime = try {
-            LocalDateTime.parse(creationTimeDer.string, ASN1Utils.BER_DATETIME_FORMATTER)
-        } catch (_: DateTimeParseException) {
-            throw RAMFException(
-                "Creation time should be an ASN.1 DATE-TIME value"
-            )
-        }
+        val creationTime =
+            try {
+                LocalDateTime.parse(creationTimeDer.string, ASN1Utils.BER_DATETIME_FORMATTER)
+            } catch (_: DateTimeParseException) {
+                throw RAMFException(
+                    "Creation time should be an ASN.1 DATE-TIME value",
+                )
+            }
 
         val ttlDer = ASN1Integer.getInstance(fields[3], false)
 
@@ -176,7 +182,7 @@ internal class RAMFSerializer(val concreteMessageType: Byte, val concreteMessage
             messageId.string,
             ZonedDateTime.of(creationTime, UTC_ZONE_ID),
             ttlDer.intPositiveValueExact(),
-            payloadDer.octets
+            payloadDer.octets,
         )
     }
 }

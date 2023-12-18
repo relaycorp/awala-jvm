@@ -21,17 +21,17 @@ class Parcel(
     messageId: String? = null,
     creationDate: ZonedDateTime? = null,
     ttl: Int? = null,
-    senderCertificateChain: Set<Certificate>? = null
+    senderCertificateChain: Set<Certificate>? = null,
 ) : EncryptedRAMFMessage<ServiceMessage>(
-    PARCEL_SERIALIZER,
-    recipient,
-    payload,
-    senderCertificate,
-    messageId,
-    creationDate,
-    ttl,
-    senderCertificateChain
-) {
+        PARCEL_SERIALIZER,
+        recipient,
+        payload,
+        senderCertificate,
+        messageId,
+        creationDate,
+        ttl,
+        senderCertificateChain,
+    ) {
     override fun deserializePayload(payloadPlaintext: ByteArray) =
         ServiceMessage.deserialize(payloadPlaintext)
 

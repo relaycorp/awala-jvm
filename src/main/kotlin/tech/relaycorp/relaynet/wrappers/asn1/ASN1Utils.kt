@@ -21,16 +21,27 @@ internal object ASN1Utils {
     val BER_DATETIME_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
-    fun makeSequence(items: List<ASN1Encodable>, explicitTagging: Boolean = true): DERSequence {
+    fun makeSequence(
+        items: List<ASN1Encodable>,
+        explicitTagging: Boolean = true,
+    ): DERSequence {
         val messagesVector = ASN1EncodableVector(items.size)
-        val finalItems = if (explicitTagging) items else items.mapIndexed { index, item ->
-            DERTaggedObject(false, index, item)
-        }
+        val finalItems =
+            if (explicitTagging) {
+                items
+            } else {
+                items.mapIndexed { index, item ->
+                    DERTaggedObject(false, index, item)
+                }
+            }
         finalItems.forEach { messagesVector.add(it) }
         return DERSequence(messagesVector)
     }
 
-    fun serializeSequence(items: List<ASN1Encodable>, explicitTagging: Boolean = true): ByteArray {
+    fun serializeSequence(
+        items: List<ASN1Encodable>,
+        explicitTagging: Boolean = true,
+    ): ByteArray {
         return makeSequence(items, explicitTagging).encoded
     }
 
@@ -40,11 +51,12 @@ internal object ASN1Utils {
             throw ASN1Exception("Value is empty")
         }
         val asn1InputStream = ASN1InputStream(serialization)
-        val asn1Value = try {
-            asn1InputStream.readObject()
-        } catch (_: IOException) {
-            throw ASN1Exception("Value is not DER-encoded")
-        }
+        val asn1Value =
+            try {
+                asn1InputStream.readObject()
+            } catch (_: IOException) {
+                throw ASN1Exception("Value is not DER-encoded")
+            }
         return try {
             ASN1Sequence.getInstance(asn1Value)
         } catch (_: IllegalArgumentException) {
@@ -54,14 +66,14 @@ internal object ASN1Utils {
 
     @Throws(ASN1Exception::class)
     inline fun <reified T : ASN1Encodable> deserializeHomogeneousSequence(
-        serialization: ByteArray
+        serialization: ByteArray,
     ): Array<T> {
         val sequence = deserializeSequence(serialization)
         return sequence.map {
             if (it !is T) {
                 throw ASN1Exception(
                     "Sequence contains an item of an unexpected type " +
-                        "(${it::class.java.simpleName})"
+                        "(${it::class.java.simpleName})",
                 )
             }
             @Suppress("USELESS_CAST")

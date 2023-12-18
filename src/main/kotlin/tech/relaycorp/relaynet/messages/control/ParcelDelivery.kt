@@ -13,10 +13,11 @@ class ParcelDelivery(val deliveryId: String, val parcelSerialized: ByteArray) {
     /**
      * Serialize delivery.
      */
-    fun serialize(): ByteArray = ASN1Utils.serializeSequence(
-        listOf(DERVisibleString(deliveryId), DEROctetString(parcelSerialized)),
-        false
-    )
+    fun serialize(): ByteArray =
+        ASN1Utils.serializeSequence(
+            listOf(DERVisibleString(deliveryId), DEROctetString(parcelSerialized)),
+            false,
+        )
 
     companion object {
         /**
@@ -24,14 +25,15 @@ class ParcelDelivery(val deliveryId: String, val parcelSerialized: ByteArray) {
          */
         @Throws(InvalidMessageException::class)
         fun deserialize(serialization: ByteArray): ParcelDelivery {
-            val sequence = try {
-                ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            } catch (exc: ASN1Exception) {
-                throw InvalidMessageException("Delivery is not a DER sequence", exc)
-            }
+            val sequence =
+                try {
+                    ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                } catch (exc: ASN1Exception) {
+                    throw InvalidMessageException("Delivery is not a DER sequence", exc)
+                }
             if (sequence.size < 2) {
                 throw InvalidMessageException(
-                    "Delivery sequence should have at least 2 items (got ${sequence.size})"
+                    "Delivery sequence should have at least 2 items (got ${sequence.size})",
                 )
             }
             val deliveryIdASN1 = ASN1Utils.getVisibleString(sequence[0])

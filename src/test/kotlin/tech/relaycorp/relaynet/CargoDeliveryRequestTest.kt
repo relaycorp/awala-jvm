@@ -14,7 +14,7 @@ class CargoDeliveryRequestTest {
         assertEquals(localId, request.localId)
         assertEquals(
             cargoSerialized,
-            request.cargoSerialized().bufferedReader().use { it.readText() }
+            request.cargoSerialized().bufferedReader().use { it.readText() },
         )
     }
 }

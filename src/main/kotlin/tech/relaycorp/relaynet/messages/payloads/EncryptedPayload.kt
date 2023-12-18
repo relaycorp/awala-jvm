@@ -13,13 +13,14 @@ abstract class EncryptedPayload : Payload {
         symmetricCipher: SymmetricCipher = SymmetricCipher.AES_128,
         hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA256,
     ): ByteArray {
-        val envelopedData = SessionEnvelopedData.encrypt(
-            serializePlaintext(),
-            recipientSessionKey,
-            senderSessionKeyPair,
-            symmetricCipher,
-            hashingAlgorithm
-        )
+        val envelopedData =
+            SessionEnvelopedData.encrypt(
+                serializePlaintext(),
+                recipientSessionKey,
+                senderSessionKeyPair,
+                symmetricCipher,
+                hashingAlgorithm,
+            )
         return envelopedData.serialize()
     }
 }

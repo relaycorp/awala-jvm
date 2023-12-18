@@ -6,5 +6,5 @@ package tech.relaycorp.relaynet.keystores
 data class SessionPublicKeyData(
     val keyId: ByteArray,
     val keyDer: ByteArray,
-    val creationTimestamp: Long
+    val creationTimestamp: Long,
 )

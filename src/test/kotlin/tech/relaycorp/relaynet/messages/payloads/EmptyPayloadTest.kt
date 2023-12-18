@@ -26,9 +26,10 @@ internal class EmptyPayloadTest {
 
         @Test
         fun `An error should be thrown if buffer is not empty`() {
-            val exception = assertThrows<RAMFException> {
-                EmptyPayload.deserialize("a".toByteArray())
-            }
+            val exception =
+                assertThrows<RAMFException> {
+                    EmptyPayload.deserialize("a".toByteArray())
+                }
 
             assertEquals("Payload is not empty", exception.message)
         }

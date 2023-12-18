@@ -49,7 +49,7 @@ internal class ASN1UtilsTest {
             val item2 = ASN1Utils.getOctetString(sequence.getObjectAt(1) as ASN1TaggedObject)
             assertEquals(
                 octetString.octets.asList(),
-                (item2.loadedObject as DEROctetString).octets.asList()
+                (item2.loadedObject as DEROctetString).octets.asList(),
             )
         }
     }
@@ -71,7 +71,7 @@ internal class ASN1UtilsTest {
             assertTrue(item2 is DEROctetStringParser)
             assertEquals(
                 octetString.octets.asList(),
-                (item2.loadedObject as DEROctetString).octets.asList()
+                (item2.loadedObject as DEROctetString).octets.asList(),
             )
         }
 
@@ -90,7 +90,7 @@ internal class ASN1UtilsTest {
             val item2 = ASN1Utils.getOctetString(sequence[1] as ASN1TaggedObject)
             assertEquals(
                 octetString.octets.asList(),
-                (item2.loadedObject as DEROctetString).octets.asList()
+                (item2.loadedObject as DEROctetString).octets.asList(),
             )
         }
     }
@@ -99,18 +99,20 @@ internal class ASN1UtilsTest {
     inner class DeserializeSequence {
         @Test
         fun `Value should be refused if it's empty`() {
-            val exception = assertThrows<ASN1Exception> {
-                ASN1Utils.deserializeHeterogeneousSequence(byteArrayOf())
-            }
+            val exception =
+                assertThrows<ASN1Exception> {
+                    ASN1Utils.deserializeHeterogeneousSequence(byteArrayOf())
+                }
 
             assertEquals("Value is empty", exception.message)
         }
 
         @Test
         fun `Value should be refused if it's not DER-encoded`() {
-            val exception = assertThrows<ASN1Exception> {
-                ASN1Utils.deserializeHeterogeneousSequence("a".toByteArray())
-            }
+            val exception =
+                assertThrows<ASN1Exception> {
+                    ASN1Utils.deserializeHeterogeneousSequence("a".toByteArray())
+                }
 
             assertEquals("Value is not DER-encoded", exception.message)
         }
@@ -119,9 +121,10 @@ internal class ASN1UtilsTest {
         fun `Value should be refused if it's not a sequence`() {
             val serialization = DERVisibleString("hey").encoded
 
-            val exception = assertThrows<ASN1Exception> {
-                ASN1Utils.deserializeHeterogeneousSequence(serialization)
-            }
+            val exception =
+                assertThrows<ASN1Exception> {
+                    ASN1Utils.deserializeHeterogeneousSequence(serialization)
+                }
 
             assertEquals("Value is not an ASN.1 sequence", exception.message)
         }
@@ -143,14 +146,15 @@ internal class ASN1UtilsTest {
         fun `Explicitly tagged items with unexpected types should be refused`() {
             val serialization = ASN1Utils.serializeSequence(listOf(visibleString, octetString))
 
-            val exception = assertThrows<ASN1Exception> {
-                ASN1Utils.deserializeHomogeneousSequence<DERVisibleString>(serialization)
-            }
+            val exception =
+                assertThrows<ASN1Exception> {
+                    ASN1Utils.deserializeHomogeneousSequence<DERVisibleString>(serialization)
+                }
 
             assertEquals(
                 "Sequence contains an item of an unexpected type " +
                     "(${octetString::class.java.simpleName})",
-                exception.message
+                exception.message,
             )
         }
 
@@ -164,11 +168,11 @@ internal class ASN1UtilsTest {
             assertEquals(2, sequence.size)
             assertEquals(
                 visibleString.octets.asList(),
-                ASN1Utils.getVisibleString(sequence[0]).octets.asList()
+                ASN1Utils.getVisibleString(sequence[0]).octets.asList(),
             )
             assertEquals(
                 octetString.octets.asList(),
-                ASN1Utils.getOctetString(sequence[1]).octets.asList()
+                ASN1Utils.getOctetString(sequence[1]).octets.asList(),
             )
         }
     }
@@ -181,9 +185,10 @@ internal class ASN1UtilsTest {
         fun `Invalid OID should be refused`() {
             val invalidImplicitlyTaggedOID = DERTaggedObject(false, 0, DERNull.INSTANCE)
 
-            val exception = assertThrows<ASN1Exception> {
-                ASN1Utils.getOID(invalidImplicitlyTaggedOID)
-            }
+            val exception =
+                assertThrows<ASN1Exception> {
+                    ASN1Utils.getOID(invalidImplicitlyTaggedOID)
+                }
 
             assertEquals("Value is not an OID", exception.message)
             assertTrue(exception.cause is IllegalArgumentException)

@@ -22,7 +22,7 @@ fun issueGatewayCertificate(
     issuerPrivateKey: PrivateKey,
     validityEndDate: ZonedDateTime,
     issuerCertificate: Certificate? = null,
-    validityStartDate: ZonedDateTime = ZonedDateTime.now()
+    validityStartDate: ZonedDateTime = ZonedDateTime.now(),
 ): Certificate {
     val isSelfIssued = issuerCertificate == null
     return Certificate.issue(
@@ -33,7 +33,7 @@ fun issueGatewayCertificate(
         issuerCertificate,
         true,
         if (isSelfIssued) 2 else 1,
-        validityStartDate
+        validityStartDate,
     )
 }
 
@@ -51,7 +51,7 @@ fun issueEndpointCertificate(
     issuerPrivateKey: PrivateKey,
     validityEndDate: ZonedDateTime,
     issuerCertificate: Certificate? = null,
-    validityStartDate: ZonedDateTime = ZonedDateTime.now()
+    validityStartDate: ZonedDateTime = ZonedDateTime.now(),
 ): Certificate {
     return Certificate.issue(
         subjectPublicKey.nodeId,
@@ -61,7 +61,7 @@ fun issueEndpointCertificate(
         issuerCertificate,
         true,
         0,
-        validityStartDate
+        validityStartDate,
     )
 }
 
@@ -82,14 +82,15 @@ fun issueDeliveryAuthorization(
     issuerPrivateKey: PrivateKey,
     validityEndDate: ZonedDateTime,
     issuerCertificate: Certificate,
-    validityStartDate: ZonedDateTime = ZonedDateTime.now()
-): Certificate = Certificate.issue(
-    subjectPublicKey.nodeId,
-    subjectPublicKey,
-    issuerPrivateKey,
-    validityEndDate,
-    issuerCertificate,
-    false,
-    0,
-    validityStartDate
-)
+    validityStartDate: ZonedDateTime = ZonedDateTime.now(),
+): Certificate =
+    Certificate.issue(
+        subjectPublicKey.nodeId,
+        subjectPublicKey,
+        issuerPrivateKey,
+        validityEndDate,
+        issuerCertificate,
+        false,
+        0,
+        validityStartDate,
+    )

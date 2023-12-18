@@ -40,20 +40,22 @@ class SignedDataTest {
     companion object {
         val stubPlaintext = "The plaintext".toByteArray()
         val stubKeyPair = generateRSAKeyPair()
-        val stubCertificate = Certificate.issue(
-            "The Common Name",
-            stubKeyPair.public,
-            stubKeyPair.private,
-            ZonedDateTime.now().plusDays(1)
-        )
-        val anotherStubCertificate = Certificate.issue(
-            "Another",
-            stubKeyPair.public,
-            stubKeyPair.private,
-            ZonedDateTime.now().plusDays(1)
-        )
+        val stubCertificate =
+            Certificate.issue(
+                "The Common Name",
+                stubKeyPair.public,
+                stubKeyPair.private,
+                ZonedDateTime.now().plusDays(1),
+            )
+        val anotherStubCertificate =
+            Certificate.issue(
+                "Another",
+                stubKeyPair.public,
+                stubKeyPair.private,
+                ZonedDateTime.now().plusDays(1),
+            )
 
-        const val cmsDigestAttributeOid = "1.2.840.113549.1.9.4"
+        const val CMS_DIGEST_ATTRIBUTE_OID = "1.2.840.113549.1.9.4"
     }
 
     @Nested
@@ -78,9 +80,10 @@ class SignedDataTest {
         fun `Empty serialization should be refused`() {
             val invalidCMSSignedData = byteArrayOf()
 
-            val exception = assertThrows<SignedDataException> {
-                SignedData.deserialize(invalidCMSSignedData)
-            }
+            val exception =
+                assertThrows<SignedDataException> {
+                    SignedData.deserialize(invalidCMSSignedData)
+                }
 
             assertEquals("Value cannot be empty", exception.message)
         }
@@ -89,9 +92,10 @@ class SignedDataTest {
         fun `Invalid DER values should be refused`() {
             val invalidCMSSignedData = "Not really DER-encoded".toByteArray()
 
-            val exception = assertThrows<SignedDataException> {
-                SignedData.deserialize(invalidCMSSignedData)
-            }
+            val exception =
+                assertThrows<SignedDataException> {
+                    SignedData.deserialize(invalidCMSSignedData)
+                }
 
             assertEquals("Value is not DER-encoded", exception.message)
         }
@@ -100,13 +104,14 @@ class SignedDataTest {
         fun `ContentInfo wrapper should be required`() {
             val invalidCMSSignedData = ASN1Integer(10).encoded
 
-            val exception = assertThrows<SignedDataException> {
-                SignedData.deserialize(invalidCMSSignedData)
-            }
+            val exception =
+                assertThrows<SignedDataException> {
+                    SignedData.deserialize(invalidCMSSignedData)
+                }
 
             assertEquals(
                 "SignedData value is not wrapped in ContentInfo",
-                exception.message
+                exception.message,
             )
         }
 
@@ -115,30 +120,32 @@ class SignedDataTest {
             val signedDataOid = ASN1ObjectIdentifier("1.2.840.113549.1.7.2")
             val invalidCMSSignedData = ContentInfo(signedDataOid, ASN1Integer(10))
 
-            val exception = assertThrows<SignedDataException> {
-                SignedData.deserialize(invalidCMSSignedData.encoded)
-            }
+            val exception =
+                assertThrows<SignedDataException> {
+                    SignedData.deserialize(invalidCMSSignedData.encoded)
+                }
 
             assertEquals(
                 "ContentInfo wraps invalid SignedData value",
-                exception.message
+                exception.message,
             )
         }
 
         @Test
         fun `Valid SignedData values should be deserialized`() {
-            val signedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate
-            )
+            val signedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                )
             val signedDataSerialized = signedData.serialize()
 
             val signedDataDeserialized = SignedData.deserialize(signedDataSerialized)
 
             assertEquals(
                 signedData.bcSignedData.encoded.asList(),
-                signedDataDeserialized.bcSignedData.encoded.asList()
+                signedDataDeserialized.bcSignedData.encoded.asList(),
             )
         }
     }
@@ -147,11 +154,12 @@ class SignedDataTest {
     inner class Sign {
         @Test
         fun `SignedData version should be set to 1`() {
-            val signedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate
-            )
+            val signedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                )
 
             assertEquals(1, signedData.bcSignedData.version)
         }
@@ -160,11 +168,12 @@ class SignedDataTest {
         inner class Plaintext {
             @Test
             fun `Plaintext should be encapsulated by default`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                    )
 
                 assertNotNull(signedData.plaintext)
                 assertEquals(stubPlaintext.asList(), signedData.plaintext!!.asList())
@@ -172,12 +181,13 @@ class SignedDataTest {
 
             @Test
             fun `Plaintext should not be encapsulated if requested`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate,
-                    encapsulatePlaintext = false
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                        encapsulatePlaintext = false,
+                    )
 
                 assertNull(signedData.plaintext)
             }
@@ -187,22 +197,24 @@ class SignedDataTest {
         inner class SignerInfo {
             @Test
             fun `There should only be one SignerInfo`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                    )
 
                 assertEquals(1, signedData.bcSignedData.signerInfos.size())
             }
 
             @Test
             fun `SignerInfo version should be set to 1 when signed with a certificate`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                    )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
                 assertEquals(1, signerInfo.version)
@@ -210,27 +222,29 @@ class SignedDataTest {
 
             @Test
             fun `SignerIdentifier should be IssuerAndSerialNumber`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                    )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
                 assertEquals(stubCertificate.certificateHolder.issuer, signerInfo.sid.issuer)
                 assertEquals(
                     stubCertificate.certificateHolder.serialNumber,
-                    signerInfo.sid.serialNumber
+                    signerInfo.sid.serialNumber,
                 )
             }
 
             @Test
             fun `Signature algorithm should be RSA-PSS`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                    )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
                 assertEquals(PKCSObjectIdentifiers.id_RSASSA_PSS.id, signerInfo.encryptionAlgOID)
@@ -240,11 +254,12 @@ class SignedDataTest {
             inner class SignedAttributes {
                 @Test
                 fun `Signed attributes should be present`() {
-                    val signedData = SignedData.sign(
-                        stubPlaintext,
-                        stubKeyPair.private,
-                        stubCertificate
-                    )
+                    val signedData =
+                        SignedData.sign(
+                            stubPlaintext,
+                            stubKeyPair.private,
+                            stubCertificate,
+                        )
 
                     val signerInfo = signedData.bcSignedData.signerInfos.first()
 
@@ -253,11 +268,12 @@ class SignedDataTest {
 
                 @Test
                 fun `Content type attribute should be set to CMS Data`() {
-                    val signedData = SignedData.sign(
-                        stubPlaintext,
-                        stubKeyPair.private,
-                        stubCertificate
-                    )
+                    val signedData =
+                        SignedData.sign(
+                            stubPlaintext,
+                            stubKeyPair.private,
+                            stubCertificate,
+                        )
 
                     val signerInfo = signedData.bcSignedData.signerInfos.first()
 
@@ -271,19 +287,20 @@ class SignedDataTest {
 
                 @Test
                 fun `Plaintext digest should be present`() {
-                    val signedData = SignedData.sign(
-                        stubPlaintext,
-                        stubKeyPair.private,
-                        stubCertificate
-                    )
+                    val signedData =
+                        SignedData.sign(
+                            stubPlaintext,
+                            stubKeyPair.private,
+                            stubCertificate,
+                        )
 
                     val signerInfo = signedData.bcSignedData.signerInfos.first()
 
                     val digestAttrs =
                         signerInfo.signedAttributes.getAll(
                             ASN1ObjectIdentifier(
-                                cmsDigestAttributeOid
-                            )
+                                CMS_DIGEST_ATTRIBUTE_OID,
+                            ),
                         )
                     assertEquals(1, digestAttrs.size())
                     val digestAttr = digestAttrs.get(0) as Attribute
@@ -291,7 +308,7 @@ class SignedDataTest {
                     val digest = MessageDigest.getInstance("SHA-256").digest(stubPlaintext)
                     assertEquals(
                         digest.asList(),
-                        (digestAttr.attributeValues[0] as DEROctetString).octets.asList()
+                        (digestAttr.attributeValues[0] as DEROctetString).octets.asList(),
                     )
                 }
             }
@@ -301,11 +318,12 @@ class SignedDataTest {
         inner class Certificates {
             @Test
             fun `Signer certificate should not be encapsulated by default`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                    )
 
                 assertNull(signedData.signerCertificate)
                 assertEquals(0, signedData.certificates.size)
@@ -313,12 +331,13 @@ class SignedDataTest {
 
             @Test
             fun `CA certificate chain should optionally be encapsulated`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate,
-                    setOf(stubCertificate, anotherStubCertificate)
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                        setOf(stubCertificate, anotherStubCertificate),
+                    )
 
                 assertEquals(2, signedData.certificates.size)
                 assertTrue(signedData.certificates.contains(anotherStubCertificate))
@@ -329,11 +348,12 @@ class SignedDataTest {
         inner class Hashing {
             @Test
             fun `SHA-256 should be used by default`() {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                    )
 
                 assertHashingAlgoEquals(signedData, HashingAlgorithm.SHA256)
             }
@@ -341,32 +361,33 @@ class SignedDataTest {
             @ParameterizedTest(name = "{0} should be honored if explicitly set")
             @EnumSource
             fun `Hashing algorithm should be customizable`(algorithm: HashingAlgorithm) {
-                val signedData = SignedData.sign(
-                    stubPlaintext,
-                    stubKeyPair.private,
-                    stubCertificate,
-                    hashingAlgorithm = algorithm
-                )
+                val signedData =
+                    SignedData.sign(
+                        stubPlaintext,
+                        stubKeyPair.private,
+                        stubCertificate,
+                        hashingAlgorithm = algorithm,
+                    )
 
                 assertHashingAlgoEquals(signedData, algorithm)
             }
 
             private fun assertHashingAlgoEquals(
                 signedData: SignedData,
-                expectedHashingAlgorithm: HashingAlgorithm
+                expectedHashingAlgorithm: HashingAlgorithm,
             ) {
                 val expectedHashingAlgoOID = HASHING_ALGORITHM_OIDS[expectedHashingAlgorithm]
 
                 assertEquals(1, signedData.bcSignedData.digestAlgorithmIDs.size)
                 assertEquals(
                     expectedHashingAlgoOID,
-                    signedData.bcSignedData.digestAlgorithmIDs.first().algorithm
+                    signedData.bcSignedData.digestAlgorithmIDs.first().algorithm,
                 )
 
                 val signerInfo = signedData.bcSignedData.signerInfos.first()
                 assertEquals(
                     expectedHashingAlgoOID,
-                    signerInfo.digestAlgorithmID.algorithm
+                    signerInfo.digestAlgorithmID.algorithm,
                 )
             }
         }
@@ -378,24 +399,27 @@ class SignedDataTest {
         fun `Invalid signature with encapsulated plaintext should be refused`() {
             // Swap the SignerInfo collection from two different CMS SignedData values
 
-            val signedData1 = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate)
-            )
+            val signedData1 =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                )
 
-            val signedData2 = SignedData.sign(
-                byteArrayOf(0xde.toByte(), *stubPlaintext),
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate)
-            )
+            val signedData2 =
+                SignedData.sign(
+                    byteArrayOf(0xde.toByte(), *stubPlaintext),
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                )
 
-            val invalidBCSignedData = CMSSignedData.replaceSigners(
-                signedData1.bcSignedData,
-                signedData2.bcSignedData.signerInfos
-            )
+            val invalidBCSignedData =
+                CMSSignedData.replaceSigners(
+                    signedData1.bcSignedData,
+                    signedData2.bcSignedData.signerInfos,
+                )
             val invalidSignedData = SignedData.deserialize(invalidBCSignedData.encoded)
 
             val exception = assertThrows<SignedDataException> { invalidSignedData.verify() }
@@ -408,26 +432,29 @@ class SignedDataTest {
         fun `Invalid signature without encapsulated plaintext should be refused`() {
             // Swap the SignerInfo collection from two different CMS SignedData values
 
-            val signedData1 = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate),
-                encapsulatePlaintext = false
-            )
+            val signedData1 =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                    encapsulatePlaintext = false,
+                )
 
-            val signedData2 = SignedData.sign(
-                byteArrayOf(0xde.toByte(), *stubPlaintext),
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate),
-                encapsulatePlaintext = false
-            )
+            val signedData2 =
+                SignedData.sign(
+                    byteArrayOf(0xde.toByte(), *stubPlaintext),
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                    encapsulatePlaintext = false,
+                )
 
-            val invalidBCSignedData = CMSSignedData.replaceSigners(
-                signedData1.bcSignedData,
-                signedData2.bcSignedData.signerInfos
-            )
+            val invalidBCSignedData =
+                CMSSignedData.replaceSigners(
+                    signedData1.bcSignedData,
+                    signedData2.bcSignedData.signerInfos,
+                )
             val invalidSignedData = SignedData.deserialize(invalidBCSignedData.encoded)
 
             val exception =
@@ -442,16 +469,18 @@ class SignedDataTest {
             // Do the verification with a different key pair
 
             val anotherKeyPair = generateRSAKeyPair()
-            val signedData = SignedData.sign(
-                stubPlaintext,
-                anotherKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate)
-            )
+            val signedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    anotherKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                )
 
-            val exception = assertThrows<SignedDataException> {
-                signedData.verify()
-            }
+            val exception =
+                assertThrows<SignedDataException> {
+                    signedData.verify()
+                }
 
             assertEquals("Invalid signature", exception.message)
             assertNull(exception.cause)
@@ -459,13 +488,14 @@ class SignedDataTest {
 
         @Test
         fun `Signed content should be encapsulated if no specific plaintext is expected`() {
-            val signedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate),
-                encapsulatePlaintext = false
-            )
+            val signedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                    encapsulatePlaintext = false,
+                )
 
             val exception = assertThrows<SignedDataException> { signedData.verify() }
 
@@ -474,53 +504,57 @@ class SignedDataTest {
 
         @Test
         fun `Expected plaintext should be refused if one is already encapsulated`() {
-            val signedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate)
-            )
+            val signedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                )
 
             val exception = assertThrows<SignedDataException> { signedData.verify(stubPlaintext) }
 
             assertEquals(
                 "No specific plaintext should be expected because one is already encapsulated",
-                exception.message
+                exception.message,
             )
         }
 
         @Test
         fun `Valid signature with encapsulated plaintext should be accepted`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate)
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                )
 
             cmsSignedData.verify()
         }
 
         @Test
         fun `Valid signature without encapsulated plaintext should be accepted`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate),
-                encapsulatePlaintext = false
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                    encapsulatePlaintext = false,
+                )
 
             cmsSignedData.verify(stubPlaintext)
         }
 
         @Test
         fun `Signer certificate should be encapsulated`() {
-            val signedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate
-            )
+            val signedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                )
 
             val exception = assertThrows<SignedDataException> { signedData.verify() }
 
@@ -529,12 +563,13 @@ class SignedDataTest {
 
         @Test
         fun `Valid signature with encapsulated signer certificate should succeed`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                encapsulatedCertificates = setOf(stubCertificate)
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    encapsulatedCertificates = setOf(stubCertificate),
+                )
 
             cmsSignedData.verify()
         }
@@ -549,12 +584,13 @@ class SignedDataTest {
             val signerBuilder =
                 JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
             val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
-            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
-                JcaDigestCalculatorProviderBuilder()
-                    .build()
-            ).build(contentSigner, stubCertificate.certificateHolder)
+            val signerInfoGenerator =
+                JcaSignerInfoGeneratorBuilder(
+                    JcaDigestCalculatorProviderBuilder()
+                        .build(),
+                ).build(contentSigner, stubCertificate.certificateHolder)
             signedDataGenerator.addSignerInfoGenerator(
-                signerInfoGenerator
+                signerInfoGenerator,
             )
 
             val certs = JcaCertStore(listOf(stubCertificate.certificateHolder))
@@ -569,11 +605,12 @@ class SignedDataTest {
 
         @Test
         fun `Plaintext should be output if encapsulated`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                )
 
             assertTrue(cmsSignedData.plaintext is ByteArray)
             assertEquals(stubPlaintext.asList(), cmsSignedData.plaintext!!.asList())
@@ -593,7 +630,7 @@ class SignedDataTest {
 
             assertEquals(
                 "SignedData should contain exactly one SignerInfo (got 0)",
-                exception.message
+                exception.message,
             )
         }
 
@@ -604,51 +641,55 @@ class SignedDataTest {
             val signerBuilder =
                 JcaContentSignerBuilder("SHA256WITHRSAANDMGF1").setProvider(BC_PROVIDER)
             val contentSigner: ContentSigner = signerBuilder.build(stubKeyPair.private)
-            val signerInfoGenerator = JcaSignerInfoGeneratorBuilder(
-                JcaDigestCalculatorProviderBuilder()
-                    .build()
-            ).build(contentSigner, stubCertificate.certificateHolder)
+            val signerInfoGenerator =
+                JcaSignerInfoGeneratorBuilder(
+                    JcaDigestCalculatorProviderBuilder()
+                        .build(),
+                ).build(contentSigner, stubCertificate.certificateHolder)
             // Add the same SignerInfo twice
             signedDataGenerator.addSignerInfoGenerator(
-                signerInfoGenerator
+                signerInfoGenerator,
             )
             signedDataGenerator.addSignerInfoGenerator(
-                signerInfoGenerator
+                signerInfoGenerator,
             )
 
-            val bcSignedData = signedDataGenerator.generate(
-                CMSProcessableByteArray(stubPlaintext),
-                true
-            )
+            val bcSignedData =
+                signedDataGenerator.generate(
+                    CMSProcessableByteArray(stubPlaintext),
+                    true,
+                )
             val signedData = SignedData(bcSignedData)
 
             val exception = assertThrows<SignedDataException> { signedData.signerCertificate }
 
             assertEquals(
                 "SignedData should contain exactly one SignerInfo (got 2)",
-                exception.message
+                exception.message,
             )
         }
 
         @Test
         fun `Certificate of signer may not be encapsulated`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                )
 
             assertNull(cmsSignedData.signerCertificate)
         }
 
         @Test
         fun `Signer certificate should be output if present`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                setOf(stubCertificate)
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    setOf(stubCertificate),
+                )
 
             assertEquals(stubCertificate, cmsSignedData.signerCertificate)
         }
@@ -658,23 +699,25 @@ class SignedDataTest {
     inner class Certificates {
         @Test
         fun `No certificates may be encapsulated`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                )
 
             assertEquals(0, cmsSignedData.certificates.size)
         }
 
         @Test
         fun `One certificate may be encapsulated`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                encapsulatedCertificates = setOf(stubCertificate)
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    encapsulatedCertificates = setOf(stubCertificate),
+                )
 
             assertEquals(1, cmsSignedData.certificates.size)
             assert(cmsSignedData.certificates.contains(stubCertificate))
@@ -682,12 +725,13 @@ class SignedDataTest {
 
         @Test
         fun `Multiple certificates may be encapsulated`() {
-            val cmsSignedData = SignedData.sign(
-                stubPlaintext,
-                stubKeyPair.private,
-                stubCertificate,
-                encapsulatedCertificates = setOf(stubCertificate, anotherStubCertificate)
-            )
+            val cmsSignedData =
+                SignedData.sign(
+                    stubPlaintext,
+                    stubKeyPair.private,
+                    stubCertificate,
+                    encapsulatedCertificates = setOf(stubCertificate, anotherStubCertificate),
+                )
 
             assertEquals(2, cmsSignedData.certificates.size)
             assert(cmsSignedData.certificates.contains(stubCertificate))
