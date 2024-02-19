@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    val kotlinCoroutinesVersion = "1.7.3"
+    val kotlinCoroutinesVersion = "1.8.0"
     val bouncyCastleVersion = "1.70"
     val junitJuniperVersion = "5.10.2"
 
