@@ -134,12 +134,13 @@ class RAMFMessageTest {
         @Test
         fun `TTL can be set to limit`() {
             val secondsIn180Days = 15552000
-            val message = StubEncryptedRAMFMessage(
-                recipient,
-                payload,
-                senderCertificate,
-                ttl = RAMFMessage.MAX_TTL_SECONDS,
-            )
+            val message =
+                StubEncryptedRAMFMessage(
+                    recipient,
+                    payload,
+                    senderCertificate,
+                    ttl = RAMFMessage.MAX_TTL_SECONDS,
+                )
 
             assertEquals(secondsIn180Days, message.ttl)
         }
@@ -204,7 +205,7 @@ class RAMFMessageTest {
 
             assertEquals(
                 "Payload cannot span more than ${RAMFMessage.MAX_PAYLOAD_LENGTH} octets " +
-                        "(got $longPayloadLength)",
+                    "(got $longPayloadLength)",
                 exception.message,
             )
         }
@@ -379,10 +380,10 @@ class RAMFMessageTest {
                     payload,
                     senderCertificate,
                     senderCertificateChain =
-                    setOf(
-                        // Wrong
-                        PDACertPath.PRIVATE_GW,
-                    ),
+                        setOf(
+                            // Wrong
+                            PDACertPath.PRIVATE_GW,
+                        ),
                 )
 
             assertNull(message.recipientCertificate)
@@ -555,10 +556,10 @@ class RAMFMessageTest {
                         payload,
                         PDACertPath.PDA,
                         senderCertificateChain =
-                        setOf(
-                            PDACertPath.PRIVATE_GW,
-                            PDACertPath.PRIVATE_ENDPOINT,
-                        ),
+                            setOf(
+                                PDACertPath.PRIVATE_GW,
+                                PDACertPath.PRIVATE_ENDPOINT,
+                            ),
                     )
 
                 message.validate(setOf(PDACertPath.INTERNET_GW))
