@@ -5,6 +5,8 @@ import java.time.ZoneId
 import java.time.ZoneOffset.UTC
 import java.time.ZonedDateTime
 import java.util.UUID
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import tech.relaycorp.relaynet.HashingAlgorithm
 import tech.relaycorp.relaynet.messages.InvalidMessageException
 import tech.relaycorp.relaynet.messages.Recipient
@@ -13,7 +15,6 @@ import tech.relaycorp.relaynet.wrappers.x509.Certificate
 import tech.relaycorp.relaynet.wrappers.x509.CertificateException
 
 private const val MAX_MESSAGE_ID_LENGTH = 64
-private const val MAX_TTL = 15552000
 
 private const val DEFAULT_TTL_MINUTES = 5
 private const val DEFAULT_TTL_SECONDS = DEFAULT_TTL_MINUTES * 60
@@ -82,9 +83,9 @@ abstract class RAMFMessage<P : Payload> internal constructor(
         if (this.ttl < 0) {
             throw RAMFException("TTL cannot be negative (got ${this.ttl})")
         }
-        if (MAX_TTL < this.ttl) {
+        if (MAX_TTL_SECONDS < this.ttl) {
             throw RAMFException(
-                "TTL cannot be greater than $MAX_TTL (got ${this.ttl})",
+                "TTL cannot be greater than $MAX_TTL_SECONDS (got ${this.ttl})",
             )
         }
         if (MAX_PAYLOAD_LENGTH < payload.size) {
@@ -174,5 +175,8 @@ abstract class RAMFMessage<P : Payload> internal constructor(
 
     companion object {
         const val MAX_PAYLOAD_LENGTH = 8_388_608
+
+        private val MAX_TTL: Duration = 180.days
+        val MAX_TTL_SECONDS = MAX_TTL.inWholeSeconds.toInt()
     }
 }

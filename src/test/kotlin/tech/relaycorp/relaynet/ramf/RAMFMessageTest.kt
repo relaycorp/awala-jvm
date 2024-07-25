@@ -132,9 +132,21 @@ class RAMFMessageTest {
         }
 
         @Test
-        fun `TTL should not be greater than 180 days`() {
+        fun `TTL can be set to limit`() {
             val secondsIn180Days = 15552000
-            val longTtl = secondsIn180Days + 1
+            val message = StubEncryptedRAMFMessage(
+                recipient,
+                payload,
+                senderCertificate,
+                ttl = RAMFMessage.MAX_TTL_SECONDS,
+            )
+
+            assertEquals(secondsIn180Days, message.ttl)
+        }
+
+        @Test
+        fun `TTL should not exceed limit`() {
+            val longTtl = RAMFMessage.MAX_TTL_SECONDS + 1
             val exception =
                 assertThrows<RAMFException> {
                     StubEncryptedRAMFMessage(
@@ -146,7 +158,7 @@ class RAMFMessageTest {
                 }
 
             assertEquals(
-                "TTL cannot be greater than $secondsIn180Days (got $longTtl)",
+                "TTL cannot be greater than ${RAMFMessage.MAX_TTL_SECONDS} (got $longTtl)",
                 exception.message,
             )
         }
@@ -192,7 +204,7 @@ class RAMFMessageTest {
 
             assertEquals(
                 "Payload cannot span more than ${RAMFMessage.MAX_PAYLOAD_LENGTH} octets " +
-                    "(got $longPayloadLength)",
+                        "(got $longPayloadLength)",
                 exception.message,
             )
         }
@@ -367,10 +379,10 @@ class RAMFMessageTest {
                     payload,
                     senderCertificate,
                     senderCertificateChain =
-                        setOf(
-                            // Wrong
-                            PDACertPath.PRIVATE_GW,
-                        ),
+                    setOf(
+                        // Wrong
+                        PDACertPath.PRIVATE_GW,
+                    ),
                 )
 
             assertNull(message.recipientCertificate)
@@ -543,10 +555,10 @@ class RAMFMessageTest {
                         payload,
                         PDACertPath.PDA,
                         senderCertificateChain =
-                            setOf(
-                                PDACertPath.PRIVATE_GW,
-                                PDACertPath.PRIVATE_ENDPOINT,
-                            ),
+                        setOf(
+                            PDACertPath.PRIVATE_GW,
+                            PDACertPath.PRIVATE_ENDPOINT,
+                        ),
                     )
 
                 message.validate(setOf(PDACertPath.INTERNET_GW))
