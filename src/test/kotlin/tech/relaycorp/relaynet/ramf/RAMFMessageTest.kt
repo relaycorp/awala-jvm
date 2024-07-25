@@ -132,9 +132,22 @@ class RAMFMessageTest {
         }
 
         @Test
-        fun `TTL should not be greater than 180 days`() {
+        fun `TTL can be set to limit`() {
             val secondsIn180Days = 15552000
-            val longTtl = secondsIn180Days + 1
+            val message =
+                StubEncryptedRAMFMessage(
+                    recipient,
+                    payload,
+                    senderCertificate,
+                    ttl = RAMFMessage.MAX_TTL_SECONDS,
+                )
+
+            assertEquals(secondsIn180Days, message.ttl)
+        }
+
+        @Test
+        fun `TTL should not exceed limit`() {
+            val longTtl = RAMFMessage.MAX_TTL_SECONDS + 1
             val exception =
                 assertThrows<RAMFException> {
                     StubEncryptedRAMFMessage(
@@ -146,7 +159,7 @@ class RAMFMessageTest {
                 }
 
             assertEquals(
-                "TTL cannot be greater than $secondsIn180Days (got $longTtl)",
+                "TTL cannot be greater than ${RAMFMessage.MAX_TTL_SECONDS} (got $longTtl)",
                 exception.message,
             )
         }
