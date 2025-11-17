@@ -16,7 +16,7 @@ plugins {
 
     id("org.jetbrains.dokka") version "2.0.0"
 
-    id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
 
     jacoco
 
